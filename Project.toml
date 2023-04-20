@@ -1,0 +1,4 @@
+name = "MondrianForests"
+uuid = "3e47f106-5d41-4e23-9040-914dff44c15a"
+authors = ["William G Underwood <42812654+WGUNDERWOOD@users.noreply.github.com>"]
+version = "0.1.0"
