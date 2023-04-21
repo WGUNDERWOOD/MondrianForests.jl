@@ -7,7 +7,8 @@ using MondrianForests
 #end
 
 d = 2
-lambda = 50.0
+lambda = 2.0
 tree = MondrianTree(d, lambda)
 #plot_mondrian_tree(tree)
-show(tree)
+MondrianForests.show(tree)
+MondrianForests.show(tree)

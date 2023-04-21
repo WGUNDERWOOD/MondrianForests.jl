@@ -11,5 +11,6 @@ export MondrianCell
 export MondrianTree
 export MondrianForest
 export fit
+export show
 
 end

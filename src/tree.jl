@@ -44,7 +44,7 @@ function MondrianTree(d::Int, lambda::Float64)
     return MondrianTree(lambda, "", 0.0, MondrianCell(d))
 end
 
-function show(tree::MondrianTree)
+function show(tree::MondrianTree{d}) where {d}
     depth = length(tree.id)
     has_split = !isnothing(tree.split_axis)
     if depth >= 1
@@ -54,19 +54,24 @@ function show(tree::MondrianTree)
     if depth >= 1
         printstyled("$(tree.id) ", bold=true, color=:light_magenta)
     else
+        printstyled("MondrianTree ", bold=true, color=:yellow)
+        print("in ")
+        printstyled("dimension $d ", color=:cyan)
+        print("with ")
+        printstyled("lambda = $(round(lambda, digits=4)) \n", color=:cyan)
         printstyled("Root ", bold=true, color=:light_magenta)
     end
     if has_split
-        print("split: axis $(tree.split_axis) ")
+        print("split on axis $(tree.split_axis) ")
         print("at location $(round(tree.split_location, digits=4)) ")
         print("at time $(round(tree.tree_left.creation_time, digits=4)) ")
     else
-        print("leaf: ")
+        print("leaf at ")
         lower = round.(tree.cell.lower, digits=4)
         upper = round.(tree.cell.upper, digits=4)
         printstyled("$lower -- $upper ", color=:green)
     end
-    println()
+    print("\n")
     if has_split
         show(tree.tree_left)
         show(tree.tree_right)
