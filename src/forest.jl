@@ -4,22 +4,22 @@ struct MondrianForest{d}
     n_trees::Int
     n_data::Int
     n_data_reduced::Int
-    x_eval::NTuple{d, Float64}
+    x_eval::NTuple{d,Float64}
     # trees
     cells::Vector{MondrianCell{d}}
     largest_cell::MondrianCell{d}
     # data
-    X_data::Vector{NTuple{d, Float64}}
+    X_data::Vector{NTuple{d,Float64}}
     Y_data::Vector{Float64}
     mu_hat::Float64
     sigma2_hat::Float64
     Sigma_hat::Float64
-    X_data_reduced::Vector{NTuple{d, Float64}}
+    X_data_reduced::Vector{NTuple{d,Float64}}
     Y_data_reduced::Vector{Float64}
     membership::Vector{Vector{Bool}}
 end
 
-function sample_mondrian_cell(x::NTuple{d, Float64}, lambda::Float64) where {d}
+function sample_mondrian_cell(x::NTuple{d,Float64}, lambda::Float64) where {d}
     E_lower = [rand(Exponential(1)) for _ in 1:d]
     E_upper = [rand(Exponential(1)) for _ in 1:d]
     lower = max.(x .- E_lower ./ lambda, 0)
@@ -37,10 +37,9 @@ function get_largest_cell(cells::Vector{MondrianCell{d}}) where {d}
     return MondrianCell(lower, upper)
 end
 
-function MondrianForest(lambda::Float64, n_trees::Int, x_eval::NTuple{d, Float64},
-                        X_data::Vector{NTuple{d, Float64}},
+function MondrianForest(lambda::Float64, n_trees::Int, x_eval::NTuple{d,Float64},
+                        X_data::Vector{NTuple{d,Float64}},
                         Y_data::Vector{Float64}) where {d}
-
     n_data = length(X_data)
     cells = [sample_mondrian_cell(x_eval, lambda) for _ in 1:n_trees]
     largest_cell = get_largest_cell(cells)
@@ -71,12 +70,10 @@ function MondrianForest(lambda::Float64, n_trees::Int, x_eval::NTuple{d, Float64
                           Sigma_hat,
                           X_data_reduced,
                           Y_data_reduced,
-                          membership,
-                         )
+                          membership)
 end
 
 function estimate_mu_hat(membership::Vector{Vector{Bool}}, Y_data_reduced::Vector{Float64})
-
     mu_hat = 0.0
     n_trees = length(membership)
     Ns = [sum(m for m in membership[b]) for b in 1:n_trees]
@@ -95,7 +92,6 @@ end
 
 function estimate_sigma2_hat(membership::Vector{Vector{Bool}}, Y_data_reduced::Vector{Float64},
                              mu_hat::Float64)
-
     sigma2_hat = 0.0
     n_trees = length(membership)
     Ns = [sum(m for m in membership[b]) for b in 1:n_trees]
@@ -115,7 +111,6 @@ end
 
 function estimate_Sigma_hat(membership::Vector{Vector{Bool}}, Y_data_reduced::Vector{Float64},
                             sigma2_hat::Float64, d::Int, lambda::Float64)
-
     A = 0.0
     n_trees = length(membership)
     n_data = length(Y_data_reduced)
@@ -137,7 +132,7 @@ function estimate_Sigma_hat(membership::Vector{Vector{Bool}}, Y_data_reduced::Ve
     end
 
     Sigma_hat = A * (n_data / lambda^d)
-    Sigma_hat *=  2 / (n_trees * (n_trees-1))
+    Sigma_hat *= 2 / (n_trees * (n_trees - 1))
     Sigma_hat *= sigma2_hat
     return Sigma_hat
 end

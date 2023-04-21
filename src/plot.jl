@@ -3,9 +3,9 @@ using PyPlot
 
 rcParams = PyPlot.PyDict(PyPlot.matplotlib."rcParams")
 rcParams["text.usetex"] = true
-rcParams["mathtext.fontset"]  = "cm";
-rcParams["font.family"]  = "serif";
-rcParams["font.serif"]  = "cm";
+rcParams["mathtext.fontset"] = "cm";
+rcParams["font.family"] = "serif";
+rcParams["font.serif"] = "cm";
 plt.ioff()
 
 function get_splits(tree::MondrianTree{d}) where {d}
@@ -14,7 +14,7 @@ function get_splits(tree::MondrianTree{d}) where {d}
         upper = tree.tree_left.cell.upper
         return [(lower, upper); get_splits(tree.tree_left); get_splits(tree.tree_right)]
     else
-        return Tuple{NTuple{d,Float64}, NTuple{d,Float64}}[]
+        return Tuple{NTuple{d,Float64},NTuple{d,Float64}}[]
     end
 end
 

@@ -1,6 +1,6 @@
 struct MondrianCell{d}
-    lower::NTuple{d, Float64}
-    upper::NTuple{d, Float64}
+    lower::NTuple{d,Float64}
+    upper::NTuple{d,Float64}
 end
 
 function MondrianCell(d::Int)
@@ -9,7 +9,7 @@ function MondrianCell(d::Int)
     return MondrianCell(lower, upper)
 end
 
-function is_in(x::NTuple{d, Float64}, cell::MondrianCell) where {d}
+function is_in(x::NTuple{d,Float64}, cell::MondrianCell) where {d}
     for i in 1:d
         if (cell.lower[i] >= x[i]) || (x[i] > cell.upper[i])
             return false

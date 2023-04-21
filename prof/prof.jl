@@ -51,4 +51,3 @@ end
 #@profile run_mondrian_forest()
 @profile check_confidence_intervals()
 #ProfileSVG.save("prof/prof.svg")
-
