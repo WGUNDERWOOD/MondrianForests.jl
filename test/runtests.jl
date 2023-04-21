@@ -24,8 +24,8 @@ end
 @testset verbose = true "MondrianForest" begin
     d = 2
     lambda = 10.0
-    B = 10
-    n = 10
+    B = 100
+    n = 100
     data = generate_data(d, n)
     forest = MondrianForest(d, lambda, B, data["X"], data["Y"])
 end
