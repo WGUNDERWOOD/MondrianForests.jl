@@ -48,24 +48,12 @@ function MondrianTree(lambda::Float64, id::String, creation_time::Float64,
     end
 end
 
-function is_leaf(tree::MondrianTree)
-    return isnothing(tree.split_axis)
-end
-
-function get_id(x::Vector{Float64}, tree::MondrianTree)
-    if is_leaf(tree)
-        return tree.id
-    else
-        if x[tree.split_axis] <= tree.split_location
-            return get_id(x, tree.tree_left)
-        else
-            return get_id(x, tree.tree_right)
-        end
-    end
-end
-
 function MondrianTree(d::Int, lambda::Float64)
     @assert lambda >= 0
     @assert d >= 1
     return MondrianTree(lambda, "", 0.0, MondrianCell(d))
+end
+
+function is_in(x::Vector{Float64}, cell::MondrianCell)
+    return all(cell.lower .< x .<= cell.upper)
 end

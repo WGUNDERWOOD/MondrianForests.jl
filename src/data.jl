@@ -15,7 +15,7 @@ end
 
 function generate_data(d::Int, n::Int)
     X_dist = product_distribution([Uniform(0, 1) for _ in 1:d])
-    eps_dist = Uniform(0, 1)
+    eps_dist = Uniform(-sqrt(3), sqrt(3))
     mu = (x -> 0.0)
     sigma2 = (x -> 1.0)
     return generate_data(n, X_dist, eps_dist, mu, sigma2)
