@@ -1,42 +1,51 @@
 using Random
+using Distributions
+using StaticArrays
 
 struct MondrianCell{d}
-    left::NTuple{d, Float64}
-    right::NTuple{d, Float64}
+    lower::SVector{d,Float64}
+    upper::SVector{d,Float64}
 end
 
 function MondrianCell(d::Int)
-    left = ntuple(i -> 0.0, d)
-    right = ntuple(i -> 1.0, d)
-    return MondrianCell(left, right)
+    lower = zeros(SVector{d,Float64})
+    upper = ones(SVector{d,Float64})
+    return MondrianCell(lower, upper)
 end
 
 struct MondrianTree{d}
     lambda::Float64
-    cell::MondrianCell
-    left::Union{MondrianTree, Nothing}
-    right::Union{MondrianTree, Nothing}
-    time::Float64
+    creation_time::Float64
+    cell::MondrianCell{d}
+    split_axis::Union{Int,Nothing}
+    split_location::Union{Float64,Nothing}
+    tree_left::Union{MondrianTree,Nothing}
+    tree_right::Union{MondrianTree,Nothing}
 end
 
-function MondrianTree(cell::MondrianCell, time::Float64, lambda::Float64)
-    size_cell = sum(cell.right .- cell.left)
+function MondrianTree(lambda::Float64, creation_time::Float64, cell::MondrianCell)
+    d = length(cell.lower)
+    size_cell = sum(cell.upper .- cell.lower)
     E = randexp() / size_cell
-
-    if time + E <= lambda
-        j = rand(DiscreteNonParametric(1:d, (c.b .- c.a) / dim_c))
-        sj = rand(Uniform(c.a[j], c.b[j]))
-        b0 = copy(c.b)
-        b0[j] = sj
-        c0 = Cell(c.a, b0)
-        a1 = copy(c.a)
-        a1[j] = sj
-        c1 = Cell(a1, c.b)
-        m0 = sample_mondrian(c0, time + E, lambda)
-        m1 = sample_mondrian(c1, time + E, lambda)
-        return [m0; m1]
+    if creation_time + E <= lambda
+        split_axis = rand(DiscreteNonParametric(1:d, (cell.upper .- cell.lower) ./ size_cell))
+        split_location = rand(Uniform(cell.lower[split_axis], cell.upper[split_axis]))
+        left_upper = MArray(cell.upper)
+        left_upper[split_axis] = split_location
+        cell_left = MondrianCell(cell.lower, SVector(left_upper))
+        right_lower = MArray(cell.lower)
+        right_lower[split_axis] = split_location
+        cell_right = MondrianCell(SVector(right_lower), cell.upper)
+        tree_left = MondrianTree(lambda, creation_time + E, cell_left)
+        tree_right = MondrianTree(lambda, creation_time + E, cell_right)
+        return MondrianTree(lambda, creation_time, cell, split_axis, split_location, tree_left, tree_right)
     else
-        return [c]
+        return MondrianTree(lambda, creation_time, cell, nothing, nothing, nothing, nothing)
     end
 end
 
+function MondrianTree(d::Int, lambda::Float64)
+    @assert lambda >= 0
+    @assert d >= 1
+    return MondrianTree(lambda, 0.0, MondrianCell(d))
+end
