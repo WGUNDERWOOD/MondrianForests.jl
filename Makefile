@@ -1,6 +1,6 @@
 all: format
 
-.PHONY: format
+.PHONY: all format
 
 format:
 	julia -e 'using JuliaFormatter; format(".")'

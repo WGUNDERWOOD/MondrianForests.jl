@@ -30,12 +30,14 @@ function MondrianTree(lambda::Float64, id::String, creation_time::Float64,
         cell_right = MondrianCell(right_lower, cell.upper)
         tree_left = MondrianTree(lambda, id * "L", creation_time + E, cell_left)
         tree_right = MondrianTree(lambda, id * "R", creation_time + E, cell_right)
-        return MondrianTree(lambda, id, creation_time, cell, split_axis, split_location,
+        tree = MondrianTree(lambda, id, creation_time, cell, split_axis, split_location,
                             tree_left, tree_right)
     else
-        return MondrianTree(lambda, id, creation_time, cell, nothing, nothing,
+        tree = MondrianTree(lambda, id, creation_time, cell, nothing, nothing,
                             nothing, nothing)
     end
+
+    return tree
 end
 
 function MondrianTree(d::Int, lambda::Float64)

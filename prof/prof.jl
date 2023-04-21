@@ -21,6 +21,7 @@ function run_mondrian_forest()
     println(forest.sigma2_hat)
     println(forest.Sigma_hat)
     println()
+    return nothing
 end
 
 function check_confidence_intervals()
@@ -43,6 +44,7 @@ function check_confidence_intervals()
         corrects[rep] = correct
     end
     println(sum(corrects) / n_reps)
+    return nothing
 end
 
 #run_mondrian_forest()
