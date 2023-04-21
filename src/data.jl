@@ -20,4 +20,3 @@ function generate_data(d::Int, n::Int)
     sigma2 = (x -> 1.0)
     return generate_data(n, X_dist, eps_dist, mu, sigma2)
 end
-
