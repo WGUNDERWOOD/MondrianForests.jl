@@ -1,6 +1,6 @@
 style = "yas"
 indent = 4
-margin = 90
+margin = 100
 always_for_in = true
 whitespace_typedefs = true
 remove_extra_newlines = true

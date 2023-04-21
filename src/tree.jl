@@ -1,9 +1,9 @@
 using Random
 using Distributions
 
-struct MondrianCell
-    lower::Vector{Float64}
-    upper::Vector{Float64}
+struct MondrianCell{d}
+    lower::NTuple{d, Float64}
+    upper::NTuple{d, Float64}
 end
 
 function MondrianCell(d::Int)
@@ -54,6 +54,11 @@ function MondrianTree(d::Int, lambda::Float64)
     return MondrianTree(lambda, "", 0.0, MondrianCell(d))
 end
 
-function is_in(x::Vector{Float64}, cell::MondrianCell)
-    return all(cell.lower .< x .<= cell.upper)
+function is_in(x::NTuple{d, Float64}, cell::MondrianCell) where {d}
+    for i in 1:d
+        if (cell.lower[i] >= x[i]) || (x[i] > cell.upper[i])
+            return false
+        end
+    end
+    return true
 end

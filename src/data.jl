@@ -8,6 +8,7 @@ function generate_data(n::Int, X_dist::Distribution, eps_dist::Distribution,
 
     d = length(X_dist)
     X = [rand(X_dist) for _ in 1:n]
+    X = [ntuple(j -> X[i][j], Val(d)) for i in 1:n]
     eps = [rand(eps_dist) for _ in 1:n]
     Y = mu.(X) + sigma2.(X) .* eps
     return Dict("X" => X, "Y" => Y)
