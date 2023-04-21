@@ -1,8 +1,12 @@
 module MondrianForests
 
-include("mondrian_tree.jl")
+include("data.jl")
+include("tree.jl")
+include("forest.jl")
 
 export MondrianCell
 export MondrianTree
+export MondrianForest
+export generate_data
 
 end

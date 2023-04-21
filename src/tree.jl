@@ -1,26 +1,25 @@
 using Random
 using Distributions
-using StaticArrays
 
-struct MondrianCell{d}
-    lower::SVector{d, Float64}
-    upper::SVector{d, Float64}
+struct MondrianCell
+    lower::Vector{Float64}
+    upper::Vector{Float64}
 end
 
 function MondrianCell(d::Int)
-    lower = zeros(SVector{d, Float64})
-    upper = ones(SVector{d, Float64})
+    lower = zeros(d)
+    upper = ones(d)
     return MondrianCell(lower, upper)
 end
 
-struct MondrianTree{d}
+struct MondrianTree
     lambda::Float64
     creation_time::Float64
-    cell::MondrianCell{d}
-    split_axis::Union{Int, Nothing}
-    split_location::Union{Float64, Nothing}
-    tree_left::Union{MondrianTree, Nothing}
-    tree_right::Union{MondrianTree, Nothing}
+    cell::MondrianCell
+    split_axis::Union{Int,Nothing}
+    split_location::Union{Float64,Nothing}
+    tree_left::Union{MondrianTree,Nothing}
+    tree_right::Union{MondrianTree,Nothing}
 end
 
 function MondrianTree(lambda::Float64, creation_time::Float64, cell::MondrianCell)
@@ -31,21 +30,19 @@ function MondrianTree(lambda::Float64, creation_time::Float64, cell::MondrianCel
         split_probabilities = (cell.upper .- cell.lower) ./ size_cell
         split_axis = rand(DiscreteNonParametric(1:d, split_probabilities))
         split_location = rand(Uniform(cell.lower[split_axis], cell.upper[split_axis]))
-        left_upper = MArray(cell.upper)
+        left_upper = copy(cell.upper)
         left_upper[split_axis] = split_location
-        cell_left = MondrianCell(cell.lower, SVector(left_upper))
-        right_lower = MArray(cell.lower)
+        cell_left = MondrianCell(cell.lower, left_upper)
+        right_lower = copy(cell.lower)
         right_lower[split_axis] = split_location
-        cell_right = MondrianCell(SVector(right_lower), cell.upper)
+        cell_right = MondrianCell(right_lower, cell.upper)
         tree_left = MondrianTree(lambda, creation_time + E, cell_left)
         tree_right = MondrianTree(lambda, creation_time + E, cell_right)
-        return MondrianTree(
-            lambda, creation_time, cell, split_axis, split_location, tree_left, tree_right
-        )
+        return MondrianTree(lambda, creation_time, cell, split_axis, split_location,
+                            tree_left, tree_right)
     else
-        return MondrianTree(
-            lambda, creation_time, cell, nothing, nothing, nothing, nothing
-        )
+        return MondrianTree(lambda, creation_time, cell, nothing, nothing, nothing,
+                            nothing)
     end
 end
 

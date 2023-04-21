@@ -1,5 +1,6 @@
 using MondrianForests
 using Test
+using Distributions
 
 @testset verbose = true "MondrianCell" begin
     for d in 1:5
@@ -12,4 +13,19 @@ end
         lambda = 10.0
         tree = MondrianTree(d, lambda)
     end
+end
+
+@testset verbose = true "Data" begin
+    d = 2
+    n = 10
+    data = generate_data(d, n)
+end
+
+@testset verbose = true "MondrianForest" begin
+    d = 2
+    lambda = 10.0
+    B = 10
+    n = 10
+    data = generate_data(d, n)
+    forest = MondrianForest(d, lambda, B, data["X"], data["Y"])
 end
