@@ -1,11 +1,13 @@
 using Distributions
 
+"""
+Generate sample data for Mondrian forest estimation.
+
+Draws `n` independent samples from `Y = mu(X) + sigma(X) eps`,
+with `X ~ X_dist` and `eps ~ eps_dist`
+"""
 function generate_data(n::Int, X_dist::Distribution, eps_dist::Distribution,
                        mu::Function, sigma2::Function)
-
-    # generate n samples from Y = mu(X) + sigma(X) eps,
-    # with X ~ X_dist and eps ~ eps_dist
-
     d = length(X_dist)
     X = [rand(X_dist) for _ in 1:n]
     X = [ntuple(j -> X[i][j], Val(d)) for i in 1:n]
@@ -14,7 +16,13 @@ function generate_data(n::Int, X_dist::Distribution, eps_dist::Distribution,
     return Dict("X" => X, "Y" => Y)
 end
 
-function generate_data(d::Int, n::Int)
+"""
+Generate uniform sample data for Mondrian forest estimation.
+
+Draws `n` independent samples from `Y = eps`,
+with `X ~ U[0, 1]` and `eps ~ U[-sqrt(3), sqrt(3)]`
+"""
+function generate_uniform_data(d::Int, n::Int)
     X_dist = product_distribution([Uniform(0, 1) for _ in 1:d])
     eps_dist = Uniform(-sqrt(3), sqrt(3))
     mu = (x -> 0.0)
