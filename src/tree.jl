@@ -46,7 +46,7 @@ function MondrianTree(d::Int, lambda::Float64)
     return MondrianTree(lambda, "", 0.0, MondrianCell(d))
 end
 
-function show(tree::MondrianTree{d}) where {d}
+function Base.show(tree::MondrianTree{d}) where {d}
     depth = length(tree.id)
     has_split = !isnothing(tree.split_axis)
     if depth >= 1

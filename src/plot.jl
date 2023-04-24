@@ -52,7 +52,7 @@ function plot_mondrian_tree(tree::MondrianTree)
         ax.spines[side].set_color("#FFFFFF00")
     end
 
-    return p
+    return (fig, ax)
 end
 
 d = 2
@@ -60,6 +60,6 @@ lambdas = [5.0, 10.0, 20.0, 40.0]
 for i in 1:length(lambdas)
     lambda = lambdas[i]
     tree = MondrianTree(d, lambda)
-    p = plot_mondrian_tree(tree)
+    (fig, ax) = plot_mondrian_tree(tree)
     savefig("plot_$i.svg", bbox_inches="tight")
 end
