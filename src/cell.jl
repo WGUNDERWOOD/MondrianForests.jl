@@ -17,3 +17,11 @@ function is_in(x::NTuple{d,Float64}, cell::MondrianCell) where {d}
     end
     return true
 end
+
+function Base.show(cell::MondrianCell{d}) where {d}
+    lower = round.(cell.lower, digits=4)
+    upper = round.(cell.upper, digits=4)
+    printstyled("$lower -- $upper ", color=:green)
+    print("\n")
+    return nothing
+end

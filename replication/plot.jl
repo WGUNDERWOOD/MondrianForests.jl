@@ -1,5 +1,6 @@
 using MondrianForests
 using PyPlot
+using Random
 
 plt.ioff()
 
@@ -13,14 +14,23 @@ function get_splits(tree::MondrianTree{d}) where {d}
     end
 end
 
+function get_cells(tree::MondrianTree{d}) where {d}
+    if isnothing(tree.split_axis)
+        cell = tree.cell
+        return [tree.cell]
+    else
+        return [get_cells(tree.tree_left); get_cells(tree.tree_right)]
+    end
+end
+
 function plot_mondrian_tree(tree::MondrianTree)
+
     @assert isa(tree, MondrianTree{2})
     splits = get_splits(tree)
-
     (fig, ax) = plt.subplots(figsize=(2.3, 2.3))
 
     # plot root cell
-    lw = 0.5
+    lw = 0.3
     (l1, l2) = tree.cell.lower
     (u1, u2) = tree.cell.upper
     plot([l1, l1], [l1, u2], color="k", lw=lw)
@@ -50,13 +60,24 @@ function plot_mondrian_tree(tree::MondrianTree)
     return (fig, ax)
 end
 
-# TODO make sure no tiny boxes
-
 d = 2
-lambdas = [2.0, 8.0, 16.0]
+lambdas = [3.0, 8.0, 16.0]
+cell_thresholds = [0.11, 0.011, 0.0011]
+Random.seed!(3)
+
 for i in 1:length(lambdas)
+
     lambda = lambdas[i]
-    tree = MondrianTree(d, lambda)
+    smallest_cell_length = 0.0
+
+    while smallest_cell_length <= cell_thresholds[i]
+        global tree = MondrianTree(d, lambda)
+        cells = get_cells(tree)
+        smallest_cell_length = minimum(minimum(c.upper .- c.lower) for c in cells)
+        smallest_cell = [c for c in cells if minimum(c.upper .- c.lower) ==
+                         smallest_cell_length][1]
+    end
+
     (fig, ax) = plot_mondrian_tree(tree)
     savefig("plot_$i.pgf", bbox_inches="tight")
     plt.close("all")
