@@ -1,53 +1,33 @@
 using MondrianForests
-using Test
+using Random
 using Distributions
-using Profile
-using ProfileSVG
 
-function run_mondrian_forest()
-    d = 1
-    lambda = 20.0
-    n_trees = 3000
-    n_data = 5000
-    data = generate_data(d, n_data)
-    X_data = data["X"]
-    Y_data = data["Y"]
-    x_eval = ntuple(i -> 0.5, d)
-    forest = MondrianForest(lambda, n_trees, x_eval, X_data, Y_data)
-    #println(forest.X_data)
-    #println(forest.cells)
-    #println(forest.membership)
-    println(forest.mu_hat)
-    println(forest.sigma2_hat)
-    println(forest.Sigma_hat)
-    println()
-    return nothing
-end
+function coverage_experiment(n_reps::Int, lambda::Float64, n_trees::Int, n_data::Int)
 
-function check_confidence_intervals()
-    n_reps = 2000
-    d = 1
-    lambda = 10.0
-    n_trees = 500
-    n_data = 3000
+    d = 2
     x_eval = ntuple(i -> 0.5, d)
+    X_dist = product_distribution([Uniform(0, 1) for _ in 1:d])
+    mu = (x -> x[1]^2 * x[2] + sin(x[1]))
+    sigma2 = (x -> x[2]^2 + 1 + x[1])
+    eps_dist = Normal(0, 1)
     corrects = fill(false, n_reps)
 
     Threads.@threads for rep in 1:n_reps
         println(rep)
-        data = generate_data(d, n_data)
+        data = generate_data(n_data, X_dist, eps_dist, mu, sigma2)
         X_data = data["X"]
         Y_data = data["Y"]
         forest = MondrianForest(lambda, n_trees, x_eval, X_data, Y_data)
         ci_width = 1.96 * sqrt(forest.Sigma_hat) * sqrt(lambda^d / n_data)
-        correct = forest.mu_hat - ci_width <= 0 <= forest.mu_hat + ci_width
+        correct = forest.mu_hat - ci_width <= mu(x_eval) <= forest.mu_hat + ci_width
         corrects[rep] = correct
     end
-    println(sum(corrects) / n_reps)
+    println("Coverage: ", sum(corrects) / n_reps)
     return nothing
 end
 
-#run_mondrian_forest()
-#@profile run_mondrian_forest()
-@profile check_confidence_intervals()
-#ProfileSVG.save("prof/prof.svg")
+n_reps = 100
+lambda = 6.0
+n_trees = 100
+n_data = 1000
+coverage_experiment(n_reps, lambda, n_trees, n_data)
