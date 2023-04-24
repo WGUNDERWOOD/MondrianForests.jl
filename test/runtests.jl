@@ -18,18 +18,15 @@ end
 @testset verbose = true "Data" begin
     d = 2
     n = 10
-    data = generate_data(d, n)
+    data = generate_uniform_data(d, n)
 end
 
-@testset verbose = true "Estimation" begin
+@testset verbose = true "MondrianForest" begin
     d = 1
-    lambda = 10.0
-    n_trees = 500
-    n = 2000
-    data = generate_data(d, n)
-    forest = MondrianForest(d, lambda, n_trees)
-    x = [0.5 for _ in 1:d]
-    MondrianForests.fit(forest, x, data["X"], data["Y"])
-    println(forest)
-    println(0.409^d)
+    lambda = 4.0
+    n_trees = 10
+    n = 20
+    data = generate_uniform_data(d, n)
+    x_eval = ntuple(x -> 0.5, d)
+    forest = MondrianForest(lambda, n_trees, x_eval, data["X"], data["Y"])
 end
