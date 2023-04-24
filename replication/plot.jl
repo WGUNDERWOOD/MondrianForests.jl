@@ -1,11 +1,6 @@
 using MondrianForests
 using PyPlot
 
-rcParams = PyPlot.PyDict(PyPlot.matplotlib."rcParams")
-rcParams["text.usetex"] = true
-rcParams["mathtext.fontset"] = "cm";
-rcParams["font.family"] = "serif";
-rcParams["font.serif"] = "cm";
 plt.ioff()
 
 function get_splits(tree::MondrianTree{d}) where {d}
@@ -22,7 +17,7 @@ function plot_mondrian_tree(tree::MondrianTree)
     @assert isa(tree, MondrianTree{2})
     splits = get_splits(tree)
 
-    (fig, ax) = plt.subplots(figsize=(3, 3))
+    (fig, ax) = plt.subplots(figsize=(2.3, 2.3))
 
     # plot root cell
     lw = 0.5
@@ -55,11 +50,14 @@ function plot_mondrian_tree(tree::MondrianTree)
     return (fig, ax)
 end
 
+# TODO make sure no tiny boxes
+
 d = 2
-lambdas = [5.0, 10.0, 20.0, 40.0]
+lambdas = [2.0, 8.0, 16.0]
 for i in 1:length(lambdas)
     lambda = lambdas[i]
     tree = MondrianTree(d, lambda)
     (fig, ax) = plot_mondrian_tree(tree)
-    savefig("plot_$i.svg", bbox_inches="tight")
+    savefig("plot_$i.pgf", bbox_inches="tight")
+    plt.close("all")
 end
