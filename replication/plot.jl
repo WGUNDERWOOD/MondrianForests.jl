@@ -2,6 +2,8 @@ using MondrianForests
 using PyPlot
 using Random
 
+rcParams = PyPlot.PyDict(PyPlot.matplotlib."rcParams")
+rcParams["text.usetex"] = true
 plt.ioff()
 
 function get_splits(tree::MondrianTree{d}) where {d}
@@ -79,6 +81,7 @@ for i in 1:length(lambdas)
     end
 
     (fig, ax) = plot_mondrian_tree(tree)
-    savefig("plot_$i.pgf", bbox_inches="tight")
+    git_root = strip(read(`git rev-parse --show-toplevel`, String), '\n')
+    savefig(git_root * "/replication/plot_$i.pgf", bbox_inches="tight")
     plt.close("all")
 end

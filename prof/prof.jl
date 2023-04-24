@@ -20,7 +20,6 @@ end
 prof()
 @time prof()
 @profile prof()
-git_root = read(`git rev-parse --show-toplevel`, String)
-git_root = strip(git_root, '\n')
+git_root = strip(read(`git rev-parse --show-toplevel`, String), '\n')
 ProfileSVG.save(git_root * "/prof/prof.svg")
 
