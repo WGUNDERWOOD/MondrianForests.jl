@@ -29,7 +29,7 @@ function plot_mondrian_tree(tree::MondrianTree)
 
     @assert isa(tree, MondrianTree{2})
     splits = get_splits(tree)
-    (fig, ax) = plt.subplots(figsize=(2.3, 2.3))
+    (fig, ax) = plt.subplots(figsize=(2.1, 2.1))
 
     # plot root cell
     lw = 0.3
