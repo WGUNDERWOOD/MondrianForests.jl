@@ -3,15 +3,9 @@
 using Documenter
 using MondrianForests
 
-makedocs(
-    sitename = "MondrianForests.jl",
-    modules = MondrianForests,
-    pages = [
-        "Home" => "index.md",
-        "Documentation" => "documentation.md",
-    ],
-)
+makedocs(sitename="MondrianForests.jl",
+         modules=MondrianForests,
+         pages=["Home" => "index.md",
+                "Documentation" => "documentation.md"])
 
-#deploydocs(
-    #repo = "github.com/WGUNDERWOOD/DyadicKDE.jl.git",
-#)
+#deploydocs(repo = "github.com/WGUNDERWOOD/DyadicKDE.jl.git")

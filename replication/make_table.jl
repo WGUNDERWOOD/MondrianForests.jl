@@ -3,7 +3,6 @@ using Random
 using Distributions
 
 function coverage_experiment(n_reps::Int, lambda::Float64, n_trees::Int, n_data::Int)
-
     d = 2
     x_eval = ntuple(i -> 0.5, d)
     X_dist = product_distribution([Uniform(0, 1) for _ in 1:d])

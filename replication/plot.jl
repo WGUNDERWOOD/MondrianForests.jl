@@ -26,7 +26,6 @@ function get_cells(tree::MondrianTree{d}) where {d}
 end
 
 function plot_mondrian_tree(tree::MondrianTree)
-
     @assert isa(tree, MondrianTree{2})
     splits = get_splits(tree)
     (fig, ax) = plt.subplots(figsize=(2.1, 2.1))
@@ -68,7 +67,6 @@ cell_thresholds = [0.11, 0.011, 0.0011]
 Random.seed!(3)
 
 for i in 1:length(lambdas)
-
     lambda = lambdas[i]
     smallest_cell_length = 0.0
 
@@ -76,8 +74,7 @@ for i in 1:length(lambdas)
         global tree = MondrianTree(d, lambda)
         cells = get_cells(tree)
         smallest_cell_length = minimum(minimum(c.upper .- c.lower) for c in cells)
-        smallest_cell = [c for c in cells if minimum(c.upper .- c.lower) ==
-                         smallest_cell_length][1]
+        smallest_cell = [c for c in cells if minimum(c.upper .- c.lower) == smallest_cell_length][1]
     end
 
     (fig, ax) = plot_mondrian_tree(tree)

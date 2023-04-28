@@ -22,4 +22,3 @@ prof()
 @profile prof()
 git_root = strip(read(`git rev-parse --show-toplevel`, String), '\n')
 ProfileSVG.save(git_root * "/prof/prof.svg")
-
