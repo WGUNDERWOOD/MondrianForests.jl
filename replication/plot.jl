@@ -53,7 +53,7 @@ function plot_mondrian_tree(tree::MondrianTree)
 end
 
 d = 2
-lambdas = [3.0, 9.0, 27.0]
+lambdas = [3.0, 10.0, 30.0]
 Random.seed!(314159)
 
 for i in 1:length(lambdas)
