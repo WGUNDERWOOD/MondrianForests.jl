@@ -111,6 +111,8 @@ end
 
 function estimate_Sigma_hat(membership::Vector{Vector{Bool}}, Y_data_reduced::Vector{Float64},
                             sigma2_hat::Float64, d::Int, lambda::Float64)
+
+    # TODO new faster method for computing this
     A = 0.0
     n_trees = length(membership)
     n_data = length(Y_data_reduced)
