@@ -10,7 +10,7 @@ end
 
 @testset verbose = true "MondrianTree" begin
     for d in 1:5
-        lambda = 10.0
+        lambda = 5.0
         tree = MondrianTree(d, lambda)
     end
 end
@@ -22,11 +22,14 @@ end
 end
 
 @testset verbose = true "MondrianForest" begin
-    d = 1
-    lambda = 4.0
-    n_trees = 10
-    n = 20
-    data = generate_uniform_data(d, n)
-    x_eval = ntuple(x -> 0.5, d)
-    forest = MondrianForest(lambda, n_trees, x_eval, data["X"], data["Y"])
+    for d in 1:5
+        lambda = 5.0
+        n_trees = 100
+        debias_order = 0
+        n = 100
+        data = generate_uniform_data(d, n)
+        x_eval = ntuple(x -> 0.5, d)
+        forest = MondrianForest(lambda, n_trees, x_eval, debias_order, data["X"], data["Y"])
+        show(forest)
+    end
 end
