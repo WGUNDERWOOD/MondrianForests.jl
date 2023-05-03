@@ -25,9 +25,11 @@ function MondrianForest(lambda::Float64, n_trees::Int, x_eval::NTuple{d,Float64}
     forest = MondrianForest(lambda, n_trees, n_data, x_eval, debias_order, X_data, Y_data,
                             Float64[], Float64[], cells, NaN, NaN, NaN)
     get_debias_params(forest)
-    estimate_mu_hat(forest)
-    estimate_sigma2_hat(forest)
-    estimate_Sigma_hat(forest)
+    Ns = [[sum(is_in(forest.X_data[i], forest.cells[r+1][b]) for i in 1:forest.n_data)
+          for b in 1:forest.n_trees] for r in 0:forest.debias_order]
+    estimate_mu_hat(forest, Ns)
+    estimate_sigma2_hat(forest, Ns)
+    estimate_Sigma_hat(forest, Ns)
     return forest
 end
 
@@ -44,17 +46,16 @@ function get_debias_params(forest)
     forest.debias_coeffs = A \ e0
 end
 
-function estimate_mu_hat(forest::MondrianForest{d}) where {d}
+function estimate_mu_hat(forest::MondrianForest{d}, Ns::Vector{Vector{Int}}) where {d}
 
     mu_hat = 0.0
 
     for r in 0:forest.debias_order
         for b in 1:forest.n_trees
-            N = sum(is_in(forest.X_data[i], forest.cells[r+1][b]) for i in 1:forest.n_data)
-            if N > 0
+            if Ns[r+1][b] > 0
                 I = sum(is_in(forest.X_data[i], forest.cells[r+1][b]) .* forest.Y_data[i]
                         for i in 1:forest.n_data)
-                mu_hat += forest.debias_coeffs[r+1] * I / N
+                mu_hat += forest.debias_coeffs[r+1] * I / Ns[r+1][b]
             end
         end
     end
@@ -62,16 +63,15 @@ function estimate_mu_hat(forest::MondrianForest{d}) where {d}
     forest.mu_hat = mu_hat / forest.n_trees
 end
 
-function estimate_sigma2_hat(forest::MondrianForest{d}) where {d}
+function estimate_sigma2_hat(forest::MondrianForest{d}, Ns::Vector{Vector{Int}}) where {d}
 
     mu_hat = 0.0
 
     for b in 1:forest.n_trees
-        N = sum(is_in(forest.X_data[i], forest.cells[1][b]) for i in 1:forest.n_data)
-        if N > 0
+        if Ns[1][b] > 0
             I = sum(is_in(forest.X_data[i], forest.cells[1][b]) .* forest.Y_data[i]
                     for i in 1:forest.n_data)
-            mu_hat += I / N
+            mu_hat += I / Ns[1][b]
         end
     end
 
@@ -80,11 +80,10 @@ function estimate_sigma2_hat(forest::MondrianForest{d}) where {d}
     sigma2_hat = 0.0
 
     for b in 1:forest.n_trees
-        N = sum(is_in(forest.X_data[i], forest.cells[1][b]) for i in 1:forest.n_data)
-        if N > 0
+        if Ns[1][b] > 0
             I = sum(is_in(forest.X_data[i], forest.cells[1][b]) .* forest.Y_data[i]^2
                     for i in 1:forest.n_data)
-            sigma2_hat += I / N
+            sigma2_hat += I / Ns[1][b]
         end
     end
 
@@ -93,11 +92,9 @@ function estimate_sigma2_hat(forest::MondrianForest{d}) where {d}
     forest.sigma2_hat = sigma2_hat
 end
 
-function estimate_Sigma_hat(forest::MondrianForest{d}) where {d}
+function estimate_Sigma_hat(forest::MondrianForest{d}, Ns::Vector{Vector{Int}}) where {d}
 
     Sigma_hat = 0.0
-    Ns = [[sum(is_in(forest.X_data[i], forest.cells[r+1][b]) for i in 1:forest.n_data)
-          for b in 1:forest.n_trees] for r in 0:forest.debias_order]
 
     for i in 1:forest.n_data
         A = 0.0

@@ -6,14 +6,15 @@ using ProfileSVG
 
 function prof()
     d = 3
-    lambda = 20.0
-    n_trees = 2000
-    n_data = 10000
+    lambda = 10.0
+    n_trees = 1000
+    n_data = 1000
+    debias_order = 2
     data = generate_uniform_data(d, n_data)
     X_data = data["X"]
     Y_data = data["Y"]
     x_eval = ntuple(i -> 0.5, d)
-    forest = MondrianForest(lambda, n_trees, x_eval, X_data, Y_data)
+    forest = MondrianForest(lambda, n_trees, x_eval, debias_order, data["X"], data["Y"])
     return nothing
 end
 

@@ -8,15 +8,16 @@ function coverage_experiment(n_reps::Int, lambda::Float64, n_trees::Int, n_data:
     X_dist = product_distribution([Uniform(0, 1) for _ in 1:d])
     mu = (x -> x[1]^2 * x[2] + sin(x[1]))
     sigma2 = (x -> x[2]^2 + 1 + x[1])
+    debias_order = 0
     eps_dist = Normal(0, 1)
     corrects = fill(false, n_reps)
 
-    Threads.@threads for rep in 1:n_reps
+    for rep in 1:n_reps
         println(rep)
         data = generate_data(n_data, X_dist, eps_dist, mu, sigma2)
         X_data = data["X"]
         Y_data = data["Y"]
-        forest = MondrianForest(lambda, n_trees, x_eval, X_data, Y_data)
+        forest = MondrianForest(lambda, n_trees, x_eval, debias_order, data["X"], data["Y"])
         ci_width = 1.96 * sqrt(forest.Sigma_hat) * sqrt(lambda^d / n_data)
         correct = forest.mu_hat - ci_width <= mu(x_eval) <= forest.mu_hat + ci_width
         corrects[rep] = correct
@@ -27,6 +28,6 @@ end
 
 n_reps = 100
 lambda = 6.0
-n_trees = 100
+n_trees = 1000
 n_data = 1000
 coverage_experiment(n_reps, lambda, n_trees, n_data)
