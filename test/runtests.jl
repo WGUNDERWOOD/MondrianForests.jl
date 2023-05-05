@@ -2,7 +2,6 @@ using MondrianForests
 using Test
 using Distributions
 
-#=
 @testset verbose = true "MondrianCell" begin
     for d in 1:5
         cell = MondrianCell(d)
@@ -27,24 +26,25 @@ end
         lambda = 5.0
         n_trees = 100
         debias_order = 0
+        significance_level = 0.05
         n = 100
         data = generate_uniform_data(d, n)
         x_eval = ntuple(x -> 0.5, d)
-        forest = MondrianForest(lambda, n_trees, x_eval, debias_order, data["X"], data["Y"])
+        forest = MondrianForest(lambda, n_trees, x_eval, debias_order,
+                                significance_level, data["X"], data["Y"])
         show(forest)
     end
 end
-=#
 
 @testset verbose = true "Lifetime selection" begin
     d = 1
-    n = 1000
+    n = 100
     X_dist = X_dist = product_distribution([Uniform(0, 1) for _ in 1:d])
     eps_dist = Uniform(-sqrt(3), sqrt(3))
     mu = (x -> 3 * x[1]^2)
-    sigma2 = (x -> 1/10)
+    sigma2 = (x -> 1/100)
     data = generate_data(n, X_dist, eps_dist, mu, sigma2)
-    debias_order = 0
+    debias_order = 1
     lambda = select_lifetime_global_polynomial(data["X"], data["Y"], debias_order)
     println(lambda)
 end

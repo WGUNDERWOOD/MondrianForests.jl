@@ -16,6 +16,7 @@ mutable struct MondrianForest{d}
     mu_hat::Float64
     sigma2_hat::Float64
     Sigma_hat::Float64
+    confidence_interval::Tuple{Float64, Float64}
 end
 
 function MondrianForest(lambda::Float64, n_trees::Int, x_eval::NTuple{d,Float64}, debias_order::Int,
@@ -24,14 +25,16 @@ function MondrianForest(lambda::Float64, n_trees::Int, x_eval::NTuple{d,Float64}
 
     n_data = length(X_data)
     cells = [[sample_mondrian_cell(x_eval, lambda) for b in 1:n_trees] for r in 0:debias_order]
-    forest = MondrianForest(lambda, n_trees, n_data, x_eval, debias_order, X_data, Y_data,
-                            Float64[], Float64[], cells, NaN, NaN, NaN)
+    forest = MondrianForest(lambda, n_trees, n_data, x_eval, debias_order, significance_level,
+                            X_data, Y_data, Float64[], Float64[], cells, NaN, NaN, NaN,
+                            ntuple(x -> NaN, 2))
     get_debias_params(forest)
     Ns = [[sum(is_in(forest.X_data[i], forest.cells[r+1][b]) for i in 1:forest.n_data)
           for b in 1:forest.n_trees] for r in 0:forest.debias_order]
     estimate_mu_hat(forest, Ns)
     estimate_sigma2_hat(forest, Ns)
     estimate_Sigma_hat(forest, Ns)
+    construct_confidence_interval(forest)
     return forest
 end
 
@@ -112,6 +115,12 @@ function estimate_Sigma_hat(forest::MondrianForest{d}, Ns::Vector{Vector{Int}}) 
 
     Sigma_hat *= forest.sigma2_hat * forest.n_data / forest.lambda^d
     forest.Sigma_hat = Sigma_hat
+end
+
+function construct_confidence_interval(forest::MondrianForest{d}) where {d}
+    q = quantile(Normal(0, 1), 1 - forest.significance_level / 2)
+    width = q * sqrt(forest.Sigma_hat) * sqrt(forest.lambda^d / forest.n_data)
+    forest.confidence_interval = (forest.mu_hat - width, forest.mu_hat + width)
 end
 
 function Base.show(forest::MondrianForest{d}) where {d}
