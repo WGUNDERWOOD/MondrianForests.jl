@@ -37,9 +37,14 @@ end
 =#
 
 @testset verbose = true "Lifetime selection" begin
-    d = 2
-    n = 5
-    data = generate_uniform_data(d, n)
-    debias_order = 1
-    lambda = select_lifetime_global_polynomial(data["X"], debias_order)
+    d = 1
+    n = 1000
+    X_dist = X_dist = product_distribution([Uniform(0, 1) for _ in 1:d])
+    eps_dist = Uniform(-sqrt(3), sqrt(3))
+    mu = (x -> 3 * x[1]^2)
+    sigma2 = (x -> 1/10)
+    data = generate_data(n, X_dist, eps_dist, mu, sigma2)
+    debias_order = 0
+    lambda = select_lifetime_global_polynomial(data["X"], data["Y"], debias_order)
+    println(lambda)
 end
