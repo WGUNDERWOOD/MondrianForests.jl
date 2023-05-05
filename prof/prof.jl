@@ -6,15 +6,17 @@ using ProfileSVG
 
 function prof()
     d = 3
-    lambda = 10.0
     n_trees = 1000
     n_data = 1000
     debias_order = 2
-    data = generate_uniform_data(d, n_data)
-    X_data = data["X"]
-    Y_data = data["Y"]
-    x_eval = ntuple(i -> 0.5, d)
-    forest = MondrianForest(lambda, n_trees, x_eval, debias_order, data["X"], data["Y"])
+    for rep in 1:100
+        data = generate_uniform_data(d, n_data)
+        X_data = data["X"]
+        Y_data = data["Y"]
+        lambda_hat = select_lifetime_global_polynomial(X_data, Y_data, debias_order)
+        x_eval = ntuple(i -> 0.5, d)
+        forest = MondrianForest(lambda_hat, n_trees, x_eval, debias_order, data["X"], data["Y"])
+    end
     return nothing
 end
 

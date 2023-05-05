@@ -5,6 +5,7 @@ mutable struct MondrianForest{d}
     const n_data::Int
     const x_eval::NTuple{d,Float64}
     const debias_order::Int
+    const significance_level::Float64
     # data
     const X_data::Vector{NTuple{d,Float64}}
     const Y_data::Vector{Float64}
@@ -18,6 +19,7 @@ mutable struct MondrianForest{d}
 end
 
 function MondrianForest(lambda::Float64, n_trees::Int, x_eval::NTuple{d,Float64}, debias_order::Int,
+                        significance_level::Float64,
                         X_data::Vector{NTuple{d,Float64}}, Y_data::Vector{Float64}) where {d}
 
     n_data = length(X_data)
