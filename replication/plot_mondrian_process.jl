@@ -61,6 +61,6 @@ for i in 1:length(lambdas)
     tree = MondrianTree(d, lambda)
     (fig, ax) = plot_mondrian_tree(tree)
     git_root = strip(read(`git rev-parse --show-toplevel`, String), '\n')
-    savefig(git_root * "/replication/plot_$i.pgf", bbox_inches="tight")
+    savefig(git_root * "/replication/plot_mondrian_process_$i.pgf", bbox_inches="tight")
     plt.close("all")
 end
