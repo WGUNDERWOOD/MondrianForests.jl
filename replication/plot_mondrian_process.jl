@@ -55,12 +55,12 @@ end
 d = 2
 lambdas = [3.0, 10.0, 30.0]
 Random.seed!(314159)
+git_root = strip(read(`git rev-parse --show-toplevel`, String), '\n')
 
 for i in 1:length(lambdas)
     lambda = lambdas[i]
     tree = MondrianTree(d, lambda)
     (fig, ax) = plot_mondrian_tree(tree)
-    git_root = strip(read(`git rev-parse --show-toplevel`, String), '\n')
     savefig(git_root * "/replication/plot_mondrian_process_$i.pgf", bbox_inches="tight")
     plt.close("all")
 end

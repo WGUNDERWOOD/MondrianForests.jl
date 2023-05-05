@@ -2,13 +2,13 @@ using MondrianForests
 using Test
 using Distributions
 
-@testset verbose = true "MondrianCell" begin
+@testset verbose = true "Cells" begin
     for d in 1:5
         cell = MondrianCell(d)
     end
 end
 
-@testset verbose = true "MondrianTree" begin
+@testset verbose = true "Trees" begin
     for d in 1:5
         lambda = 5.0
         tree = MondrianTree(d, lambda)
@@ -21,7 +21,7 @@ end
     data = generate_uniform_data(d, n)
 end
 
-@testset verbose = true "MondrianForest" begin
+@testset verbose = true "Forests" begin
     for d in 1:5
         lambda = 5.0
         n_trees = 100
@@ -32,7 +32,6 @@ end
         x_eval = ntuple(x -> 0.5, d)
         forest = MondrianForest(lambda, n_trees, x_eval, debias_order,
                                 significance_level, data["X"], data["Y"])
-        show(forest)
     end
 end
 
@@ -46,5 +45,4 @@ end
     data = generate_data(n, X_dist, eps_dist, mu, sigma2)
     debias_order = 1
     lambda = select_lifetime_global_polynomial(data["X"], data["Y"], debias_order)
-    println(lambda)
 end

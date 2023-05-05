@@ -23,7 +23,6 @@ data = generate_data(n_data, X_dist, eps_dist, mu, sigma2)
 X_data = data["X"]
 Y_data = data["Y"]
 lambda_hat = select_lifetime_global_polynomial(X_data, Y_data, debias_order)
-println(lambda_hat)
 
 xs = range(0, 1, length=100)
 mu_hats = Float64[]
@@ -38,9 +37,6 @@ end
 plot(xs, mu.(xs), lw=1, color="k")
 plot(xs, mu_hats, lw=1, color="r")
 scatter(X_data, Y_data, s=1, color="#aaaaaa")
-
-
-
 
 plt.xticks([0, 0.5, 1])
 plt.yticks([0, 1, 2, 3, 4])
