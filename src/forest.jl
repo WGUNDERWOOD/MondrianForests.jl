@@ -24,11 +24,12 @@ function MondrianForest(lambda::Float64, n_trees::Int, x_eval::NTuple{d,Float64}
                         X_data::Vector{NTuple{d,Float64}}, Y_data::Vector{Float64}) where {d}
 
     n_data = length(X_data)
-    cells = [[sample_mondrian_cell(x_eval, lambda) for b in 1:n_trees] for r in 0:debias_order]
     forest = MondrianForest(lambda, n_trees, n_data, x_eval, debias_order, significance_level,
-                            X_data, Y_data, Float64[], Float64[], cells, NaN, NaN, NaN,
-                            ntuple(x -> NaN, 2))
+                            X_data, Y_data, Float64[], Float64[], Vector{MondrianCell{d}}[],
+                            NaN, NaN, NaN, ntuple(x -> NaN, 2))
     get_debias_params(forest)
+    forest.cells = [[sample_mondrian_cell(x_eval, lambda / forest.debias_scaling[r+1])
+                     for b in 1:n_trees] for r in 0:debias_order]
     Ns = [[sum(is_in(forest.X_data[i], forest.cells[r+1][b]) for i in 1:forest.n_data)
           for b in 1:forest.n_trees] for r in 0:forest.debias_order]
     estimate_mu_hat(forest, Ns)
@@ -70,30 +71,20 @@ end
 
 function estimate_sigma2_hat(forest::MondrianForest{d}, Ns::Vector{Vector{Int}}) where {d}
 
-    mu_hat = 0.0
-
-    for b in 1:forest.n_trees
-        if Ns[1][b] > 0
-            I = sum(is_in(forest.X_data[i], forest.cells[1][b]) .* forest.Y_data[i]
-                    for i in 1:forest.n_data)
-            mu_hat += I / Ns[1][b]
-        end
-    end
-
-    mu_hat /= forest.n_trees
-
     sigma2_hat = 0.0
 
-    for b in 1:forest.n_trees
-        if Ns[1][b] > 0
-            I = sum(is_in(forest.X_data[i], forest.cells[1][b]) .* forest.Y_data[i]^2
-                    for i in 1:forest.n_data)
-            sigma2_hat += I / Ns[1][b]
+    for r in 0:forest.debias_order
+        for b in 1:forest.n_trees
+            if Ns[r+1][b] > 0
+                I = sum(is_in(forest.X_data[i], forest.cells[r+1][b]) .* forest.Y_data[i]^2
+                        for i in 1:forest.n_data)
+                sigma2_hat += forest.debias_coeffs[r+1] * I / Ns[r+1][b]
+            end
         end
     end
 
     sigma2_hat /= forest.n_trees
-    sigma2_hat -= mu_hat^2
+    sigma2_hat -= forest.mu_hat^2
     forest.sigma2_hat = sigma2_hat
 end
 
