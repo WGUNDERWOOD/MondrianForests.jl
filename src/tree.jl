@@ -60,7 +60,7 @@ function Base.show(tree::MondrianTree{d}) where {d}
         print("in ")
         printstyled("dimension $d ", color=:cyan)
         print("with ")
-        printstyled("lambda = $(round(lambda, digits=4)) \n", color=:cyan)
+        printstyled("lambda = $(round(tree.lambda, digits=4)) \n", color=:cyan)
         printstyled("Root ", bold=true, color=:light_magenta)
     end
     if has_split

@@ -3,7 +3,7 @@ mutable struct MondrianForest{d}
     const lambda::Float64
     const n_trees::Int
     const n_data::Int
-    const x_eval::NTuple{d,Float64}
+    const x_evals::Vector{NTuple{d,Float64}}
     const debias_order::Int
     const significance_level::Float64
     # data
@@ -12,30 +12,32 @@ mutable struct MondrianForest{d}
     # estimates
     debias_scaling::Vector{Float64}
     debias_coeffs::Vector{Float64}
-    cells::Vector{Vector{MondrianCell{d}}}
+    trees::Vector{Vector{MondrianTree{d}}}
     mu_hat::Float64
     sigma2_hat::Float64
     Sigma_hat::Float64
     confidence_interval::Tuple{Float64, Float64}
 end
 
-function MondrianForest(lambda::Float64, n_trees::Int, x_eval::NTuple{d,Float64}, debias_order::Int,
-                        significance_level::Float64,
+function MondrianForest(lambda::Float64, n_trees::Int, x_evals::Vector{NTuple{d,Float64}},
+                        debias_order::Int, significance_level::Float64,
                         X_data::Vector{NTuple{d,Float64}}, Y_data::Vector{Float64}) where {d}
 
     n_data = length(X_data)
-    forest = MondrianForest(lambda, n_trees, n_data, x_eval, debias_order, significance_level,
-                            X_data, Y_data, Float64[], Float64[], Vector{MondrianCell{d}}[],
+    forest = MondrianForest(lambda, n_trees, n_data, x_evals, debias_order, significance_level,
+                            X_data, Y_data, Float64[], Float64[], Vector{MondrianTree{d}}[],
                             NaN, NaN, NaN, ntuple(x -> NaN, 2))
     get_debias_params(forest)
-    forest.cells = [[sample_mondrian_cell(x_eval, lambda / forest.debias_scaling[r+1])
+    forest.trees = [[MondrianTree(d, lambda / forest.debias_scaling[r+1])
                      for b in 1:n_trees] for r in 0:debias_order]
+    #[[show(t) for t in ts] for ts in forest.trees]
+    # TODO think about how to do this
     Ns = [[sum(is_in(forest.X_data[i], forest.cells[r+1][b]) for i in 1:forest.n_data)
           for b in 1:forest.n_trees] for r in 0:forest.debias_order]
-    estimate_mu_hat(forest, Ns)
-    estimate_sigma2_hat(forest, Ns)
-    estimate_Sigma_hat(forest, Ns)
-    construct_confidence_interval(forest)
+    #estimate_mu_hat(forest, Ns)
+    #estimate_sigma2_hat(forest, Ns)
+    #estimate_Sigma_hat(forest, Ns)
+    #construct_confidence_interval(forest)
     return forest
 end
 
