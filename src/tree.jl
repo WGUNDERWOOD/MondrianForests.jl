@@ -46,6 +46,38 @@ function MondrianTree(d::Int, lambda::Float64)
     return MondrianTree(lambda, "", 0.0, MondrianCell(d))
 end
 
+function get_cell_id(x::NTuple{d,Float64}, tree::MondrianTree{d}) where {d}
+    if isnothing(tree.split_axis)
+        return tree.id
+    else
+        if x[tree.split_axis] <= tree.split_location
+            return get_cell_id(tree.tree_left)
+        else
+            return get_cell_id(tree.tree_right)
+        end
+    end
+end
+
+function are_in_same_cell(x1::NTuple{d,Float64}, x2::NTuple{d,Float64},
+                         tree::MondrianTree{d}) where {d}
+    if isnothing(tree.split_axis)
+        return true
+    else
+        axis = tree.split_axis
+        location = tree.split_location
+        x1_left = (x1[axis] <= location)
+        x2_left = (x2[axis] <= location)
+
+        if  x1_left != x2_left
+            return false
+        elseif x1_left
+            return are_in_same_cell(x1, x2, tree.tree_left)
+        else
+            return are_in_same_cell(x1, x2, tree.tree_right)
+        end
+    end
+end
+
 function Base.show(tree::MondrianTree{d}) where {d}
     depth = length(tree.id)
     has_split = !isnothing(tree.split_axis)

@@ -8,14 +8,17 @@ using Distributions
         cell = MondrianCell(d)
     end
 end
+=#
 
 @testset verbose = true "Trees" begin
-    for d in 1:5
-        lambda = 5.0
+    for d in 1:3
+        lambda = 2.0
         tree = MondrianTree(d, lambda)
+        show(tree)
     end
 end
 
+#=
 @testset verbose = true "Data" begin
     d = 2
     n = 10
@@ -24,7 +27,7 @@ end
 =#
 
 @testset verbose = true "Forests" begin
-    for d in 1:5
+    for d in 1:2
         lambda = 5.0
         n_trees = 10
         debias_order = 0
@@ -34,6 +37,7 @@ end
         x_evals = [ntuple(_ -> x, d) for x in range(0, 1, step=0.3)]
         forest = MondrianForest(lambda, n_trees, x_evals, debias_order,
                                 significance_level, data["X"], data["Y"])
+        show(forest)
     end
 end
 
