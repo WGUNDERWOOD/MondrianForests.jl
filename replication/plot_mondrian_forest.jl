@@ -6,14 +6,13 @@ using Distributions
 rcParams = PyPlot.PyDict(PyPlot.matplotlib."rcParams")
 rcParams["text.usetex"] = true
 plt.ioff()
-Random.seed!(314159)
+#Random.seed!(314159)
 
 d = 1
-x_eval = ntuple(i -> 0.5, d)
 X_dist = Uniform(0, 1)
 mu = (x -> 10 * (x[1] - 0.5)^2)
-sigma2 = (x -> 0.001)
-debias_order = 1
+sigma2 = (x -> 0.01)
+debias_order = 0
 eps_dist = Normal(0, 1)
 n_data = 1000
 n_trees = 1000
@@ -22,22 +21,19 @@ significance_level = 0.05
 data = generate_data(n_data, X_dist, eps_dist, mu, sigma2)
 X_data = data["X"]
 Y_data = data["Y"]
-#lambda_hat = select_lifetime_global_polynomial(X_data, Y_data, debias_order)
-lambda_hat = 5.0
+lambda_hat = select_lifetime_global_polynomial(X_data, Y_data, debias_order)
+#lambda_hat = 10.0
+println(lambda_hat)
 
-xs = range(0, 1, length=50)
-mu_hats = Float64[]
+n_evals = 100
+x_evals = [ntuple(_ -> x, 1) for x in range(0, 1, length=n_evals)]
 
-for x in xs
-    forest = MondrianForest(lambda_hat, n_trees, ntuple(a -> x, 1), debias_order,
-                            significance_level, data["X"], data["Y"])
-    push!(mu_hats, forest.mu_hat)
-    show(forest)
-end
+forest = MondrianForest(lambda_hat, n_trees, x_evals, debias_order,
+                        significance_level, data["X"], data["Y"])
 
 (fig, ax) = plt.subplots(figsize=(3, 2.1))
-plot(xs, mu.(xs), lw=1, color="k")
-plot(xs, mu_hats, lw=1, color="r")
+plot(x_evals, mu.(x_evals), lw=1, color="k")
+plot(x_evals, forest.mu_hat, lw=1, color="r")
 scatter(X_data, Y_data, s=1, color="#aaaaaa")
 
 #plt.xticks([0, 0.5, 1])

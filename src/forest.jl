@@ -70,6 +70,8 @@ function estimate_mu_hat(forest::MondrianForest{d}, Ns::Vector{Vector{Vector{Int
                                              forest.trees[r+1][b])
                             .* forest.Y_data[i] for i in 1:forest.n_data)
                     mu_hat[s] += forest.debias_coeffs[r+1] * I / Ns[s][r+1][b]
+                else
+                    # TODO add the mean y-value instead
                 end
             end
         end

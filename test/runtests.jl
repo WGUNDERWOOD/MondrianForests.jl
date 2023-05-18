@@ -2,13 +2,11 @@ using MondrianForests
 using Test
 using Distributions
 
-#=
 @testset verbose = true "Cells" begin
     for d in 1:5
         cell = MondrianCell(d)
     end
 end
-=#
 
 @testset verbose = true "Trees" begin
     for d in 1:3
@@ -18,13 +16,11 @@ end
     end
 end
 
-#=
 @testset verbose = true "Data" begin
     d = 2
     n = 10
     data = generate_uniform_data(d, n)
 end
-=#
 
 @testset verbose = true "Forests" begin
     for d in 1:2
@@ -41,7 +37,6 @@ end
     end
 end
 
-#=
 @testset verbose = true "Lifetime selection" begin
     d = 1
     n = 100
@@ -53,4 +48,3 @@ end
     debias_order = 1
     lambda = select_lifetime_global_polynomial(data["X"], data["Y"], debias_order)
 end
-=#
