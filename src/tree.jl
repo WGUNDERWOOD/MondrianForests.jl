@@ -30,20 +30,21 @@ function MondrianTree(lambda::Float64, id::String, creation_time::Float64,
         cell_right = MondrianCell(right_lower, cell.upper)
         tree_left = MondrianTree(lambda, id * "L", creation_time + E, cell_left)
         tree_right = MondrianTree(lambda, id * "R", creation_time + E, cell_right)
-        tree = MondrianTree(lambda, id, creation_time, cell, split_axis, split_location,
-                            tree_left, tree_right)
+        tree = MondrianTree(lambda, id, creation_time, cell, split_axis,
+                            split_location, tree_left, tree_right)
     else
-        tree = MondrianTree(lambda, id, creation_time, cell, nothing, nothing,
-                            nothing, nothing)
+        tree = MondrianTree(lambda, id, creation_time, cell, nothing,
+                            nothing, nothing, nothing)
     end
-
     return tree
 end
 
 function MondrianTree(d::Int, lambda::Float64)
-    @assert lambda >= 0
-    @assert d >= 1
-    return MondrianTree(lambda, "", 0.0, MondrianCell(d))
+    if lambda < 0
+        throw(DomainError(lambda, "lambda must be non-negative"))
+    else
+        return MondrianTree(lambda, "", 0.0, MondrianCell(d))
+    end
 end
 
 function get_cell_id(x::NTuple{d,Float64}, tree::MondrianTree{d}) where {d}
@@ -51,9 +52,9 @@ function get_cell_id(x::NTuple{d,Float64}, tree::MondrianTree{d}) where {d}
         return tree.id
     else
         if x[tree.split_axis] <= tree.split_location
-            return get_cell_id(tree.tree_left)
+            return get_cell_id(x, tree.tree_left)
         else
-            return get_cell_id(tree.tree_right)
+            return get_cell_id(x, tree.tree_right)
         end
     end
 end
@@ -75,6 +76,14 @@ function are_in_same_cell(x1::NTuple{d,Float64}, x2::NTuple{d,Float64},
         else
             return are_in_same_cell(x1, x2, tree.tree_right)
         end
+    end
+end
+
+function count_cells(tree::MondrianTree{d}) where {d}
+    if isnothing(tree.split_axis)
+        return 1
+    else
+        return count_cells(tree.tree_left) + count_cells(tree.tree_right)
     end
 end
 
