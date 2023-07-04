@@ -30,9 +30,9 @@ function coverage_experiment(n_reps::Int, n_trees::Int, n_data::Int)
                                  significance_level, data["X"], data["Y"])
 
         correct0 = all(forest0.confidence_band[s][1] <= mu(x_evals[s]) <=
-                       forest0.confidence_band[s][2] for s in 1:forest0.n_evals)
+                       forest0.confidence_band[s][2] for s in 1:(forest0.n_evals))
         correct1 = all(forest1.confidence_band[s][1] <= mu(x_evals[s]) <=
-                       forest1.confidence_band[s][2] for s in 1:forest1.n_evals)
+                       forest1.confidence_band[s][2] for s in 1:(forest1.n_evals))
         #
         #println(forest0.sigma2_hat)
         #println(forest1.sigma2_hat)

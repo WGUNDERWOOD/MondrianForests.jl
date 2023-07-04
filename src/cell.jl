@@ -1,21 +1,32 @@
 struct MondrianCell{d}
     lower::NTuple{d,Float64}
     upper::NTuple{d,Float64}
+
+    function MondrianCell(lower::NTuple{d,Float64}, upper::NTuple{d,Float64}) where {d}
+        if !all(0 .<= lower .<= 1)
+            throw(DomainError(lower, "coordinates of lower must be in [0, 1]"))
+        elseif !all(0 .<= upper .<= 1)
+            throw(DomainError(upper, "coordinates of upper must be in [0, 1]"))
+        elseif !all(lower .<= upper)
+            throw(ArgumentError("lower must be pointwise no greater than upper"))
+        else
+            return new{d}(lower, upper)
+        end
+    end
 end
 
 function MondrianCell(d::Int)
-    lower = ntuple(i -> 0.0, d)
-    upper = ntuple(i -> 1.0, d)
-    return MondrianCell(lower, upper)
+    if d < 0
+        throw(DomainError(d, "dimension must be non-negative"))
+    else
+        lower = ntuple(i -> 0.0, d)
+        upper = ntuple(i -> 1.0, d)
+        return MondrianCell(lower, upper)
+    end
 end
 
 function is_in(x::NTuple{d,Float64}, cell::MondrianCell) where {d}
-    for i in 1:d
-        if (cell.lower[i] >= x[i]) || (x[i] > cell.upper[i])
-            return false
-        end
-    end
-    return true
+    return all(cell.lower .<= x .<= cell.upper)
 end
 
 function Base.show(cell::MondrianCell{d}) where {d}
