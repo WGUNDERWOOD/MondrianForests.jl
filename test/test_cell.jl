@@ -7,11 +7,6 @@
             @test length(cell.upper) == d
             @test all(cell.lower .== 0)
             @test all(cell.upper .== 1)
-        end
-    end
-
-    @testset verbose = true "Arbitrary cell construction" begin
-        for d in 1:5
             lower = ntuple(i -> rand() / 2, d)
             upper = ntuple(i -> 0.5 + rand() / 2, d)
             cell = MondrianCell(lower, upper)

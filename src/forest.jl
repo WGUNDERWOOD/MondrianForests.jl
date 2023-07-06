@@ -59,7 +59,7 @@ end
 
 function estimate_mu_hat(forest::MondrianForest{d}, Ns::Vector{Vector{Vector{Int}}}) where {d}
     mu_hat = [0.0 for _ in 1:(forest.n_evals)]
-    Y_bar = sum(forest.Y_data)
+    Y_bar = sum(forest.Y_data) / forest.n_data
 
     for s in 1:(forest.n_evals)
         for r in 0:(forest.debias_order)
