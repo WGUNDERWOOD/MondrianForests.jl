@@ -22,7 +22,8 @@ end
 
 function MondrianForest(lambda::Float64, n_trees::Int, x_evals::Vector{NTuple{d,Float64}},
                         debias_order::Int, significance_level::Float64,
-                        X_data::Vector{NTuple{d,Float64}}, Y_data::Vector{Float64}) where {d}
+                        X_data::Vector{NTuple{d,Float64}}, Y_data::Vector{Float64},
+                        estimate_var::Bool=false) where {d}
     n_data = length(X_data)
     n_evals = length(x_evals)
     forest = MondrianForest(lambda, n_trees, n_data, n_evals, x_evals, debias_order,
@@ -38,9 +39,11 @@ function MondrianForest(lambda::Float64, n_trees::Int, x_evals::Vector{NTuple{d,
            for r in 0:(forest.debias_order)]
           for x in x_evals]
     estimate_mu_hat(forest, Ns)
-    estimate_sigma2_hat(forest, Ns)
-    estimate_Sigma_hat(forest, Ns)
-    construct_confidence_band(forest)
+    if estimate_var
+        estimate_sigma2_hat(forest, Ns)
+        estimate_Sigma_hat(forest, Ns)
+        construct_confidence_band(forest)
+    end
     return forest
 end
 

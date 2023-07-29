@@ -19,8 +19,9 @@
     end
 
     @testset verbose = true "Linear" begin
-        n = 100
-        lambda = 10.0
+        Random.seed!(0)
+        n = 5000
+        lambda = 20.0
         n_trees = 100
         debias_order = 0
         significance_level = 0.05
@@ -30,21 +31,44 @@
             Y = sum.(X)
             forest = MondrianForest(lambda, n_trees, x_evals, debias_order,
                                     significance_level, X, Y)
-            @test isapprox(forest.mu_hat[], 0.5 * d, rtol=0.1)
+            @test isapprox(forest.mu_hat[], 0.5 * d, rtol=0.01)
         end
     end
 
-    #for d in 1:2
-        #lambda = 10.0
-        #n_trees = 1000
-        #debias_order = 0
-        #significance_level = 0.05
-        #n = 2000
-        #data = generate_uniform_data(d, n)
-        #x_evals = [ntuple(_ -> x, d) for x in range(0.25, 0.75, length=3)]
-        #forest = MondrianForest(lambda, n_trees, x_evals, debias_order,
-                                #significance_level, data["X"], data["Y"])
-        #show(forest)
-    #end
+    @testset verbose = true "Quadratic" begin
+        Random.seed!(0)
+        n = 5000
+        lambda = 20.0
+        n_trees = 1000
+        debias_order = 0
+        significance_level = 0.05
+        for d in 1:2
+            X = [ntuple(i -> rand(), d) for _ in 1:n]
+            x_evals = [ntuple(i -> 0.5, d)]
+            Y = sum.(X) .^ 2
+            forest = MondrianForest(lambda, n_trees, x_evals, debias_order,
+                                    significance_level, X, Y)
+            @test isapprox(forest.mu_hat[], 0.25 * d ^ 2, rtol=0.01)
+        end
+    end
+
+    @testset verbose = true "Quadratic debiased" begin
+        # TODO this is failing with the debiasing
+        Random.seed!(0)
+        n = 5000
+        lambda = 20.0
+        n_trees = 1000
+        debias_order = 1
+        significance_level = 0.05
+        for d in 1:2
+            X = [ntuple(i -> rand(), d) for _ in 1:n]
+            x_evals = [ntuple(i -> 0.5, d)]
+            Y = sum.(X) .^ 2
+            forest = MondrianForest(lambda, n_trees, x_evals, debias_order,
+                                    significance_level, X, Y)
+            @test isapprox(forest.mu_hat[], 0.25 * d ^ 2, rtol=0.01)
+        end
+    end
+
 end
 
