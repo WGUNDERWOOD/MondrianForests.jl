@@ -29,6 +29,10 @@ function is_in(x::NTuple{d,Float64}, cell::MondrianCell) where {d}
     return all(cell.lower .<= x .<= cell.upper)
 end
 
+function get_center(cell::MondrianCell)
+    return (cell.lower .+ cell.upper) ./ 2
+end
+
 function Base.show(cell::MondrianCell{d}) where {d}
     lower = round.(cell.lower, digits=4)
     upper = round.(cell.upper, digits=4)
