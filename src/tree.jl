@@ -87,6 +87,24 @@ function count_cells(tree::MondrianTree{d}) where {d}
     end
 end
 
+function get_splits(tree::MondrianTree{d}) where {d}
+    if !isnothing(tree.split_axis)
+        lower = tree.tree_right.cell.lower
+        upper = tree.tree_left.cell.upper
+        return [(lower, upper); get_splits(tree.tree_left); get_splits(tree.tree_right)]
+    else
+        return Tuple{NTuple{d,Float64},NTuple{d,Float64}}[]
+    end
+end
+
+function get_cells(tree::MondrianTree{d}) where {d}
+    if !isnothing(tree.split_axis)
+        return [get_cells(tree.tree_left); get_cells(tree.tree_right)]
+    else
+        return [tree.cell]
+    end
+end
+
 function Base.show(tree::MondrianTree{d}) where {d}
     depth = length(tree.id)
     has_split = !isnothing(tree.split_axis)

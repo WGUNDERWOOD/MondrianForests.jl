@@ -13,24 +13,6 @@ rcParams = PyPlot.PyDict(PyPlot.matplotlib."rcParams")
 rcParams["text.usetex"] = true
 plt.ioff()
 
-function get_splits(tree::MondrianTree{d}) where {d}
-    if !isnothing(tree.split_axis)
-        lower = tree.tree_right.cell.lower
-        upper = tree.tree_left.cell.upper
-        return [(lower, upper); get_splits(tree.tree_left); get_splits(tree.tree_right)]
-    else
-        return Tuple{NTuple{d,Float64},NTuple{d,Float64}}[]
-    end
-end
-
-function get_cells(tree::MondrianTree{d}) where {d}
-    if !isnothing(tree.split_axis)
-        return [get_cells(tree.tree_left); get_cells(tree.tree_right)]
-    else
-        return [tree.cell]
-    end
-end
-
 function plot_mondrian_tree(forest::MondrianForest)
     tree = forest.trees[][]
     @assert isa(tree, MondrianTree{2})
