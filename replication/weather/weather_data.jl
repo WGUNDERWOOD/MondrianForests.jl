@@ -110,7 +110,53 @@ function plot_cells(tree)
     end
 end
 
-function plot_forest(forest, ax)
+function plot_small_forest(trees, ax)
+
+    # get all cells
+    all_cells = [MondrianForests.get_cells(tree) for tree in trees]
+
+    # get refined cells
+    refined_cells = copy(all_cells[1])
+    if length(trees) >= 2
+        for j in 2:length(trees)
+            for cell in all_cells[j]
+                new_cells = [MondrianForests.get_intersection(cell, c) for c in refined_cells]
+                new_cells = [c for c in new_cells if !isnothing(c)]
+                append!(refined_cells, new_cells)
+                refined_cells = unique(refined_cells)
+            end
+        end
+    end
+
+    # get counts
+    X = [ntuple(j -> data[i, [:Humidity3pm, :Pressure3pm][j]], 2) for i in 1:nrow(data)]
+    Y = [data[i, :RainTomorrow] for i in 1:nrow(data)]
+    n = length(X)
+
+    ratios = Float64[]
+
+    for r_cell in refined_cells
+        x = MondrianForests.get_center(r_cell)
+        cells = [[cell for cell in all_cells[j] if
+                  MondrianForests.is_in(x, cell)][] for j in 1:length(trees)]
+        counts = [sum(MondrianForests.is_in(X[i], cell) for i in 1:n) for cell in cells]
+        ones = [sum(MondrianForests.is_in(X[i], cell) * Y[i] for i in 1:n) for cell in cells]
+        ratio = sum(ones ./ counts) / length(trees)
+        push!(ratios, ratio)
+    end
+    hue1 = 25
+    hue2 = 267
+    colormap = ColorMap(diverging_palette(hue1, hue2, c=0.5))
+    colors = colormap.(ratios)
+    for i in 1:length(refined_cells)
+        cell = refined_cells[i]
+        x1s = [cell.lower[1], cell.lower[1], cell.upper[1], cell.upper[1]]
+        x2s = [cell.lower[2], cell.upper[2], cell.upper[2], cell.lower[2]]
+        fill(x1s, x2s, facecolor=colors[i])
+    end
+end
+
+function plot_large_forest(forest, ax)
     n_x1s = length(x1s)
     n_x2s = length(x2s)
     reshaped_mu_hat = reshape(forest.mu_hat, (n_x2s, n_x1s))
@@ -157,9 +203,17 @@ function make_filled_partition_plot(data, tree, x_min, x_max, y_min, y_max, file
     plt.close("all")
 end
 
-function make_forest_plot(data, forest, x_min, x_max, y_min, y_max, filename)
+function make_small_forest_plot(data, trees, x_min, x_max, y_min, y_max, filename)
     (fig, ax) = plt.subplots(figsize=(4, 3.5))
-    plot_forest(forest, ax)
+    plot_small_forest(trees, ax)
+    format_plot(ax)
+    PyPlot.savefig(filename, dpi=300)
+    plt.close("all")
+end
+
+function make_large_forest_plot(data, forest, x_min, x_max, y_min, y_max, filename)
+    (fig, ax) = plt.subplots(figsize=(4, 3.5))
+    plot_large_forest(forest, ax)
     format_plot(ax)
     PyPlot.savefig(filename, dpi=300)
     plt.close("all")
@@ -168,56 +222,72 @@ end
 (data, x_min, x_max, y_min, y_max) = load_data(limit=nothing)
 lambda = 5.0
 
+# plot data
 println("plotting data")
 filename = "replication/weather_data.png"
-make_data_plot(data, x_min, x_max, y_min, y_max, filename)
+#make_data_plot(data, x_min, x_max, y_min, y_max, filename)
 
+# plot data and partition
 println("plotting data and partition")
 Random.seed!(314159)
 tree = MondrianTree(2, lambda)
 filename = "replication/weather_data_partition.png"
-make_data_partition_plot(data, tree, x_min, x_max, y_min, y_max, filename)
+#make_data_partition_plot(data, tree, x_min, x_max, y_min, y_max, filename)
 
+# plot data and filled partition
 println("plotting data and filled partition")
 filename = "replication/weather_data_filled_partition.png"
-make_data_filled_partition_plot(data, tree, x_min, x_max, y_min, y_max, filename)
+#make_data_filled_partition_plot(data, tree, x_min, x_max, y_min, y_max, filename)
 
+# plot filled partition
 println("plotting filled partition")
 filename = "replication/weather_filled_partition.png"
-make_filled_partition_plot(data, tree, x_min, x_max, y_min, y_max, filename)
+#make_filled_partition_plot(data, tree, x_min, x_max, y_min, y_max, filename)
 
-seeds = [314160, 314161, 314162]
+seeds = [314160, 314161, 314162, 314163, 314164, 314165]
+trees = []
 for i in 1:length(seeds)
     println("plotting filled partition for tree " * string(i))
     global seed = seeds[i]
     Random.seed!(seed)
-    global tree = MondrianTree(2, lambda)
+    tree = MondrianTree(2, lambda)
+    push!(trees, tree)
     global filename = "replication/weather_filled_partition_" * string(i) * ".png"
-    make_filled_partition_plot(data, tree, x_min, x_max, y_min, y_max, filename)
+    #make_filled_partition_plot(data, tree, x_min, x_max, y_min, y_max, filename)
 end
 
-n_x1_evals = 50
-n_x2_evals = 50
-x1s = range(1 / n_x1_evals, 1 - 1 / n_x1_evals, length=n_x1_evals)
-x2s = range(1 / n_x2_evals, 1 - 1 / n_x2_evals, length=n_x2_evals)
-x_evals = Tuple{Float64, Float64}[(x1s[i], x2s[j]) for i in 1:n_x1_evals for j in 1:n_x2_evals]
+# plot small forest
 debias_order = 0
 significance_level = 0.95
 estimate_var = false
+n_trees = 2
 X = [ntuple(j -> data[i, [:Humidity3pm, :Pressure3pm][j]], 2) for i in 1:nrow(data)]
 Y = [data[i, :RainTomorrow] for i in 1:nrow(data)]
+x_evals = Tuple{Float64, Float64}[]
+forest = MondrianForest(lambda, n_trees, x_evals, debias_order,
+                        significance_level, X, Y, estimate_var)
 
-n_trees_all = [1, 2, 3, 10, 100]
-for i in 1:length(n_trees_all)
-    n_trees = n_trees_all[i]
-    println("computing forest with", n_trees, "trees")
-    seed = 314165
-    Random.seed!(seed)
-    forest = MondrianForest(lambda, n_trees, x_evals, debias_order,
-                            significance_level, X, Y, estimate_var)
+filename = "replication/weather_forest_small.png"
+make_small_forest_plot(data, trees, x_min, x_max, y_min, y_max, filename)
 
-    println("plotting forest with ", n_trees, " trees")
-    global filename = "replication/weather_forest_" * string(i) * ".png"
-    make_forest_plot(data, forest, x_min, x_max, y_min, y_max, filename)
-end
+# plot large forest
+#n_x1_evals = 50
+#n_x2_evals = 50
+#x1s = range(1 / n_x1_evals, 1 - 1 / n_x1_evals, length=n_x1_evals)
+#x2s = range(1 / n_x2_evals, 1 - 1 / n_x2_evals, length=n_x2_evals)
+#x_evals = Tuple{Float64, Float64}[(x1s[i], x2s[j]) for i in 1:n_x1_evals for j in 1:n_x2_evals]
+
+#n_trees_all = [1, 2, 3, 10, 100]
+#for i in 1:length(n_trees_all)
+    #n_trees = n_trees_all[i]
+    #println("computing forest with ", n_trees, " trees")
+    #seed = 314165
+    #Random.seed!(seed)
+    #forest = MondrianForest(lambda, n_trees, x_evals, debias_order,
+                            #significance_level, X, Y, estimate_var)
+
+    #println("plotting forest with ", n_trees, " trees")
+    #global filename = "replication/weather_forest_" * string(i) * ".png"
+    #make_forest_plot(data, forest, x_min, x_max, y_min, y_max, filename)
+#end
 

@@ -33,6 +33,16 @@ function get_center(cell::MondrianCell)
     return (cell.lower .+ cell.upper) ./ 2
 end
 
+function get_intersection(cell1::MondrianCell, cell2::MondrianCell)
+    lower = max.(cell1.lower, cell2.lower)
+    upper = min.(cell1.upper, cell2.upper)
+    if all(lower .< upper)
+        return MondrianCell(lower, upper)
+    else
+        return nothing
+    end
+end
+
 function Base.show(cell::MondrianCell{d}) where {d}
     lower = round.(cell.lower, digits=4)
     upper = round.(cell.upper, digits=4)
