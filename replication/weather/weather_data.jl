@@ -57,6 +57,8 @@ function format_plot(ax)
               handletextpad=0.1, frameon=false,
               bbox_to_anchor=(0.93, 1.16), ncol=2)
     # layout
+    plt.xlim([-0.05, 1.05])
+    plt.ylim([-0.05, 1.05])
     plt.tight_layout()
 end
 
@@ -100,9 +102,6 @@ function plot_cells(tree)
     hue2 = 267
     colormap = ColorMap(diverging_palette(hue1, hue2, c=0.5))
     colors = colormap.(ones ./ counts)
-    #for i in 1:length(colors)
-        #colors[i] = (colors[i][1], colors[i][2], colors[i][3], colors[i][4] * 0.8)
-    #end
     for i in 1:length(cells)
         cell = cells[i]
         x1s = [cell.lower[1], cell.lower[1], cell.upper[1], cell.upper[1]]
@@ -114,21 +113,11 @@ end
 function plot_forest(forest, ax)
     n_x1s = length(x1s)
     n_x2s = length(x2s)
-    #extended_x1s = [0; [(x1s[i] + x1s[i+1]) / 2 for i in 1:n_x1s-1]; 1]
-    #extended_x2s = [0; [(x2s[i] + x2s[i+1]) / 2 for i in 1:n_x2s-1]; 1]
     reshaped_mu_hat = reshape(forest.mu_hat, (n_x2s, n_x1s))
-
     hue1 = 25
     hue2 = 267
     colormap = ColorMap(diverging_palette(hue1, hue2, c=0.5))
-    #colors = colormap.(reshaped_mu_hat)
-    #for i in 1:length(colors)
-        #colors[i] = (colors[i][1], colors[i][2], colors[i][3], colors[i][4] * 0.8)
-    #end
-    #ax.pcolormesh(extended_x1s, extended_x2s, colors)
-    #println(size(colors))
-    #display(colors)
-    plt.contourf(x1s, x2s, reshaped_mu_hat, cmap=colormap)
+    plt.contourf(x1s, x2s, reshaped_mu_hat, cmap=colormap, levels=1000)
 
 end
 
@@ -176,43 +165,39 @@ function make_forest_plot(data, forest, x_min, x_max, y_min, y_max, filename)
     plt.close("all")
 end
 
-(data, x_min, x_max, y_min, y_max) = load_data(limit=10000)
-lambda = 10.0
+(data, x_min, x_max, y_min, y_max) = load_data(limit=nothing)
+lambda = 5.0
 
-# data
+println("plotting data")
 filename = "replication/weather_data.png"
-#make_data_plot(data, x_min, x_max, y_min, y_max)
+make_data_plot(data, x_min, x_max, y_min, y_max, filename)
 
-# data and partition
+println("plotting data and partition")
 Random.seed!(314159)
 tree = MondrianTree(2, lambda)
 filename = "replication/weather_data_partition.png"
-#make_data_partition_plot(data, tree, x_min, x_max, y_min, y_max, filename)
+make_data_partition_plot(data, tree, x_min, x_max, y_min, y_max, filename)
 
-# data and filled partition
+println("plotting data and filled partition")
 filename = "replication/weather_data_filled_partition.png"
-#plot_data_filled_partition(data, tree, x_min, x_max, y_min, y_max, filename)
+make_data_filled_partition_plot(data, tree, x_min, x_max, y_min, y_max, filename)
 
-# filled partition
+println("plotting filled partition")
 filename = "replication/weather_filled_partition.png"
-#plot_filled_partition(data, tree, x_min, x_max, y_min, y_max, filename)
+make_filled_partition_plot(data, tree, x_min, x_max, y_min, y_max, filename)
 
-# filled partition with three new trees
 seeds = [314160, 314161, 314162]
 for i in 1:length(seeds)
+    println("plotting filled partition for tree " * string(i))
     global seed = seeds[i]
     Random.seed!(seed)
     global tree = MondrianTree(2, lambda)
     global filename = "replication/weather_filled_partition_" * string(i) * ".png"
-    #plot_filled_partition(data, tree, x_min, x_max, y_min, y_max, filename)
+    make_filled_partition_plot(data, tree, x_min, x_max, y_min, y_max, filename)
 end
 
-# forest output with increasing trees
-seed = 314165
-Random.seed!(seed)
-n_trees = 10
-n_x1_evals = 100
-n_x2_evals = 100
+n_x1_evals = 50
+n_x2_evals = 50
 x1s = range(1 / n_x1_evals, 1 - 1 / n_x1_evals, length=n_x1_evals)
 x2s = range(1 / n_x2_evals, 1 - 1 / n_x2_evals, length=n_x2_evals)
 x_evals = Tuple{Float64, Float64}[(x1s[i], x2s[j]) for i in 1:n_x1_evals for j in 1:n_x2_evals]
@@ -222,10 +207,17 @@ estimate_var = false
 X = [ntuple(j -> data[i, [:Humidity3pm, :Pressure3pm][j]], 2) for i in 1:nrow(data)]
 Y = [data[i, :RainTomorrow] for i in 1:nrow(data)]
 
-forest = MondrianForest(lambda, n_trees, x_evals, debias_order,
-                        significance_level, X, Y, estimate_var)
+n_trees_all = [1, 2, 3, 10, 100]
+for i in 1:length(n_trees_all)
+    n_trees = n_trees_all[i]
+    println("computing forest with", n_trees, "trees")
+    seed = 314165
+    Random.seed!(seed)
+    forest = MondrianForest(lambda, n_trees, x_evals, debias_order,
+                            significance_level, X, Y, estimate_var)
 
-
-filename = "replication/weather_forest.png"
-make_forest_plot(data, forest, x_min, x_max, y_min, y_max, filename)
+    println("plotting forest with ", n_trees, " trees")
+    global filename = "replication/weather_forest_" * string(i) * ".png"
+    make_forest_plot(data, forest, x_min, x_max, y_min, y_max, filename)
+end
 

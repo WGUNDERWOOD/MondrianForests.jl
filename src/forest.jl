@@ -33,11 +33,14 @@ function MondrianForest(lambda::Float64, n_trees::Int, x_evals::Vector{NTuple{d,
     get_debias_params(forest)
     forest.trees = [[MondrianTree(d, lambda / forest.debias_scaling[r + 1])
                      for b in 1:n_trees] for r in 0:debias_order]
-    Ns = [[[sum(are_in_same_cell(X, x, forest.trees[r + 1][b])
-                for X in forest.X_data)
-            for b in 1:(forest.n_trees)]
-           for r in 0:(forest.debias_order)]
-          for x in x_evals]
+    Ns = [Vector{Int}[] for x in x_evals]
+    Threads.@threads for s in 1:n_evals
+        println(s, "/", forest.n_evals)
+        Ns[s] = [[sum(are_in_same_cell(X, x_evals[s], forest.trees[r + 1][b])
+                      for X in forest.X_data)
+                  for b in 1:(forest.n_trees)]
+                 for r in 0:(forest.debias_order)]
+    end
     estimate_mu_hat(forest, Ns)
     if estimate_var
         estimate_sigma2_hat(forest, Ns)
@@ -64,7 +67,8 @@ function estimate_mu_hat(forest::MondrianForest{d}, Ns::Vector{Vector{Vector{Int
     mu_hat = [0.0 for _ in 1:(forest.n_evals)]
     Y_bar = sum(forest.Y_data) / forest.n_data
 
-    for s in 1:(forest.n_evals)
+    Threads.@threads for s in 1:(forest.n_evals)
+        println(s, "/", forest.n_evals)
         for r in 0:(forest.debias_order)
             for b in 1:(forest.n_trees)
                 if Ns[s][r + 1][b] > 0
