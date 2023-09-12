@@ -105,6 +105,40 @@ function get_cells(tree::MondrianTree{d}) where {d}
     end
 end
 
+function get_ids(tree::MondrianTree{d}) where {d}
+    if !isnothing(tree.split_axis)
+        return [get_ids(tree.tree_left); get_ids(tree.tree_right)]
+    else
+        return [tree.id]
+    end
+end
+
+function get_split_times(tree::MondrianTree{d}) where {d}
+    if !isnothing(tree.split_axis)
+        return [tree.creation_time; get_split_times(tree.tree_left); get_split_times(tree.tree_right)]
+    else
+        return [tree.creation_time]
+    end
+end
+
+function restrict(tree::MondrianTree{d}, time::Float64) where {d}
+    if !isnothing(tree.split_axis)
+        if tree.tree_left.creation_time > time
+            new_tree = MondrianTree{d}(tree.lambda, tree.id, tree.creation_time, tree.cell,
+                                       nothing, nothing, nothing, nothing)
+            return new_tree
+        else
+            new_tree = MondrianTree{d}(tree.lambda, tree.id, tree.creation_time, tree.cell,
+                                       tree.split_axis, tree.split_location,
+                                       restrict(tree.tree_left, time),
+                                       restrict(tree.tree_right, time))
+            return new_tree
+        end
+    else
+        return tree
+    end
+end
+
 function Base.show(tree::MondrianTree{d}) where {d}
     depth = length(tree.id)
     has_split = !isnothing(tree.split_axis)

@@ -33,6 +33,10 @@ function get_center(cell::MondrianCell)
     return (cell.lower .+ cell.upper) ./ 2
 end
 
+function get_volume(cell::MondrianCell)
+    return prod(cell.upper .- cell.lower)
+end
+
 function get_intersection(cell1::MondrianCell{d}, cell2::MondrianCell{d}) where {d}
     lower = max.(cell1.lower, cell2.lower)
     upper = min.(cell1.upper, cell2.upper)
