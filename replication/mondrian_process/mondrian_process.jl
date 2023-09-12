@@ -3,8 +3,12 @@ using PyPlot
 using Random
 using Revise
 
+# TODO color the leaves on partition and tree
+# TODO color the node under consideration on the tree
+
 rcParams = PyPlot.PyDict(PyPlot.matplotlib."rcParams")
 rcParams["text.usetex"] = true
+rcParams["text.latex.preamble"]="\\usepackage[sfdefault,light]{FiraSans}"
 plt.ioff()
 
 function get_splits(tree::MondrianTree{d}) where {d}
@@ -17,10 +21,10 @@ function get_splits(tree::MondrianTree{d}) where {d}
     end
 end
 
-function plot_mondrian_tree(tree::MondrianTree, cell::Union{MondrianCell, Nothing})
+function plot_mondrian_process(tree::MondrianTree, cell::Union{MondrianCell, Nothing})
 
     splits = get_splits(tree)
-    (fig, ax) = plt.subplots(figsize=(2.1, 2.1))
+    (fig, ax) = plt.subplots(figsize=(2.2, 2.2))
 
     # plot root cell
     lw = 0.9
@@ -42,8 +46,8 @@ function plot_mondrian_tree(tree::MondrianTree, cell::Union{MondrianCell, Nothin
     if !isnothing(cell)
         (l1, l2) = cell.lower
         (u1, u2) = cell.upper
-        plot([l1, l1], [l2, u2], color="r", lw=lw, zorder=10)
-        plot([l1, u1], [l2, l2], color="r", lw=lw, zorder=10)
+        plot([l1, l1], [l2, u2], color="r", lw=lw, zorder=2)
+        plot([l1, u1], [l2, l2], color="r", lw=lw, zorder=2)
     end
 
     # annotate cells
@@ -64,6 +68,7 @@ function plot_mondrian_tree(tree::MondrianTree, cell::Union{MondrianCell, Nothin
     ax.xaxis.set_label_coords(0.5, -0.04)
     ax.yaxis.set_label_coords(-0.04, 0.5)
     ax.tick_params(color="w", direction="in", pad=0)
+    ax.set_aspect("equal")
     for side in ["bottom", "top", "left", "right"]
         ax.spines[side].set_color("#FFFFFF00")
     end
@@ -71,39 +76,128 @@ function plot_mondrian_tree(tree::MondrianTree, cell::Union{MondrianCell, Nothin
     return (fig, ax)
 end
 
+function get_tree_info(tree::MondrianTree)
+    info = (tree.id, tree.creation_time)
+    if !isnothing(tree.split_axis)
+        return [info; get_tree_info(tree.tree_left); get_tree_info(tree.tree_right)]
+    else
+        return [info]
+    end
+end
+
+function get_horizontal_value(id::String)
+    value = 0.0
+    for i in 1:length(id)
+        c = id[i]
+        if c == 'L'
+            value -= 0.5^i
+        elseif c == 'R'
+            value += 0.5^i
+        end
+    end
+    return value
+end
+
+function plot_mondrian_tree(tree::MondrianTree)
+    (fig, ax) = plt.subplots(figsize=(2.2, 2.2))
+    info = get_tree_info(tree)
+    ids = [i[1] for i in info]
+    times = [i[2] for i in info]
+    n = length(times)
+
+    # plot split points
+    for i in 1:n
+        circle1 = plt.Circle((x_locs[ids[i]], times[i]), 0.2, color="k", zorder=10)
+        circle2 = plt.Circle((x_locs[ids[i]], times[i]), 0.19, color="w", zorder=20)
+        ax.add_patch(circle1)
+        ax.add_patch(circle2)
+        label = "\$C_{\\mathrm{$(ids[i])}}\$"
+        plt.text(x_locs[ids[i]], times[i], label, ha="center",
+                 va="center", fontsize=8, zorder=30)
+    end
+
+    # plot tree
+    lw = 0.9
+    for i in 1:n
+        id = ids[i]
+        if id * "L" in ids
+            x_left = [x_locs[ids[i]] for i in 1:n if ids[i] == id * "L"][]
+            x_right = [x_locs[ids[i]] for i in 1:n if ids[i] == id * "R"][]
+            time1 = times[i]
+            time2 = [times[i] for i in 1:n if ids[i] == id * "L"][]
+            plt.plot([x_left, x_right], [time1, time1], color="k", lw=lw)
+            plt.plot([x_left, x_left], [time1, time2], color="k", lw=lw)
+            plt.plot([x_right, x_right], [time1, time2], color="k", lw=lw)
+        end
+    end
+
+    # format
+    ax.invert_yaxis()
+    ax.set_aspect("equal")
+    plt.xticks([])
+    plt.yticks([0, 1, 2])
+    plt.ylabel("Time")
+    plt.ylim([2.3, -0.21])
+    plt.xlim([minimum(values(x_locs)) - 0.25, maximum(values(x_locs)) + 0.35])
+    ax.yaxis.tick_right()
+    ax.yaxis.set_label_position("right")
+    for side in ["bottom", "top", "left"]
+        ax.spines[side].set_color("#FFFFFF00")
+    end
+    ax.spines["right"].set_bounds([2, 0])
+    plt.tight_layout()
+    return (fig, ax)
+end
+
+# construct a good tree
 d = 2
 lambda = 2.0
-
 Random.seed!(0)
 min_vol = 0.0
 n_cells = 1
 while min_vol < 0.2 || n_cells != 4
     global tree = MondrianTree(d, lambda)
     global cells = MondrianForests.get_cells(tree)
-    global min_vol =  minimum(MondrianForests.get_volume(c) for c in cells)
-    global n_cells =  length(cells)
+    global min_vol = minimum(MondrianForests.get_volume(c) for c in cells)
+    global n_cells = length(cells)
 end
-
-
-println(min_vol)
-println(n_cells)
-
-times = sort(unique(MondrianForests.get_split_times(tree)))
 show(tree)
 
+# plot the generation of the partition
+times = sort(unique(MondrianForests.get_split_times(tree)))
 for i in 1:length(times)
     println(i)
     t = times[i]
     restricted_tree = MondrianForests.restrict(tree, t)
     restricted_cells = MondrianForests.get_cells(restricted_tree)
-    (fig, ax) = plot_mondrian_tree(restricted_tree, nothing)
+    global (fig, ax) = plot_mondrian_process(restricted_tree, nothing)
     savefig("replication/mondrian_process/mondrian_process_$(i).png",
-            bbox_inches="tight", dpi=200)
+            bbox_inches="tight", dpi=300)
     for j in 1:length(restricted_cells)
         cell = restricted_cells[j]
-        (fig, ax) = plot_mondrian_tree(restricted_tree, cell)
+        global (fig, ax) = plot_mondrian_process(restricted_tree, cell)
         savefig("replication/mondrian_process/mondrian_process_$(i)_$(j).png",
-                bbox_inches="tight", dpi=200)
+                bbox_inches="tight", dpi=300)
     end
     plt.close("all")
+end
+
+# get x locations
+info = get_tree_info(tree)
+ids = [i[1] for i in info]
+xs = get_horizontal_value.(ids)
+xs = invperm(sortperm(xs)) / 4
+x_locs = Dict()
+for i in 1:length(ids)
+    x_locs[ids[i]] = xs[i]
+end
+
+# plot the tree structure
+for i in 1:length(times)
+    println(i)
+    t = times[i]
+    restricted_tree = MondrianForests.restrict(tree, t)
+    (fig, ax) = plot_mondrian_tree(restricted_tree)
+    savefig("replication/mondrian_process/mondrian_tree_$(i).png",
+            bbox_inches="tight", dpi=300)
 end
