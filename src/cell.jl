@@ -33,13 +33,36 @@ function get_center(cell::MondrianCell)
     return (cell.lower .+ cell.upper) ./ 2
 end
 
-function get_intersection(cell1::MondrianCell, cell2::MondrianCell)
+function get_intersection(cell1::MondrianCell{d}, cell2::MondrianCell{d}) where {d}
     lower = max.(cell1.lower, cell2.lower)
     upper = min.(cell1.upper, cell2.upper)
     if all(lower .< upper)
         return MondrianCell(lower, upper)
     else
         return nothing
+    end
+end
+
+function get_common_refinement(cells1::Vector{MondrianCell{d}}, cells2::Vector{MondrianCell{d}}) where {d}
+    cells = MondrianCell{d}[]
+
+    for c1 in cells1
+        for c2 in cells2
+            c = get_intersection(c1, c2)
+            if isa(c, MondrianCell{d})
+                push!(cells, c)
+            end
+        end
+    end
+
+    return unique(cells)
+end
+
+function get_common_refinement(cells::Vector{Vector{MondrianCell{d}}}) where {d}
+    if length(cells) == 1
+        return cells[1]
+    else
+        return get_common_refinement(cells[1], get_common_refinement(cells[2:end]))
     end
 end
 
