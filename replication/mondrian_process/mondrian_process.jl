@@ -26,6 +26,13 @@ function plot_mondrian_process(tree::MondrianTree, cell::Union{MondrianCell, Not
     splits = get_splits(tree)
     (fig, ax) = plt.subplots(figsize=(2.2, 2.2))
 
+    # highlight cell
+    if !isnothing(cell)
+        x1s = [cell.lower[1], cell.lower[1], cell.upper[1], cell.upper[1]]
+        x2s = [cell.lower[2], cell.upper[2], cell.upper[2], cell.lower[2]]
+        fill(x1s, x2s, facecolor="#bd93f9", alpha=0.4)
+    end
+
     # plot root cell
     lw = 0.9
     (l1, l2) = tree.cell.lower
@@ -40,14 +47,6 @@ function plot_mondrian_process(tree::MondrianTree, cell::Union{MondrianCell, Not
         x1s = [point[1] for point in split]
         x2s = [point[2] for point in split]
         plot(x1s, x2s, ms=0, color="k", lw=lw)
-    end
-
-    # highlight cell
-    if !isnothing(cell)
-        (l1, l2) = cell.lower
-        (u1, u2) = cell.upper
-        plot([l1, l1], [l2, u2], color="r", lw=lw, zorder=2)
-        plot([l1, u1], [l2, l2], color="r", lw=lw, zorder=2)
     end
 
     # annotate cells
@@ -99,7 +98,7 @@ function get_horizontal_value(id::String)
 end
 
 function plot_mondrian_tree(tree::MondrianTree)
-    (fig, ax) = plt.subplots(figsize=(2.2, 2.2))
+    (fig, ax) = plt.subplots(figsize=(2.5, 2.2))
     info = get_tree_info(tree)
     ids = [i[1] for i in info]
     times = [i[2] for i in info]
@@ -186,7 +185,7 @@ end
 info = get_tree_info(tree)
 ids = [i[1] for i in info]
 xs = get_horizontal_value.(ids)
-xs = invperm(sortperm(xs)) / 4
+xs = invperm(sortperm(xs)) / 3
 x_locs = Dict()
 for i in 1:length(ids)
     x_locs[ids[i]] = xs[i]
@@ -197,7 +196,16 @@ for i in 1:length(times)
     println(i)
     t = times[i]
     restricted_tree = MondrianForests.restrict(tree, t)
-    (fig, ax) = plot_mondrian_tree(restricted_tree)
+    restricted_cells = MondrianForests.get_cells(restricted_tree)
+    (fig, ax) = plot_mondrian_tree(restricted_tree, cell, nothing, nothing)
     savefig("replication/mondrian_process/mondrian_tree_$(i).png",
             bbox_inches="tight", dpi=300)
+    for cell in restricted_cells
+        (fig, ax) = plot_mondrian_tree(restricted_tree, terminal_cells)
+        savefig("replication/mondrian_process/mondrian_tree_$(i).png",
+                bbox_inches="tight", dpi=300)
+        (fig, ax) = plot_mondrian_tree(restricted_tree, cell, "current")
+        savefig("replication/mondrian_process/mondrian_tree_$(i).png",
+                bbox_inches="tight", dpi=300)
+    end
 end
