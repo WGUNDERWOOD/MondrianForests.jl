@@ -3,7 +3,7 @@ using PyPlot
 using Random
 using Revise
 
-# TODO color leaves in partition
+# TODO highlight current cell parent while doing split
 
 rcParams = PyPlot.PyDict(PyPlot.matplotlib."rcParams")
 rcParams["text.usetex"] = true
@@ -62,13 +62,17 @@ function plot_mondrian_process(partition)
     cells = MondrianForests.get_cells(tree)
     centers = MondrianForests.get_center.(cells)
     for i in 1:length(cells)
-        label = "\$C_{\\mathrm{$(ids[i])}}\$"
+        if ids[i] == ""
+            label = "\$C_{\\emptyset}\$"
+        else
+            label = "\$C_{\\mathrm{$(ids[i])}}\$"
+        end
         plt.text(centers[i][1], centers[i][2], label, ha="center",
                  va="center", fontsize=10)
     end
 
     # format plot
-    plt.ylim([-0.05, 1.01])
+    #plt.ylim([-0.05, 1.01])
     plt.xticks([0, 1])
     plt.yticks([0, 1])
     plt.xlabel("\$x_1\$")
@@ -79,6 +83,20 @@ function plot_mondrian_process(partition)
     ax.set_aspect("equal")
     for side in ["bottom", "top", "left", "right"]
         ax.spines[side].set_color("#FFFFFF00")
+    end
+
+    # color key
+    current_handle = plt.scatter([], [], c="#d9b3ff")
+    terminal_handle = plt.scatter([], [], c="#6feb8e")
+    if length(cells) >= 4 || length(partition["terminals"]) >= 1
+        ax.legend([current_handle, terminal_handle],
+                  ["Current", "Leaf"], ncol=2,
+                  handletextpad=0.1, frameon=false, columnspacing=0.8,
+                  bbox_to_anchor=(0.47, 1.15), loc="upper center")
+    elseif length(cells) >= 2 || !isnothing(partition["current"])
+        ax.legend([current_handle], ["Current"], ncol=2,
+                  handletextpad=0.1, frameon=false, columnspacing=0.8,
+                  bbox_to_anchor=(0.277, 1.15), loc="upper center")
     end
 
     return (fig, ax)
@@ -152,6 +170,9 @@ function plot_mondrian_tree(partition)
         end
     end
 
+    # time label
+    plt.text(2.84, 2.47, "\$t\$", fontsize=10)
+
     # format
     ax.invert_yaxis()
     ax.set_aspect("equal")
@@ -165,7 +186,7 @@ function plot_mondrian_tree(partition)
     for side in ["bottom", "top", "left"]
         ax.spines[side].set_color("#FFFFFF00")
     end
-    ax.spines["right"].set_bounds([2.2, 0])
+    ax.spines["right"].set_bounds([2.4, 0])
     return (fig, ax)
 end
 
@@ -241,6 +262,8 @@ function update_partitions(partitions, tree)
     return [partitions; [new_partition]]
 end
 
+info = get_tree_info(tree)
+times = [i[2] for i in info]
 for rep in 1:14
     global partitions = update_partitions(partitions, tree)
 end
@@ -250,7 +273,8 @@ for i in 1:length(partitions)
     println(i)
     partition = partitions[i]
     global (fig, ax) = plot_mondrian_tree(partition)
-    savefig("replication/mondrian_process/mondrian_tree_$(i).png", dpi=300)
+    plt.savefig("replication/mondrian_process/mondrian_tree_$(i).png", dpi=300)
+    plt.close("all")
 end
 
 # plot the generation of the partition
@@ -258,7 +282,7 @@ for i in 1:length(partitions)
     println(i)
     partition = partitions[i]
     global (fig, ax) = plot_mondrian_process(partition)
-    savefig("replication/mondrian_process/mondrian_process_$(i).png", dpi=300)
+    plt.savefig("replication/mondrian_process/mondrian_process_$(i).png", dpi=300)
+    plt.close("all")
 end
 
-plt.close("all")

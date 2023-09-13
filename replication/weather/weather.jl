@@ -37,6 +37,7 @@ function load_data(; limit=nothing)
     data.Pressure3pm = (data.Pressure3pm .- y_min) ./ (y_max - y_min)
     Random.seed!(1)
     data = shuffle(data)
+    println("number of samples ", nrow(data))
     return (data, x_min, x_max, y_min, y_max)
 end
 
@@ -243,7 +244,7 @@ n_trees = 2
 X = [ntuple(j -> data[i, [:Humidity3pm, :Pressure3pm][j]], 2) for i in 1:nrow(data)]
 Y = [data[i, :RainTomorrow] for i in 1:nrow(data)]
 x_evals = Tuple{Float64, Float64}[]
-for i in [1, 2, 3, 10, 50]
+for i in [2, 3, 10, 50]
     println("plotting forest with ", i, " trees")
     global filename = "replication/weather/weather_forest_" * string(i) * ".png"
     make_forest_plot(data, trees[1:i], x_min, x_max, y_min, y_max, filename)
