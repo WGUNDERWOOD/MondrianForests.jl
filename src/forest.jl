@@ -18,24 +18,24 @@ mutable struct MondrianForest{d}
     sigma2_hat::Vector{Float64}
     Sigma_hat::Vector{Float64}
     confidence_band::Vector{Tuple{Float64,Float64}}
+    gcv_dof::Union{Nothing, Float64}
 end
 
 function MondrianForest(lambda::Float64, n_trees::Int, x_evals::Vector{NTuple{d,Float64}},
                         debias_order::Int, significance_level::Float64,
                         X_data::Vector{NTuple{d,Float64}}, Y_data::Vector{Float64},
-                        estimate_var::Bool=false) where {d}
+                        estimate_var::Bool=false, get_gcv::Bool=false) where {d}
     n_data = length(X_data)
     n_evals = length(x_evals)
     forest = MondrianForest(lambda, n_trees, n_data, n_evals, x_evals, debias_order,
                             significance_level, X_data, Y_data, Float64[], Float64[],
                             Vector{MondrianTree{d}}[], Float64[], Float64[], Float64[],
-                            Tuple{Float64,Float64}[])
+                            Tuple{Float64,Float64}[], nothing)
     get_debias_params(forest)
     forest.trees = [[MondrianTree(d, lambda / forest.debias_scaling[r + 1])
                      for b in 1:n_trees] for r in 0:debias_order]
     Ns = [Vector{Int}[] for x in x_evals]
     Threads.@threads for s in 1:n_evals
-        println(s, "/", forest.n_evals)
         Ns[s] = [[sum(are_in_same_cell(X, x_evals[s], forest.trees[r + 1][b])
                       for X in forest.X_data)
                   for b in 1:(forest.n_trees)]
@@ -46,6 +46,9 @@ function MondrianForest(lambda::Float64, n_trees::Int, x_evals::Vector{NTuple{d,
         estimate_sigma2_hat(forest, Ns)
         estimate_Sigma_hat(forest, Ns)
         construct_confidence_band(forest)
+    end
+    if get_gcv
+        get_gcv_dof(forest)
     end
     return forest
 end
@@ -68,7 +71,6 @@ function estimate_mu_hat(forest::MondrianForest{d}, Ns::Vector{Vector{Vector{Int
     Y_bar = sum(forest.Y_data) / forest.n_data
 
     Threads.@threads for s in 1:(forest.n_evals)
-        println(s, "/", forest.n_evals)
         for r in 0:(forest.debias_order)
             for b in 1:(forest.n_trees)
                 if Ns[s][r + 1][b] > 0
@@ -142,6 +144,19 @@ function estimate_Sigma_hat(forest::MondrianForest{d}, Ns::Vector{Vector{Vector{
 
     Sigma_hat .*= forest.sigma2_hat .* forest.n_data / forest.lambda^d
     return forest.Sigma_hat = Sigma_hat
+end
+
+function get_gcv_dof(forest::MondrianForest{d}) where {d}
+    gcv_dof = 0.0
+    for i in 1:forest.n_data
+        for b in 1:forest.n_trees
+            Xi = forest.X_data[i]
+            Tb = forest.trees[1][b]
+            S = sum(are_in_same_cell(Xi, forest.X_data[j], Tb) for j in 1:forest.n_data)
+            gcv_dof += 1 / (S * forest.n_trees)
+        end
+    end
+    forest.gcv_dof = gcv_dof
 end
 
 function construct_confidence_band(forest::MondrianForest{d}) where {d}

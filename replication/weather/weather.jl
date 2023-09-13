@@ -210,7 +210,19 @@ lambda = 5.0
 for i in 1:length(seeds)
     seed = seeds[i]
     Random.seed!(seed)
-    global tree = MondrianTree(2, lambda)
+
+    if i <= 5
+        min_vol = 0.0
+        while min_vol < 0.009
+            tree = MondrianTree(2, lambda)
+            cells = MondrianForests.get_cells(tree)
+            min_vol = minimum(MondrianForests.get_volume(c) for c in cells)
+        end
+        println(min_vol)
+    else
+        tree = MondrianTree(2, lambda)
+    end
+
     push!(trees, tree)
 end
 
