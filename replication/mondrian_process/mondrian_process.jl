@@ -3,7 +3,7 @@ using PyPlot
 using Random
 using Revise
 
-# TODO highlight current cell parent while doing split
+# TODO when making a leaf jump straight to next current
 
 rcParams = PyPlot.PyDict(PyPlot.matplotlib."rcParams")
 rcParams["text.usetex"] = true
@@ -225,10 +225,12 @@ function update_partitions(partitions, tree)
     p = partitions[end]
     info = get_tree_info(p["tree"])
     cells = MondrianForests.get_cells(tree)
+    leaves = MondrianForests.get_cells(p["tree"])
     current_split = !isnothing(p["current"]) && !(p["current"] in cells)
+    current_parent = !(p["current"] in leaves)
 
     # update time and tree
-    if current_split
+    if current_split && !current_parent
         new_time = minimum(t for t in times if t > p["time"])
         new_tree = MondrianForests.restrict(tree, new_time)
     else
@@ -237,14 +239,18 @@ function update_partitions(partitions, tree)
     end
 
     # update current
-    if isnothing(p["current"])
-        leaves = MondrianForests.get_cells(p["tree"])
-        ids = [i[4] for i in info if i[3] in leaves && !(i[3] in p["terminals"])]
+    if isnothing(p["current"]) || current_parent || !current_split
+        ids = [i[4] for i in info if i[3] in leaves &&
+               !(i[3] in p["terminals"]) && !(i[3] == p["current"])]
         ids = [i for i in ids if length(i) == minimum(length(j) for j in ids)]
-        new_current_id = minimum(ids)
-        new_current = [i[3] for i in info if i[4] == new_current_id][]
+        if !isempty(ids)
+            new_current_id = minimum(ids)
+            new_current = [i[3] for i in info if i[4] == new_current_id][]
+        else
+            new_current = nothing
+        end
     else
-        new_current = nothing
+        new_current = p["current"]
     end
 
     # update terminals
@@ -264,7 +270,7 @@ end
 
 info = get_tree_info(tree)
 times = [i[2] for i in info]
-for rep in 1:14
+for rep in 1:11
     global partitions = update_partitions(partitions, tree)
 end
 
