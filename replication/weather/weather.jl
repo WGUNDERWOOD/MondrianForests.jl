@@ -209,7 +209,7 @@ lambda = 5.0
 for i in 1:length(seeds)
     seed = seeds[i]
     Random.seed!(seed)
-    tree = MondrianTree(2, lambda)
+    global tree = MondrianTree(2, lambda)
     push!(trees, tree)
 end
 

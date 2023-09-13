@@ -3,9 +3,6 @@ using PyPlot
 using Random
 using Revise
 
-# TODO color the leaves on partition and tree
-# TODO color the node under consideration on the tree
-
 rcParams = PyPlot.PyDict(PyPlot.matplotlib."rcParams")
 rcParams["text.usetex"] = true
 rcParams["text.latex.preamble"]="\\usepackage[sfdefault,light]{FiraSans}"
@@ -37,16 +34,16 @@ function plot_mondrian_process(tree::MondrianTree, cell::Union{MondrianCell, Not
     lw = 0.9
     (l1, l2) = tree.cell.lower
     (u1, u2) = tree.cell.upper
-    plot([l1, l1], [l2, u2], color="k", lw=lw)
-    plot([u1, u1], [l2, u2], color="k", lw=lw)
-    plot([l1, u1], [l2, l2], color="k", lw=lw)
-    plot([u1, l1], [u2, u2], color="k", lw=lw)
+    plt.plot([l1, l1], [l2, u2], color="k", lw=lw)
+    plt.plot([u1, u1], [l2, u2], color="k", lw=lw)
+    plt.plot([l1, u1], [l2, l2], color="k", lw=lw)
+    plt.plot([u1, l1], [u2, u2], color="k", lw=lw)
 
     # plot splits
     for split in splits
         x1s = [point[1] for point in split]
         x2s = [point[2] for point in split]
-        plot(x1s, x2s, ms=0, color="k", lw=lw)
+        plt.plot(x1s, x2s, ms=0, color="k", lw=lw)
     end
 
     # annotate cells
@@ -98,7 +95,6 @@ function get_horizontal_value(id::String)
 end
 
 function plot_mondrian_tree(partition)
-    display(partition)
     tree = partition["tree"]
     (fig, ax) = plt.subplots(figsize=(2.2, 2.2))
     info = get_tree_info(tree)
@@ -175,19 +171,19 @@ end
 # plot the generation of the partition
 times = sort(unique(MondrianForests.get_split_times(tree)))
 for i in 1:length(times)
-    #println(i)
-    #t = times[i]
-    #restricted_tree = MondrianForests.restrict(tree, t)
-    #restricted_cells = MondrianForests.get_cells(restricted_tree)
-    #global (fig, ax) = plot_mondrian_process(restricted_tree, nothing)
-    #savefig("replication/mondrian_process/mondrian_process_$(i).png",
-            #bbox_inches="tight", dpi=300)
-    #for j in 1:length(restricted_cells)
-        #cell = restricted_cells[j]
-        #global (fig, ax) = plot_mondrian_process(restricted_tree, cell)
-        #savefig("replication/mondrian_process/mondrian_process_$(i)_$(j).png",
-                #bbox_inches="tight", dpi=300)
-    #end
+    println(i)
+    t = times[i]
+    restricted_tree = MondrianForests.restrict(tree, t)
+    restricted_cells = MondrianForests.get_cells(restricted_tree)
+    global (fig, ax) = plot_mondrian_process(restricted_tree, nothing)
+    savefig("replication/mondrian_process/mondrian_process_$(i).png",
+            bbox_inches="tight", dpi=300)
+    for j in 1:length(restricted_cells)
+        cell = restricted_cells[j]
+        global (fig, ax) = plot_mondrian_process(restricted_tree, cell)
+        savefig("replication/mondrian_process/mondrian_process_$(i)_$(j).png",
+                bbox_inches="tight", dpi=300)
+    end
     plt.close("all")
 end
 
@@ -213,7 +209,6 @@ function update_partitions(partitions, tree)
     info = get_tree_info(p["tree"])
     cells = MondrianForests.get_cells(tree)
     current_split = !isnothing(p["current"]) && !(p["current"] in cells)
-    println(current_split)
 
     # update time and tree
     if current_split
@@ -257,22 +252,5 @@ for i in 1:length(partitions)
     global (fig, ax) = plot_mondrian_tree(partition)
     savefig("replication/mondrian_process/mondrian_tree_$(i).png",
             bbox_inches="tight", dpi=300)
-    for cell in restricted_cells
-        (fig, ax) = plot_mondrian_tree(restricted_tree, terminal_cells)
-        savefig("replication/mondrian_process/mondrian_tree_$(i).png",
-                bbox_inches="tight", dpi=300)
-        (fig, ax) = plot_mondrian_tree(restricted_tree, cell, "current")
-        savefig("replication/mondrian_process/mondrian_tree_$(i).png",
-                bbox_inches="tight", dpi=300)
-    end
 end
 
-# plot the tree structure
-#for i in 1:length(times)
-    #println(i)
-    #t = times[i]
-    #restricted_tree = MondrianForests.restrict(tree, t)
-    #global (fig, ax) = plot_mondrian_tree(restricted_tree)
-    #savefig("replication/mondrian_process/mondrian_tree_$(i).png",
-            #bbox_inches="tight", dpi=300)
-#end
