@@ -3,6 +3,8 @@ using PyPlot
 using Random
 using Revise
 
+# TODO color leaves in partition
+
 rcParams = PyPlot.PyDict(PyPlot.matplotlib."rcParams")
 rcParams["text.usetex"] = true
 rcParams["text.latex.preamble"]="\\usepackage[sfdefault,light]{FiraSans}"
@@ -23,11 +25,11 @@ function plot_mondrian_process(tree::MondrianTree, cell::Union{MondrianCell, Not
     splits = get_splits(tree)
     (fig, ax) = plt.subplots(figsize=(2.2, 2.2))
 
-    # highlight cell
+    # highlight current cell
     if !isnothing(cell)
         x1s = [cell.lower[1], cell.lower[1], cell.upper[1], cell.upper[1]]
         x2s = [cell.lower[2], cell.upper[2], cell.upper[2], cell.lower[2]]
-        fill(x1s, x2s, facecolor="#bd93f9", alpha=0.4)
+        fill(x1s, x2s, facecolor="#ecd9ff")
     end
 
     # plot root cell
@@ -57,6 +59,7 @@ function plot_mondrian_process(tree::MondrianTree, cell::Union{MondrianCell, Not
     end
 
     # format plot
+    plt.ylim([-0.05, 1.01])
     plt.xticks([0, 1])
     plt.yticks([0, 1])
     plt.xlabel("\$x_1\$")
@@ -106,9 +109,9 @@ function plot_mondrian_tree(partition)
     # plot split points
     for i in 1:n
         if cells[i] == partition["current"]
-            color = "#ffffaa"
+            color = "#ecd9ff"
         elseif cells[i] in partition["terminals"]
-            color = "#aaffaa"
+            color = "#b5fdc7"
         else
             color = "white"
         end
@@ -116,8 +119,12 @@ function plot_mondrian_tree(partition)
         circle2 = plt.Circle((x_locs[ids[i]], times[i]), 0.19, color=color, zorder=20)
         ax.add_patch(circle1)
         ax.add_patch(circle2)
-        label = "\$C_{\\mathrm{$(ids[i])}}\$"
-        plt.text(x_locs[ids[i]], times[i], label, ha="center",
+        if ids[i] == ""
+            label = "\$\\emptyset\$"
+        else
+            label = "\$\\mathrm{$(ids[i])}\$"
+        end
+        plt.text(x_locs[ids[i]]+0.005, times[i]+0.01, label, ha="center",
                  va="center", fontsize=8, zorder=30)
     end
 
@@ -142,15 +149,14 @@ function plot_mondrian_tree(partition)
     plt.xticks([])
     plt.yticks([0, 1, 2])
     plt.ylabel("Time")
-    plt.ylim([2.3, -0.21])
-    plt.xlim([minimum(values(x_locs)) - 0.25, maximum(values(x_locs)) + 0.35])
+    plt.ylim([2.3, -0.22])
+    plt.xlim([minimum(values(x_locs)) - 0.22, maximum(values(x_locs)) + 0.35])
     ax.yaxis.tick_right()
     ax.yaxis.set_label_position("right")
     for side in ["bottom", "top", "left"]
         ax.spines[side].set_color("#FFFFFF00")
     end
     ax.spines["right"].set_bounds([2, 0])
-    plt.tight_layout()
     return (fig, ax)
 end
 
@@ -176,13 +182,11 @@ for i in 1:length(times)
     restricted_tree = MondrianForests.restrict(tree, t)
     restricted_cells = MondrianForests.get_cells(restricted_tree)
     global (fig, ax) = plot_mondrian_process(restricted_tree, nothing)
-    savefig("replication/mondrian_process/mondrian_process_$(i).png",
-            bbox_inches="tight", dpi=300)
+    savefig("replication/mondrian_process/mondrian_process_$(i).png", dpi=300)
     for j in 1:length(restricted_cells)
         cell = restricted_cells[j]
         global (fig, ax) = plot_mondrian_process(restricted_tree, cell)
-        savefig("replication/mondrian_process/mondrian_process_$(i)_$(j).png",
-                bbox_inches="tight", dpi=300)
+        savefig("replication/mondrian_process/mondrian_process_$(i)_$(j).png", dpi=300)
     end
     plt.close("all")
 end
@@ -231,7 +235,11 @@ function update_partitions(partitions, tree)
     end
 
     # update terminals
-    new_terminals = [p["terminals"]; [p["current"]]]
+    if current_split
+        new_terminals = p["terminals"]
+    else
+        new_terminals = [p["terminals"]; [p["current"]]]
+    end
 
     new_partition = Dict("time" => new_time,
                          "tree" => new_tree,
@@ -250,7 +258,6 @@ for i in 1:length(partitions)
     println(i)
     partition = partitions[i]
     global (fig, ax) = plot_mondrian_tree(partition)
-    savefig("replication/mondrian_process/mondrian_tree_$(i).png",
-            bbox_inches="tight", dpi=300)
+    savefig("replication/mondrian_process/mondrian_tree_$(i).png", dpi=300)
 end
 
