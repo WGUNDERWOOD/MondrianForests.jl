@@ -78,8 +78,8 @@ X = [ntuple(j -> data[i, [:Humidity3pm, :Pressure3pm][j]], 2) for i in 1:nrow(da
 Y = [data[i, :RainTomorrow] for i in 1:nrow(data)]
 
 n_evals = 100
-lambdas = range(0.5, stop=10.0, step=0.5)
-n_trees = 50
+lambdas = range(0.5, stop=8.0, step=0.5)
+n_trees = 100
 debias_order = 0
 
 eval_ids = sort(shuffle(1:n)[1:n_evals])
@@ -108,11 +108,13 @@ for lambda in lambdas
     forest = MondrianForest(lambda, n_trees, x_evals, debias_order,
                             0.05, X, Y, false, true)
     gcv_dof = forest.gcv_dof
-    println("gcv dof: ", gcv_dof)
     mse = sum((y_evals .- forest.mu_hat).^2) / n_evals
     gcv = mse / ((1 - gcv_dof / n)^2)
     push!(gcvs, gcv)
     push!(mses, mse)
+    println("gcv dof: ", gcv_dof)
+    println("gcv: ", gcv)
+    println("mse: ", mse)
 end
 
 gcvs
