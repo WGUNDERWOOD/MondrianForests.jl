@@ -20,16 +20,25 @@ function get_splits(tree::MondrianTree{d}) where {d}
     end
 end
 
-function plot_mondrian_process(tree::MondrianTree, cell::Union{MondrianCell, Nothing})
+function plot_mondrian_process(partition)
 
+    tree = partition["tree"]
     splits = get_splits(tree)
     (fig, ax) = plt.subplots(figsize=(2.2, 2.2))
 
     # highlight current cell
-    if !isnothing(cell)
+    if !isnothing(partition["current"])
+        cell = partition["current"]
         x1s = [cell.lower[1], cell.lower[1], cell.upper[1], cell.upper[1]]
         x2s = [cell.lower[2], cell.upper[2], cell.upper[2], cell.lower[2]]
         fill(x1s, x2s, facecolor="#ecd9ff")
+    end
+
+    # highlight leaves
+    for cell in partition["terminals"]
+        x1s = [cell.lower[1], cell.lower[1], cell.upper[1], cell.upper[1]]
+        x2s = [cell.lower[2], cell.upper[2], cell.upper[2], cell.lower[2]]
+        fill(x1s, x2s, facecolor="#b5fdc7")
     end
 
     # plot root cell
@@ -156,7 +165,7 @@ function plot_mondrian_tree(partition)
     for side in ["bottom", "top", "left"]
         ax.spines[side].set_color("#FFFFFF00")
     end
-    ax.spines["right"].set_bounds([2, 0])
+    ax.spines["right"].set_bounds([2.2, 0])
     return (fig, ax)
 end
 
@@ -173,23 +182,6 @@ while min_vol < 0.2 || n_cells != 4
     global n_cells = length(cells)
 end
 #show(tree)
-
-# plot the generation of the partition
-times = sort(unique(MondrianForests.get_split_times(tree)))
-for i in 1:length(times)
-    println(i)
-    t = times[i]
-    restricted_tree = MondrianForests.restrict(tree, t)
-    restricted_cells = MondrianForests.get_cells(restricted_tree)
-    global (fig, ax) = plot_mondrian_process(restricted_tree, nothing)
-    savefig("replication/mondrian_process/mondrian_process_$(i).png", dpi=300)
-    for j in 1:length(restricted_cells)
-        cell = restricted_cells[j]
-        global (fig, ax) = plot_mondrian_process(restricted_tree, cell)
-        savefig("replication/mondrian_process/mondrian_process_$(i)_$(j).png", dpi=300)
-    end
-    plt.close("all")
-end
 
 # get locations of tree nodes for diagram
 info = get_tree_info(tree)
@@ -235,7 +227,7 @@ function update_partitions(partitions, tree)
     end
 
     # update terminals
-    if current_split
+    if current_split || isnothing(p["current"])
         new_terminals = p["terminals"]
     else
         new_terminals = [p["terminals"]; [p["current"]]]
@@ -261,3 +253,12 @@ for i in 1:length(partitions)
     savefig("replication/mondrian_process/mondrian_tree_$(i).png", dpi=300)
 end
 
+# plot the generation of the partition
+for i in 1:length(partitions)
+    println(i)
+    partition = partitions[i]
+    global (fig, ax) = plot_mondrian_process(partition)
+    savefig("replication/mondrian_process/mondrian_process_$(i).png", dpi=300)
+end
+
+plt.close("all")
