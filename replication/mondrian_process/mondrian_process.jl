@@ -274,7 +274,6 @@ for rep in 1:11
     global partitions = update_partitions(partitions, tree)
 end
 
-#=
 # plot the tree structures
 for i in 1:length(partitions)
     println(i)
@@ -292,7 +291,6 @@ for i in 1:length(partitions)
     plt.savefig("replication/mondrian_process/mondrian_process_$(i).png", dpi=300)
     plt.close("all")
 end
-=#
 
 function plot_theorem_restriction(tree, cell)
     splits = get_splits(tree)
@@ -301,11 +299,11 @@ function plot_theorem_restriction(tree, cell)
     # plot root cell and extra cell
     colors = ["k", "k"]
     styles = ["solid", "dashed"]
+    lw = 0.9
     for i in 1:2
         c = [tree.cell, cell][i]
         color = colors[i]
         style = styles[i]
-        lw = 0.9
         (l1, l2) = c.lower
         (u1, u2) = c.upper
         plt.plot([l1, l1], [l2, u2], color=color, lw=lw, linestyle=style)
