@@ -274,6 +274,7 @@ for rep in 1:11
     global partitions = update_partitions(partitions, tree)
 end
 
+#=
 # plot the tree structures
 for i in 1:length(partitions)
     println(i)
@@ -291,6 +292,7 @@ for i in 1:length(partitions)
     plt.savefig("replication/mondrian_process/mondrian_process_$(i).png", dpi=300)
     plt.close("all")
 end
+=#
 
 function plot_theorem_restriction(tree, cell)
     splits = get_splits(tree)
@@ -410,4 +412,61 @@ end
 point = (0.4, 0.25)
 (fig, ax) = plot_theorem_distribution(tree, point)
 plt.savefig("replication/mondrian_process/theorem_distribution.png", dpi=300)
+plt.close("all")
+
+function plot_piet_mondrian(tree)
+    splits = get_splits(tree)
+    (fig, ax) = plt.subplots(figsize=(2.2, 2.2))
+
+    # plot root cell
+    lw = 0.9
+    (l1, l2) = tree.cell.lower
+    (u1, u2) = tree.cell.upper
+    plt.plot([l1, l1], [l2, u2], color="k", lw=lw)
+    plt.plot([u1, u1], [l2, u2], color="k", lw=lw)
+    plt.plot([l1, u1], [l2, l2], color="k", lw=lw)
+    plt.plot([u1, l1], [u2, u2], color="k", lw=lw)
+
+    # plot splits
+    for split in splits
+        x1s = [point[1] for point in split]
+        x2s = [point[2] for point in split]
+        plt.plot(x1s, x2s, ms=0, color="k", lw=lw)
+    end
+
+    # format plot
+    plt.ylim([-0.01, 1.01])
+    plt.xticks([])
+    plt.yticks([])
+    #plt.xlabel("\$x_1\$")
+    #plt.ylabel("\$x_2\$")
+    #ax.xaxis.set_label_coords(0.5, -0.04)
+    #ax.yaxis.set_label_coords(-0.04, 0.5)
+    ax.tick_params(color="w", direction="in", pad=0)
+    ax.set_aspect("equal")
+    for side in ["bottom", "top", "left", "right"]
+        ax.spines[side].set_color("#FFFFFF00")
+    end
+    plt.tight_layout()
+    return (fig, ax)
+end
+
+# piet plot
+lambda = 4.0
+min_vol = 0.0
+best_min_vol = 0.0
+while min_vol < 0.01 || n_cells < 10
+    global tree = MondrianTree(d, lambda)
+    global cells = MondrianForests.get_cells(tree)
+    global min_vol = minimum(MondrianForests.get_volume(c) for c in cells)
+    global n_cells = length(cells)
+    if min_vol > best_min_vol
+        global best_min_vol = min_vol
+        println(best_min_vol)
+        println(n_cells)
+    end
+end
+(fig, ax) = plot_piet_mondrian(tree)
+plt.savefig("replication/mondrian_process/piet_mondrian.png", dpi=300,
+           bbox_inches="tight", pad_inches=-0.008)
 plt.close("all")
