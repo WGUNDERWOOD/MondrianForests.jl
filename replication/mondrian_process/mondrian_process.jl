@@ -92,11 +92,11 @@ function plot_mondrian_process(partition)
         ax.legend([current_handle, terminal_handle],
                   ["Current", "Leaf"], ncol=2,
                   handletextpad=0.1, frameon=false, columnspacing=0.8,
-                  bbox_to_anchor=(0.47, 1.15), loc="upper center")
+                  bbox_to_anchor=(0.47, 1.19), loc="upper center")
     elseif length(cells) >= 2 || !isnothing(partition["current"])
         ax.legend([current_handle], ["Current"], ncol=2,
                   handletextpad=0.1, frameon=false, columnspacing=0.8,
-                  bbox_to_anchor=(0.277, 1.15), loc="upper center")
+                  bbox_to_anchor=(0.277, 1.19), loc="upper center")
     end
 
     return (fig, ax)
@@ -274,7 +274,6 @@ for rep in 1:11
     global partitions = update_partitions(partitions, tree)
 end
 
-#=
 # plot the tree structures
 for i in 1:length(partitions)
     println(i)
@@ -292,7 +291,6 @@ for i in 1:length(partitions)
     plt.savefig("replication/mondrian_process/mondrian_process_$(i).png", dpi=300)
     plt.close("all")
 end
-=#
 
 function plot_theorem_restriction(tree, cell)
     splits = get_splits(tree)
