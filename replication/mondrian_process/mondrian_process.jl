@@ -175,18 +175,18 @@ function plot_mondrian_tree(partition)
 
     # format
     ax.invert_yaxis()
-    ax.set_aspect("equal")
-    plt.xticks([])
     plt.yticks([0, 1, 2])
-    plt.ylabel("Time")
-    plt.ylim([2.3, -0.22])
-    plt.xlim([minimum(values(x_locs)) - 0.22, maximum(values(x_locs)) + 0.35])
+    plt.xticks([])
+    plt.ylim([2.17, -0.22])
+    plt.xlim([minimum(values(x_locs)) - 0.32, maximum(values(x_locs)) + 0.35])
     ax.yaxis.tick_right()
     ax.yaxis.set_label_position("right")
     for side in ["bottom", "top", "left"]
         ax.spines[side].set_color("#FFFFFF00")
     end
     ax.spines["right"].set_bounds([2.4, 0])
+    ax.set_aspect("equal")
+    plt.subplots_adjust(left=0.07, bottom=0.1, right=0.9, top=1.0)
     return (fig, ax)
 end
 
@@ -280,6 +280,7 @@ for i in 1:length(partitions)
     partition = partitions[i]
     global (fig, ax) = plot_mondrian_tree(partition)
     plt.savefig("replication/mondrian_process/mondrian_tree_$(i).png", dpi=300)
+               #bbox_inches="tight", pad_inches=0.01)
     plt.close("all")
 end
 
