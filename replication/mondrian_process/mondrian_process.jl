@@ -274,6 +274,7 @@ for rep in 1:11
     global partitions = update_partitions(partitions, tree)
 end
 
+#=
 # plot the tree structures
 for i in 1:length(partitions)
     println(i)
@@ -292,6 +293,7 @@ for i in 1:length(partitions)
     plt.savefig("replication/mondrian_process/mondrian_process_$(i).png", dpi=300)
     plt.close("all")
 end
+=#
 
 function plot_theorem_restriction(tree, cell)
     splits = get_splits(tree)
@@ -468,4 +470,48 @@ end
 (fig, ax) = plot_piet_mondrian(tree)
 plt.savefig("replication/mondrian_process/piet_mondrian.png", dpi=300,
            bbox_inches="tight", pad_inches=-0.008)
+plt.close("all")
+
+function plot_first_order_bias(tree)
+    lw = 0.9
+    splits = get_splits(tree)
+    splits = [s[1][1] for s in splits]
+    splits = [0; splits; 1]
+    display(splits)
+    show(tree)
+    (fig, ax) = plt.subplots(figsize=(2.2, 2.2))
+
+    for split in splits
+        plt.plot([split, split], [0, 1], color="k",
+                 linestyle="dashed", lw=lw)
+    end
+
+    for i in 1:length(splits)-1
+        y = (splits[i] + splits[i+1]) / 2
+        plt.plot([splits[i], splits[i+1]], [y, y], color="k", lw=lw)
+    end
+    plt.plot([0, 1], [0, 1], color="k", lw=lw)
+
+    # label cell width
+    plt.text(0.73, 0.08, "\$\\sim \\frac{1}{\\lambda}\$", fontsize=10)
+    plt.arrow(0.9, 0.2, -0.23, 0, head_width=0.02,
+              head_length=0.03, ec="k", fc="k")
+    plt.arrow(0.8, 0.2, 0.13, 0, head_width=0.018,
+              head_length=0.03, ec="k", fc="k")
+
+    # format plot
+    plt.xticks([0, 1])
+    plt.yticks([0, 1])
+    plt.xlabel("\$x\$")
+    plt.ylabel("\$y\$")
+    ax.xaxis.set_label_coords(0.5, -0.04)
+    ax.yaxis.set_label_coords(-0.04, 0.5)
+    plt.tight_layout()
+    return (fig, ax)
+end
+
+Random.seed!(5)
+tree = MondrianTree(1, 2.0)
+(fig, ax) = plot_first_order_bias(tree)
+plt.savefig("replication/mondrian_process/first_order_bias.png", dpi=300)
 plt.close("all")
