@@ -3,9 +3,6 @@ using PyPlot
 using Random
 using Revise
 
-# TODO add split location to partitions
-# TODO add split time to trees
-
 rcParams = PyPlot.PyDict(PyPlot.matplotlib."rcParams")
 rcParams["text.usetex"] = true
 rcParams["text.latex.preamble"]="\\usepackage[sfdefault,light]{FiraSans}"
@@ -72,6 +69,20 @@ function plot_mondrian_process(partition)
                  va="center", fontsize=10)
     end
 
+    # add split point
+    subtrees = MondrianForests.get_subtrees(tree)
+    current = partition["current"]
+    if !isnothing(current)
+        if !(current in cells)
+            subtree = [c for c in subtrees if c.cell == current][]
+            J = subtree.split_axis
+            S = subtree.split_location
+            J == 1 ? x = S - 0.005 : x = -0.06
+            J == 1 ? y = -0.07 : y = S - 0.005
+            plt.text(x, y, "\$S\$", fontsize=10, ha="center", va="center")
+        end
+    end
+
     # format plot
     plt.ylim([-0.05, 1.01])
     plt.xticks([0, 1])
@@ -79,7 +90,7 @@ function plot_mondrian_process(partition)
     plt.xlabel("\$x_1\$")
     plt.ylabel("\$x_2\$")
     ax.xaxis.set_label_coords(0.5, -0.04)
-    ax.yaxis.set_label_coords(-0.04, 0.5)
+    ax.yaxis.set_label_coords(-0.06, 0.5)
     ax.tick_params(color="w", direction="in", pad=0)
     ax.set_aspect("equal")
     for side in ["bottom", "top", "left", "right"]
@@ -168,6 +179,30 @@ function plot_mondrian_tree(partition)
             plt.plot([x_left, x_right], [time1, time1], color="k", lw=lw)
             plt.plot([x_left, x_left], [time1, time2], color="k", lw=lw)
             plt.plot([x_right, x_right], [time1, time2], color="k", lw=lw)
+        end
+    end
+
+    # add split time
+    cells = MondrianForests.get_cells(tree)
+    subtrees = MondrianForests.get_subtrees(tree)
+    current = partition["current"]
+    if !isnothing(current)
+        if !(current in cells)
+            subtree = [c for c in subtrees if c.cell == current][]
+            t = subtree.tree_left.creation_time
+            x_left = x_locs[subtree.tree_left.id]
+            x_right = x_locs[subtree.tree_right.id]
+            if x_left > 1
+                plt.text(x_left - 0.8, t, "\$t + E\$", fontsize=10,
+                         ha="center", va="center")
+                plt.plot([x_left - 0.47, 3], [t, t], linestyle="dashed",
+                        lw=lw, c="k")
+            else
+                plt.text(x_right + 0.62, t, "\$t + E\$", fontsize=10,
+                         ha="center", va="center")
+                plt.plot([x_right + 0.94, 3], [t, t], linestyle="dashed",
+                        lw=lw, c="k")
+            end
         end
     end
 
@@ -275,6 +310,7 @@ for rep in 1:11
 end
 
 # plot the tree structures
+println("plotting trees")
 dpi= 500
 for i in 1:length(partitions)
     println(i)
@@ -286,6 +322,7 @@ for i in 1:length(partitions)
 end
 
 # plot the generation of the partition
+println("plotting partitions")
 for i in 1:length(partitions)
     println(i)
     partition = partitions[i]
@@ -342,6 +379,7 @@ function plot_theorem_restriction(tree, cell)
 end
 
 # restriction theorem plot
+println("plotting restriction theorem")
 tree = MondrianForests.restrict(tree, 1.5)
 cell = MondrianCell((0.5, 0.3), (0.9, 0.85))
 (fig, ax) = plot_theorem_restriction(tree, cell)
@@ -409,6 +447,7 @@ function plot_theorem_distribution(tree, point)
 end
 
 # distribution theorem plot
+println("plotting distribution theorem")
 point = (0.4, 0.25)
 (fig, ax) = plot_theorem_distribution(tree, point)
 plt.savefig("replication/mondrian_process/theorem_distribution.png", dpi=dpi)
@@ -452,6 +491,7 @@ function plot_piet_mondrian(tree)
 end
 
 # piet plot
+println("plotting piet")
 lambda = 4.0
 min_vol = 0.0
 best_min_vol = 0.0
@@ -462,8 +502,6 @@ while min_vol < 0.01 || n_cells < 10
     global n_cells = length(cells)
     if min_vol > best_min_vol
         global best_min_vol = min_vol
-        println(best_min_vol)
-        println(n_cells)
     end
 end
 (fig, ax) = plot_piet_mondrian(tree)
@@ -476,8 +514,6 @@ function plot_first_order_bias(tree)
     splits = get_splits(tree)
     splits = [s[1][1] for s in splits]
     splits = [0; splits; 1]
-    display(splits)
-    show(tree)
     (fig, ax) = plt.subplots(figsize=(2.2, 2.2))
 
     for split in splits

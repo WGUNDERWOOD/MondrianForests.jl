@@ -105,6 +105,14 @@ function get_cells(tree::MondrianTree{d}) where {d}
     end
 end
 
+function get_subtrees(tree::MondrianTree{d}) where {d}
+    if !isnothing(tree.split_axis)
+        return [tree; get_subtrees(tree.tree_left); get_subtrees(tree.tree_right)]
+    else
+        return [tree]
+    end
+end
+
 function get_ids(tree::MondrianTree{d}) where {d}
     if !isnothing(tree.split_axis)
         return [get_ids(tree.tree_left); get_ids(tree.tree_right)]
