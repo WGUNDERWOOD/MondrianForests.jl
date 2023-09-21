@@ -157,7 +157,7 @@ function make_data_plot(data, x_min, x_max, y_min, y_max, filename)
     (fig, ax) = plt.subplots(figsize=figsize)
     plot_data()
     format_plot(ax)
-    PyPlot.savefig(filename, dpi=300)
+    PyPlot.savefig(filename, dpi=dpi)
     plt.close("all")
 end
 
@@ -166,7 +166,7 @@ function make_data_partition_plot(data, tree, x_min, x_max, y_min, y_max, filena
     plot_splits(tree)
     plot_data()
     format_plot(ax)
-    PyPlot.savefig(filename, dpi=300)
+    PyPlot.savefig(filename, dpi=dpi)
     plt.close("all")
 end
 
@@ -176,7 +176,7 @@ function make_data_filled_partition_plot(data, tree, x_min, x_max, y_min, y_max,
     plot_cells(tree)
     plot_data()
     format_plot(ax)
-    PyPlot.savefig(filename, dpi=300)
+    PyPlot.savefig(filename, dpi=dpi)
     plt.close("all")
 end
 
@@ -185,7 +185,7 @@ function make_filled_partition_plot(data, tree, x_min, x_max, y_min, y_max, file
     plot_splits(tree)
     plot_cells(tree)
     format_plot(ax)
-    PyPlot.savefig(filename, dpi=300)
+    PyPlot.savefig(filename, dpi=dpi)
     plt.close("all")
 end
 
@@ -193,7 +193,7 @@ function make_forest_plot(data, trees, x_min, x_max, y_min, y_max, filename)
     (fig, ax) = plt.subplots(figsize=figsize)
     plot_forest(trees, ax)
     format_plot(ax)
-    PyPlot.savefig(filename, dpi=300)
+    PyPlot.savefig(filename, dpi=dpi)
     plt.close("all")
 end
 
@@ -202,6 +202,7 @@ end
 dry_color = "#da6200"
 wet_color = "#0080d0"
 figsize = (3.5, 3.5)
+dpi = 500
 
 # make trees
 seeds = 4:54

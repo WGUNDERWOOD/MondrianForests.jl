@@ -3,7 +3,8 @@ using PyPlot
 using Random
 using Revise
 
-# TODO when making a leaf jump straight to next current
+# TODO add split location to partitions
+# TODO add split time to trees
 
 rcParams = PyPlot.PyDict(PyPlot.matplotlib."rcParams")
 rcParams["text.usetex"] = true
@@ -202,7 +203,6 @@ while min_vol < 0.2 || n_cells != 4
     global min_vol = minimum(MondrianForests.get_volume(c) for c in cells)
     global n_cells = length(cells)
 end
-#show(tree)
 
 # get locations of tree nodes for diagram
 info = get_tree_info(tree)
@@ -274,13 +274,13 @@ for rep in 1:11
     global partitions = update_partitions(partitions, tree)
 end
 
-#=
 # plot the tree structures
+dpi= 500
 for i in 1:length(partitions)
     println(i)
     partition = partitions[i]
     global (fig, ax) = plot_mondrian_tree(partition)
-    plt.savefig("replication/mondrian_process/mondrian_tree_$(i).png", dpi=300)
+    plt.savefig("replication/mondrian_process/mondrian_tree_$(i).png", dpi=dpi)
                #bbox_inches="tight", pad_inches=0.01)
     plt.close("all")
 end
@@ -290,10 +290,9 @@ for i in 1:length(partitions)
     println(i)
     partition = partitions[i]
     global (fig, ax) = plot_mondrian_process(partition)
-    plt.savefig("replication/mondrian_process/mondrian_process_$(i).png", dpi=300)
+    plt.savefig("replication/mondrian_process/mondrian_process_$(i).png", dpi=dpi)
     plt.close("all")
 end
-=#
 
 function plot_theorem_restriction(tree, cell)
     splits = get_splits(tree)
@@ -346,7 +345,7 @@ end
 tree = MondrianForests.restrict(tree, 1.5)
 cell = MondrianCell((0.5, 0.3), (0.9, 0.85))
 (fig, ax) = plot_theorem_restriction(tree, cell)
-plt.savefig("replication/mondrian_process/theorem_restriction.png", dpi=300)
+plt.savefig("replication/mondrian_process/theorem_restriction.png", dpi=dpi)
 plt.close("all")
 
 function plot_theorem_distribution(tree, point)
@@ -412,7 +411,7 @@ end
 # distribution theorem plot
 point = (0.4, 0.25)
 (fig, ax) = plot_theorem_distribution(tree, point)
-plt.savefig("replication/mondrian_process/theorem_distribution.png", dpi=300)
+plt.savefig("replication/mondrian_process/theorem_distribution.png", dpi=dpi)
 plt.close("all")
 
 function plot_piet_mondrian(tree)
@@ -468,7 +467,7 @@ while min_vol < 0.01 || n_cells < 10
     end
 end
 (fig, ax) = plot_piet_mondrian(tree)
-plt.savefig("replication/mondrian_process/piet_mondrian.png", dpi=300,
+plt.savefig("replication/mondrian_process/piet_mondrian.png", dpi=dpi,
            bbox_inches="tight", pad_inches=-0.008)
 plt.close("all")
 
@@ -513,5 +512,5 @@ end
 Random.seed!(5)
 tree = MondrianTree(1, 2.0)
 (fig, ax) = plot_first_order_bias(tree)
-plt.savefig("replication/mondrian_process/first_order_bias.png", dpi=300)
+plt.savefig("replication/mondrian_process/first_order_bias.png", dpi=dpi)
 plt.close("all")
