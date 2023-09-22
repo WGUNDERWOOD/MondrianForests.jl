@@ -419,8 +419,8 @@ function plot_theorem_distribution(tree, point)
     # annotate arrows
     plt.text(0.07, 0.29, "\$x_1\$", fontsize=9)
     plt.text(0.28, 0.04, "\$x_2\$", fontsize=9)
-    plt.text(0.52, 0.15, "\$E_{12} / \\lambda\$", fontsize=9)
-    plt.text(0.44, 0.65, "\$E_{22} / \\lambda\$", fontsize=9)
+    plt.text(0.61, 0.15, "\$E_{12}\$", fontsize=9)
+    plt.text(0.44, 0.65, "\$E_{22}\$", fontsize=9)
 
     # plot splits
     for split in splits
