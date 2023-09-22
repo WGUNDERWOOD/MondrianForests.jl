@@ -197,6 +197,21 @@ function make_forest_plot(data, trees, x_min, x_max, y_min, y_max, filename)
     plt.close("all")
 end
 
+function make_forest_design_plot(data, trees, x_min, x_max,
+        y_min, y_max, design_points, filename)
+    (fig, ax) = plt.subplots(figsize=figsize)
+    plot_forest(trees, ax)
+    for i in 1:length(design_points)
+        p = design_points[i]
+        plt.scatter(p[1], p[2], c="k", s=30, marker="x", linewidths=1)
+        plt.text(p[1] + 0.07, p[2] - 0.003, "\$$(string(i))\$", fontsize=12,
+                 ha="center", va="center")
+    end
+    format_plot(ax)
+    PyPlot.savefig(filename, dpi=dpi)
+    plt.close("all")
+end
+
 # get data and plot params
 (data, x_min, x_max, y_min, y_max) = load_data(limit=nothing)
 dry_color = "#da6200"
@@ -219,7 +234,6 @@ for i in 1:length(seeds)
             cells = MondrianForests.get_cells(tree)
             min_vol = minimum(MondrianForests.get_volume(c) for c in cells)
         end
-        println(min_vol)
     else
         tree = MondrianTree(2, lambda)
     end
@@ -262,3 +276,14 @@ for i in [2, 3, 10, 50]
     global filename = "replication/weather/weather_forest_" * string(i) * ".png"
     make_forest_plot(data, trees[1:i], x_min, x_max, y_min, y_max, filename)
 end
+
+# plot forest with design points
+i = 50
+println("plotting forest with ", i, " trees and design points")
+global filename = "replication/weather/weather_forest_design.png"
+
+design_points = [(20, 1020), (70, 1000), (80, 990)]
+design_points = [((x[1]-x_min)/(x_max-x_min), (x[2]-y_min)/(y_max-y_min))
+                 for x in design_points]
+make_forest_design_plot(data, trees[1:i], x_min, x_max, y_min,
+                        y_max, design_points, filename)

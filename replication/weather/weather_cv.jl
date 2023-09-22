@@ -77,49 +77,72 @@ n = nrow(data)
 X = [ntuple(j -> data[i, [:Humidity3pm, :Pressure3pm][j]], 2) for i in 1:nrow(data)]
 Y = [data[i, :RainTomorrow] for i in 1:nrow(data)]
 
-n_evals = 100
-lambdas = range(0.5, stop=8.0, step=0.5)
-n_trees = 100
+n_evals = 200
+lambdas = range(0.1, stop=8.0, step=0.1)
+n_trees = 200
 debias_order = 0
 
 eval_ids = sort(shuffle(1:n)[1:n_evals])
 x_evals = X[eval_ids]
 y_evals = Y[eval_ids]
-#forest = MondrianForest(2.0, 10, x_evals, 0,
-                        #0.05, X, Y, false, true)
 
-#forest.gcv_dof
-
-#=
-Random.seed!()
-mses = Float64[]
-for lambda in lambdas
-    println("lambda: ", lambda)
-    mse = get_mse(n_evals, X, Y, lambda, n_trees, debias_order, n_folds)
-    push!(mses, mse)
-end
-=#
-
+# GCV
 Random.seed!()
 gcvs = Float64[]
 mses = Float64[]
+d = 2
 for lambda in lambdas
     println("lambda: ", lambda)
     forest = MondrianForest(lambda, n_trees, x_evals, debias_order,
-                            0.05, X, Y, false, true)
-    gcv_dof = forest.gcv_dof
+                            0.05, X, Y, false, false)
+    #gcv_dof = forest.gcv_dof
     mse = sum((y_evals .- forest.mu_hat).^2) / n_evals
-    gcv = mse / ((1 - gcv_dof / n)^2)
+    #gcv = mse / ((1 - gcv_dof / n)^2)
+    gcv = mse / (1 - lambda^d / n)^2
     push!(gcvs, gcv)
     push!(mses, mse)
-    println("gcv dof: ", gcv_dof)
+    #println("gcv dof: ", gcv_dof)
     println("gcv: ", gcv)
     println("mse: ", mse)
 end
 
-gcvs
-
-(fig, ax) = plt.subplots(figsize=(5, 3))
-plt.plot(lambdas, gcvs)
-plt.plot(lambdas, mses)
+(fig, ax) = plt.subplots(figsize=(3.5, 3.5))
+i = [i for i in 1:length(lambdas) if lambdas[i] == best_lambda][]
+plt.plot([best_lambda, best_lambda], [0.0, gcvs[i] - 0.0001], c="#666677",
+         linestyle="dashed", lw=1.0)
+plt.plot(lambdas, mses, lw=1.0, c="#aa44dd",
+         label="Mean squared error")
+plt.plot(lambdas, gcvs, lw=1.0, c="#009944",
+         label="Generalized cross-validation")
+best_lambda = 5.0
+plt.ylim([0.13 - 0.002, 0.17 + 0.002])
+plt.yticks(range(0.13, stop=0.17, step=0.01))
+plt.xlabel("Lifetime parameter \$\\lambda\$")
+plt.ylabel("Loss function")
+plt.legend(frameon=false)
+plt.subplots_adjust(left=0.205, right=0.96, top=0.854, bottom=0.165)
 plt.savefig("replication/weather/weather_gcv.png", dpi=300)
+
+
+
+# CIs
+(data, x_min, x_max, y_min, y_max) = load_data(limit=nothing)
+n = nrow(data)
+X = [ntuple(j -> data[i, [:Humidity3pm, :Pressure3pm][j]], 2) for i in 1:nrow(data)]
+Y = [data[i, :RainTomorrow] for i in 1:nrow(data)]
+
+n_trees = 200
+debias_order = 0
+x_evals_original = [(20, 1020), (70, 1000), (80, 990)]
+x_evals = [((x[1]-x_min)/(x_max-x_min), (x[2]-y_min)/(y_max-y_min))
+           for x in x_evals_original]
+
+forest = MondrianForest(lambda, n_trees, x_evals, 0,
+                        0.05, X, Y, true, false)
+
+for i in 1:length(x_evals)
+    println()
+    println("eval: ", x_evals_original[i])
+    println("mu_hat: ", forest.mu_hat[i])
+    println("CI: ", forest.confidence_band[i])
+end
