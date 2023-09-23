@@ -107,6 +107,7 @@ for lambda in lambdas
 end
 
 (fig, ax) = plt.subplots(figsize=(3.5, 3.5))
+best_lambda = 5.0
 i = [i for i in 1:length(lambdas) if lambdas[i] == best_lambda][]
 plt.plot([best_lambda, best_lambda], [0.0, gcvs[i] - 0.0001], c="#666677",
          linestyle="dashed", lw=1.0)
@@ -114,7 +115,6 @@ plt.plot(lambdas, mses, lw=1.0, c="#aa44dd",
          label="Mean squared error")
 plt.plot(lambdas, gcvs, lw=1.0, c="#009944",
          label="Generalized cross-validation")
-best_lambda = 5.0
 plt.ylim([0.13 - 0.002, 0.17 + 0.002])
 plt.yticks(range(0.13, stop=0.17, step=0.01))
 plt.xlabel("Lifetime parameter \$\\lambda\$")
