@@ -416,7 +416,8 @@ function plot_theorem_distribution(tree, point)
              head_width=0.02, head_length=0.03, ec="k", fc="k")
     plt.scatter(point[1], point[2], color="k", s=2)
 
-    # annotate arrows
+    # annotate point and arrows
+    plt.text(0.44, 0.28, "\$x\$", fontsize=9)
     plt.text(0.07, 0.29, "\$x_1\$", fontsize=9)
     plt.text(0.28, 0.04, "\$x_2\$", fontsize=9)
     plt.text(0.61, 0.15, "\$E_{12}\$", fontsize=9)
