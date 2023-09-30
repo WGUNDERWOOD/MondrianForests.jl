@@ -106,7 +106,7 @@ for lambda in lambdas
     println("mse: ", mse)
 end
 
-(fig, ax) = plt.subplots(figsize=(3.5, 3.5))
+(fig, ax) = plt.subplots(figsize=(3.5, 3.7))
 best_lambda = 5.0
 i = [i for i in 1:length(lambdas) if lambdas[i] == best_lambda][]
 plt.plot([best_lambda, best_lambda], [0.0, gcvs[i] - 0.0001], c="#666677",
@@ -121,7 +121,7 @@ plt.xlabel("Lifetime parameter \$\\lambda\$")
 plt.ylabel("Loss function")
 plt.legend(frameon=false)
 plt.subplots_adjust(left=0.205, right=0.96, top=0.854, bottom=0.165)
-plt.savefig("replication/weather/weather_gcv.png", dpi=300)
+plt.savefig("replication/weather/weather_gcv.png", dpi=500)
 
 
 

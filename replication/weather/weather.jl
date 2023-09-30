@@ -216,7 +216,7 @@ end
 (data, x_min, x_max, y_min, y_max) = load_data(limit=nothing)
 dry_color = "#da6200"
 wet_color = "#0080d0"
-figsize = (3.5, 3.5)
+figsize = (3.5, 3.7)
 dpi = 500
 
 # make trees
@@ -271,7 +271,7 @@ n_trees = 2
 X = [ntuple(j -> data[i, [:Humidity3pm, :Pressure3pm][j]], 2) for i in 1:nrow(data)]
 Y = [data[i, :RainTomorrow] for i in 1:nrow(data)]
 x_evals = Tuple{Float64, Float64}[]
-for i in [2, 3, 10, 50]
+for i in [2, 10, 50]
     println("plotting forest with ", i, " trees")
     global filename = "replication/weather/weather_forest_" * string(i) * ".png"
     make_forest_plot(data, trees[1:i], x_min, x_max, y_min, y_max, filename)
