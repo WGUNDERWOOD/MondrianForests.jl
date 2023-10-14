@@ -1,4 +1,4 @@
-mutable struct MondrianForest{d}
+mutable struct DebiasedMondrianForest{d}
     # parameters
     const lambda::Float64
     const n_trees::Int
@@ -20,6 +20,8 @@ mutable struct MondrianForest{d}
     confidence_band::Vector{Tuple{Float64,Float64}}
     gcv_dof::Union{Nothing, Float64}
 end
+
+# TODO write all of this file
 
 function MondrianForest(lambda::Float64, n_trees::Int, x_evals::Vector{NTuple{d,Float64}},
                         debias_order::Int, significance_level::Float64,
