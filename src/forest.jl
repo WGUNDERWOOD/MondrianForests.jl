@@ -65,8 +65,8 @@ end
 function estimate_sigma2_hat(forest::MondrianForest{d}, Ns::Matrix{Int}) where {d}
     sigma2_hat = [0.0 for _ in 1:(forest.n_evals)]
 
-    for s in 1:(forest.n_evals)
-        for b in 1:(forest.n_trees)
+    @inbounds Threads.@threads for s in 1:(forest.n_evals)
+        @inbounds for b in 1:(forest.n_trees)
             if Ns[b,s] > 0
                 I = sum(are_in_same_cell(forest.X_data[i], forest.x_evals[s], forest.trees[b])
                         .* (forest.Y_data[i] - forest.mu_hat[s])^2 for i in 1:(forest.n_data))
@@ -83,11 +83,11 @@ end
 function estimate_Sigma_hat(forest::MondrianForest{d}, Ns::Matrix{Int}) where {d}
     Sigma_hat = [0.0 for _ in 1:(forest.n_evals)]
 
-    for s in 1:(forest.n_evals)
+    @inbounds Threads.@threads for s in 1:(forest.n_evals)
         x_eval = forest.x_evals[s]
-        for i in 1:(forest.n_data)
+        @inbounds for i in 1:(forest.n_data)
             A = 0.0
-            for b in 1:(forest.n_trees)
+            @inbounds for b in 1:(forest.n_trees)
                 if are_in_same_cell(forest.X_data[i], x_eval, forest.trees[b])
                     A += 1 / Ns[b,s]
                 end
