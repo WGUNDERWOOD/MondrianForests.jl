@@ -17,14 +17,28 @@ function generate_data(n::Int, X_dist::Distribution, eps_dist::Distribution,
 end
 
 """
-Generate uniform sample data for Mondrian forest estimation.
+Generate uniform sample data with uniform errors for Mondrian forest estimation.
 
 Draws `n` independent samples from `Y = eps`,
 with `X ~ U[0, 1]` and `eps ~ U[-sqrt(3), sqrt(3)]`
 """
-function generate_uniform_data(d::Int, n::Int)
+function generate_uniform_data_uniform_errors(d::Int, n::Int)
     X_dist = product_distribution([Uniform(0, 1) for _ in 1:d])
     eps_dist = Uniform(-sqrt(3), sqrt(3))
+    mu = (x -> 0.0)
+    sigma2 = (x -> 1.0)
+    return generate_data(n, X_dist, eps_dist, mu, sigma2)
+end
+
+"""
+Generate uniform sample data with normal errors for Mondrian forest estimation.
+
+Draws `n` independent samples from `Y = eps`,
+with `X ~ U[0, 1]` and `eps ~ N(0, 1)`
+"""
+function generate_uniform_data_normal_errors(d::Int, n::Int)
+    X_dist = product_distribution([Uniform(0, 1) for _ in 1:d])
+    eps_dist = Normal(0, 1)
     mu = (x -> 0.0)
     sigma2 = (x -> 1.0)
     return generate_data(n, X_dist, eps_dist, mu, sigma2)

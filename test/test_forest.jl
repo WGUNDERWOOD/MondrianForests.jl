@@ -11,11 +11,11 @@ Random.seed!(0)
         significance_level = 0.05
         estimate_var = false
         for d in 1:3
-            X = [ntuple(i -> rand(), d) for _ in 1:n]
+            X_data = [ntuple(i -> rand(), d) for _ in 1:n]
             x_evals = [ntuple(i -> rand(), d) for _ in 1:n_evals]
-            Y = [2.0 for _ in 1:n]
+            Y_data = [2.0 for _ in 1:n]
             forest = MondrianForest(lambda, n_trees, x_evals, significance_level,
-                                    X, Y, estimate_var)
+                                    X_data, Y_data, estimate_var)
             @suppress show(forest)
             @test all(forest.mu_hat .== 2)
         end
@@ -29,11 +29,11 @@ Random.seed!(0)
         significance_level = 0.05
         estimate_var = true
         for d in 1:3
-            X = [ntuple(i -> rand(), d) for _ in 1:n]
+            X_data = [ntuple(i -> rand(), d) for _ in 1:n]
             x_evals = [ntuple(i -> 0.5, d)]
-            Y = sum.(X)
+            Y_data = sum.(X_data)
             forest = MondrianForest(lambda, n_trees, x_evals, significance_level,
-                                    X, Y, estimate_var)
+                                    X_data, Y_data, estimate_var)
             ci_lower = [ci[1] for ci in forest.confidence_band]
             ci_upper = [ci[2] for ci in forest.confidence_band]
             @test all(ci_lower .<= forest.mu_hat .<= ci_upper)
@@ -49,11 +49,11 @@ Random.seed!(0)
         significance_level = 0.05
         estimate_var = true
         for d in 1:2
-            X = [ntuple(i -> rand(), d) for _ in 1:n]
+            X_data = [ntuple(i -> rand(), d) for _ in 1:n]
             x_evals = [ntuple(i -> 0.5, d)]
-            Y = sum.(X) .^ 2
+            Y_data = sum.(X_data) .^ 2
             forest = MondrianForest(lambda, n_trees, x_evals, significance_level,
-                                    X, Y, estimate_var)
+                                    X_data, Y_data, estimate_var)
             ci_lower = [ci[1] for ci in forest.confidence_band]
             ci_upper = [ci[2] for ci in forest.confidence_band]
             @test all(ci_lower .<= forest.mu_hat .<= ci_upper)
