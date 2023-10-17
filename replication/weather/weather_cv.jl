@@ -11,7 +11,7 @@ using MondrianForests
 # plot setup
 rcParams = PyPlot.PyDict(PyPlot.matplotlib."rcParams")
 rcParams["text.usetex"] = true
-rcParams["text.latex.preamble"]="\\usepackage[sfdefault,light]{FiraSans}"
+rcParams["text.latex.preamble"] = "\\usepackage[sfdefault,light]{FiraSans}"
 plt.ioff()
 
 function load_data(; limit=nothing)
@@ -56,7 +56,7 @@ function get_mse_fold(n_evals, X, Y, lambda, n_trees, debias_order)
     (eval_ids, x_evals, y_evals, X_reduced, Y_reduced) = make_evals(n_evals, X, Y)
     forest = MondrianForest(lambda, n_trees, x_evals, debias_order,
                             0.05, X_reduced, Y_reduced, false)
-    mse_fold = sum((y_evals .- forest.mu_hat).^2) / n_evals
+    mse_fold = sum((y_evals .- forest.mu_hat) .^ 2) / n_evals
     return mse_fold
 end
 
@@ -96,7 +96,7 @@ for lambda in lambdas
     forest = MondrianForest(lambda, n_trees, x_evals, debias_order,
                             0.05, X, Y, false, false)
     #gcv_dof = forest.gcv_dof
-    mse = sum((y_evals .- forest.mu_hat).^2) / n_evals
+    mse = sum((y_evals .- forest.mu_hat) .^ 2) / n_evals
     #gcv = mse / ((1 - gcv_dof / n)^2)
     gcv = mse / (1 - lambda^d / n)^2
     push!(gcvs, gcv)
@@ -123,8 +123,6 @@ plt.legend(frameon=false)
 plt.subplots_adjust(left=0.205, right=0.96, top=0.854, bottom=0.165)
 plt.savefig("replication/weather/weather_gcv.png", dpi=500)
 
-
-
 # CIs
 (data, x_min, x_max, y_min, y_max) = load_data(limit=nothing)
 n = nrow(data)
@@ -134,7 +132,7 @@ Y = [data[i, :RainTomorrow] for i in 1:nrow(data)]
 n_trees = 200
 debias_order = 0
 x_evals_original = [(20, 1020), (70, 1000), (80, 990)]
-x_evals = [((x[1]-x_min)/(x_max-x_min), (x[2]-y_min)/(y_max-y_min))
+x_evals = [((x[1] - x_min) / (x_max - x_min), (x[2] - y_min) / (y_max - y_min))
            for x in x_evals_original]
 
 forest = MondrianForest(lambda, n_trees, x_evals, 0,

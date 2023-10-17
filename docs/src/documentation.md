@@ -4,6 +4,7 @@
 
 ```@autodocs
 Modules = [MondrianForests]
-Pages   = ["cell.jl", "data.jl", "tree.jl", "forest.jl"]
+Pages   = ["cell.jl", "tree.jl", "forest.jl", "debias.jl",
+        "lifetime_polynomial.jl", "lifetime_gcv.jl", "data.jl"]
 ```
 

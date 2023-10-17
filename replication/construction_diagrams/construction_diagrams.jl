@@ -5,7 +5,7 @@ using Revise
 
 rcParams = PyPlot.PyDict(PyPlot.matplotlib."rcParams")
 rcParams["text.usetex"] = true
-rcParams["text.latex.preamble"]="\\usepackage[sfdefault,light]{FiraSans}"
+rcParams["text.latex.preamble"] = "\\usepackage[sfdefault,light]{FiraSans}"
 plt.ioff()
 
 function get_splits(tree::MondrianTree{d}) where {d}
@@ -19,7 +19,6 @@ function get_splits(tree::MondrianTree{d}) where {d}
 end
 
 function plot_mondrian_process(partition)
-
     tree = partition["tree"]
     splits = get_splits(tree)
     (fig, ax) = plt.subplots(figsize=(2.2, 2.2))
@@ -163,7 +162,7 @@ function plot_mondrian_tree(partition)
         else
             label = "\$\\mathrm{$(ids[i])}\$"
         end
-        plt.text(x_locs[ids[i]]+0.005, times[i]+0.01, label, ha="center",
+        plt.text(x_locs[ids[i]] + 0.005, times[i] + 0.01, label, ha="center",
                  va="center", fontsize=8, zorder=30)
     end
 
@@ -196,12 +195,12 @@ function plot_mondrian_tree(partition)
                 plt.text(x_left - 0.8, t, "\$t + E\$", fontsize=10,
                          ha="center", va="center")
                 plt.plot([x_left - 0.47, 3], [t, t], linestyle="dashed",
-                        lw=lw, c="k")
+                         lw=lw, c="k")
             else
                 plt.text(x_right + 0.62, t, "\$t + E\$", fontsize=10,
                          ha="center", va="center")
                 plt.plot([x_right + 0.94, 3], [t, t], linestyle="dashed",
-                        lw=lw, c="k")
+                         lw=lw, c="k")
             end
         end
     end
@@ -256,7 +255,6 @@ partitions = [Dict("time" => 0.0,
                    "terminals" => [])]
 
 function update_partitions(partitions, tree)
-
     p = partitions[end]
     info = get_tree_info(p["tree"])
     cells = MondrianForests.get_cells(tree)
@@ -275,8 +273,10 @@ function update_partitions(partitions, tree)
 
     # update current
     if isnothing(p["current"]) || current_parent || !current_split
-        ids = [i[4] for i in info if i[3] in leaves &&
-               !(i[3] in p["terminals"]) && !(i[3] == p["current"])]
+        ids = [i[4]
+               for i in info
+               if i[3] in leaves &&
+                  !(i[3] in p["terminals"]) && !(i[3] == p["current"])]
         ids = [i for i in ids if length(i) == minimum(length(j) for j in ids)]
         if !isempty(ids)
             new_current_id = minimum(ids)
@@ -311,13 +311,13 @@ end
 
 # plot the tree structures
 println("plotting trees")
-dpi= 500
+dpi = 500
 for i in 1:length(partitions)
     println(i)
     partition = partitions[i]
     global (fig, ax) = plot_mondrian_tree(partition)
     plt.savefig("replication/mondrian_process/mondrian_tree_$(i).png", dpi=dpi)
-               #bbox_inches="tight", pad_inches=0.01)
+    #bbox_inches="tight", pad_inches=0.01)
     plt.close("all")
 end
 
@@ -406,14 +406,14 @@ function plot_theorem_distribution(tree, point)
     # plot point and distribution
     e1 = 0.03
     e2 = 0.1
-    plt.arrow(point[1]+e1, point[2], cell.upper[1]-point[1]-e2, 0,
-             head_width=0.02, head_length=0.03, ec="k", fc="k")
-    plt.arrow(point[1]-e1, point[2], cell.lower[1]-point[1]+e2, 0,
-             head_width=0.02, head_length=0.03, ec="k", fc="k")
-    plt.arrow(point[1], point[2]+e1, 0, cell.upper[2]-point[2]-e2,
-             head_width=0.02, head_length=0.03, ec="k", fc="k")
-    plt.arrow(point[1], point[2]-e1, 0, cell.lower[2]-point[2]+e2,
-             head_width=0.02, head_length=0.03, ec="k", fc="k")
+    plt.arrow(point[1] + e1, point[2], cell.upper[1] - point[1] - e2, 0,
+              head_width=0.02, head_length=0.03, ec="k", fc="k")
+    plt.arrow(point[1] - e1, point[2], cell.lower[1] - point[1] + e2, 0,
+              head_width=0.02, head_length=0.03, ec="k", fc="k")
+    plt.arrow(point[1], point[2] + e1, 0, cell.upper[2] - point[2] - e2,
+              head_width=0.02, head_length=0.03, ec="k", fc="k")
+    plt.arrow(point[1], point[2] - e1, 0, cell.lower[2] - point[2] + e2,
+              head_width=0.02, head_length=0.03, ec="k", fc="k")
     plt.scatter(point[1], point[2], color="k", s=2)
 
     # annotate point and arrows
@@ -507,7 +507,7 @@ while min_vol < 0.01 || n_cells < 10
 end
 (fig, ax) = plot_piet_mondrian(tree)
 plt.savefig("replication/mondrian_process/piet_mondrian.png", dpi=dpi,
-           bbox_inches="tight", pad_inches=-0.008)
+            bbox_inches="tight", pad_inches=-0.008)
 plt.close("all")
 
 function plot_first_order_bias(tree)
@@ -522,9 +522,9 @@ function plot_first_order_bias(tree)
                  linestyle="dashed", lw=lw)
     end
 
-    for i in 1:length(splits)-1
-        y = (splits[i] + splits[i+1]) / 2
-        plt.plot([splits[i], splits[i+1]], [y, y], color="k", lw=lw)
+    for i in 1:(length(splits) - 1)
+        y = (splits[i] + splits[i + 1]) / 2
+        plt.plot([splits[i], splits[i + 1]], [y, y], color="k", lw=lw)
     end
     plt.plot([0, 1], [0, 1], color="k", lw=lw)
 

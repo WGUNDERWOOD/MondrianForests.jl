@@ -10,7 +10,7 @@ using MondrianForests
 # plot setup
 rcParams = PyPlot.PyDict(PyPlot.matplotlib."rcParams")
 rcParams["text.usetex"] = true
-rcParams["text.latex.preamble"]="\\usepackage[sfdefault,light]{FiraSans}"
+rcParams["text.latex.preamble"] = "\\usepackage[sfdefault,light]{FiraSans}"
 plt.ioff()
 
 function load_data(; limit=nothing)
@@ -60,13 +60,13 @@ function format_plot(ax)
     # layout
     plt.xlim([-0.05, 1.05])
     plt.ylim([-0.05, 1.05])
-    plt.tight_layout()
+    return plt.tight_layout()
 end
 
 function plot_data()
     colors = [dry_color, wet_color][Int.(data.RainTomorrow) .+ 1]
-    plt.scatter(data.Humidity3pm, data.Pressure3pm, c=colors,
-                s=5, alpha=0.3, marker=".", ec=nothing)
+    return plt.scatter(data.Humidity3pm, data.Pressure3pm, c=colors,
+                       s=5, alpha=0.3, marker=".", ec=nothing)
 end
 
 function plot_splits(tree)
@@ -158,7 +158,7 @@ function make_data_plot(data, x_min, x_max, y_min, y_max, filename)
     plot_data()
     format_plot(ax)
     PyPlot.savefig(filename, dpi=dpi)
-    plt.close("all")
+    return plt.close("all")
 end
 
 function make_data_partition_plot(data, tree, x_min, x_max, y_min, y_max, filename)
@@ -167,7 +167,7 @@ function make_data_partition_plot(data, tree, x_min, x_max, y_min, y_max, filena
     plot_data()
     format_plot(ax)
     PyPlot.savefig(filename, dpi=dpi)
-    plt.close("all")
+    return plt.close("all")
 end
 
 function make_data_filled_partition_plot(data, tree, x_min, x_max, y_min, y_max, filename)
@@ -177,7 +177,7 @@ function make_data_filled_partition_plot(data, tree, x_min, x_max, y_min, y_max,
     plot_data()
     format_plot(ax)
     PyPlot.savefig(filename, dpi=dpi)
-    plt.close("all")
+    return plt.close("all")
 end
 
 function make_filled_partition_plot(data, tree, x_min, x_max, y_min, y_max, filename)
@@ -186,7 +186,7 @@ function make_filled_partition_plot(data, tree, x_min, x_max, y_min, y_max, file
     plot_cells(tree)
     format_plot(ax)
     PyPlot.savefig(filename, dpi=dpi)
-    plt.close("all")
+    return plt.close("all")
 end
 
 function make_forest_plot(data, trees, x_min, x_max, y_min, y_max, filename)
@@ -194,11 +194,11 @@ function make_forest_plot(data, trees, x_min, x_max, y_min, y_max, filename)
     plot_forest(trees, ax)
     format_plot(ax)
     PyPlot.savefig(filename, dpi=dpi)
-    plt.close("all")
+    return plt.close("all")
 end
 
 function make_forest_design_plot(data, trees, x_min, x_max,
-        y_min, y_max, design_points, filename)
+                                 y_min, y_max, design_points, filename)
     (fig, ax) = plt.subplots(figsize=figsize)
     plot_forest(trees, ax)
     for i in 1:length(design_points)
@@ -209,7 +209,7 @@ function make_forest_design_plot(data, trees, x_min, x_max,
     end
     format_plot(ax)
     PyPlot.savefig(filename, dpi=dpi)
-    plt.close("all")
+    return plt.close("all")
 end
 
 # get data and plot params
@@ -270,7 +270,7 @@ estimate_var = false
 n_trees = 2
 X = [ntuple(j -> data[i, [:Humidity3pm, :Pressure3pm][j]], 2) for i in 1:nrow(data)]
 Y = [data[i, :RainTomorrow] for i in 1:nrow(data)]
-x_evals = Tuple{Float64, Float64}[]
+x_evals = Tuple{Float64,Float64}[]
 for i in [2, 10, 50]
     println("plotting forest with ", i, " trees")
     global filename = "replication/weather/weather_forest_" * string(i) * ".png"
@@ -283,7 +283,7 @@ println("plotting forest with ", i, " trees and design points")
 global filename = "replication/weather/weather_forest_design.png"
 
 design_points = [(20, 1020), (70, 1000), (80, 990)]
-design_points = [((x[1]-x_min)/(x_max-x_min), (x[2]-y_min)/(y_max-y_min))
+design_points = [((x[1] - x_min) / (x_max - x_min), (x[2] - y_min) / (y_max - y_min))
                  for x in design_points]
 make_forest_design_plot(data, trees[1:i], x_min, x_max, y_min,
                         y_max, design_points, filename)

@@ -1,5 +1,7 @@
 Manifest.toml
+*.csv
 *.svg
 *.pdf
 *.pgf
+*.png
 docs/build
