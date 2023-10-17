@@ -7,8 +7,6 @@ using Plots
 using Dates
 using MondrianForests
 
-# TODO
-
 # plot setup
 rcParams = PyPlot.PyDict(PyPlot.matplotlib."rcParams")
 rcParams["text.usetex"] = true
@@ -245,23 +243,23 @@ end
 
 # plot data
 println("plotting data")
-filename = "replication/weather/weather_data.png"
+filename = "./replication/weather/weather_data.png"
 make_data_plot(data, x_min, x_max, y_min, y_max, filename)
 
 # plot data and partition
 println("plotting data and partition")
-filename = "replication/weather/weather_data_partition.png"
+filename = "./replication/weather/weather_data_partition.png"
 make_data_partition_plot(data, trees[1], x_min, x_max, y_min, y_max, filename)
 
 # plot data and filled partition
 println("plotting data and filled partition")
-filename = "replication/weather/weather_data_filled_partition.png"
+filename = "./replication/weather/weather_data_filled_partition.png"
 make_data_filled_partition_plot(data, trees[1], x_min, x_max, y_min, y_max, filename)
 
 # plot filled partitions
 for i in 1:3
     println("plotting filled partition for tree ", i, " / ", length(trees))
-    global filename = "replication/weather/weather_filled_partition_" * string(i) * ".png"
+    global filename = "./replication/weather/weather_filled_partition_" * string(i) * ".png"
     make_filled_partition_plot(data, trees[i], x_min, x_max, y_min, y_max, filename)
 end
 
@@ -275,14 +273,14 @@ Y = [data[i, :RainTomorrow] for i in 1:nrow(data)]
 x_evals = Tuple{Float64,Float64}[]
 for i in [2, 10, 50]
     println("plotting forest with ", i, " trees")
-    global filename = "replication/weather/weather_forest_" * string(i) * ".png"
+    global filename = "./replication/weather/weather_forest_" * string(i) * ".png"
     make_forest_plot(data, trees[1:i], x_min, x_max, y_min, y_max, filename)
 end
 
 # plot forest with design points
 i = 50
 println("plotting forest with ", i, " trees and design points")
-global filename = "replication/weather/weather_forest_design.png"
+global filename = "./replication/weather/weather_forest_design.png"
 
 design_points = [(20, 1020), (70, 1000), (80, 990)]
 design_points = [((x[1] - x_min) / (x_max - x_min), (x[2] - y_min) / (y_max - y_min))

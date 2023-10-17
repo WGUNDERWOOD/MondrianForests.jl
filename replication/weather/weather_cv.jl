@@ -8,8 +8,6 @@ using Plots
 using Dates
 using MondrianForests
 
-# TODO
-
 # plot setup
 rcParams = PyPlot.PyDict(PyPlot.matplotlib."rcParams")
 rcParams["text.usetex"] = true
@@ -40,7 +38,6 @@ function load_data(; limit=nothing)
     data.Pressure3pm = (data.Pressure3pm .- y_min) ./ (y_max - y_min)
     Random.seed!(1)
     data = shuffle(data)
-    #println("number of samples ", nrow(data))
     return (data, x_min, x_max, y_min, y_max)
 end
 
@@ -56,8 +53,7 @@ end
 
 function get_mse_fold(n_evals, X, Y, lambda, n_trees, debias_order)
     (eval_ids, x_evals, y_evals, X_reduced, Y_reduced) = make_evals(n_evals, X, Y)
-    forest = MondrianForest(lambda, n_trees, x_evals, debias_order,
-                            0.05, X_reduced, Y_reduced, false)
+    local forest = MondrianForest(lambda, n_trees, x_evals, X_reduced, Y_reduced)
     mse_fold = sum((y_evals .- forest.mu_hat) .^ 2) / n_evals
     return mse_fold
 end
@@ -95,35 +91,31 @@ mses = Float64[]
 d = 2
 for lambda in lambdas
     println("lambda: ", lambda)
-    forest = MondrianForest(lambda, n_trees, x_evals, debias_order,
-                            0.05, X, Y, false, false)
-    #gcv_dof = forest.gcv_dof
+    local forest = MondrianForest(lambda, n_trees, x_evals, X, Y)
     mse = sum((y_evals .- forest.mu_hat) .^ 2) / n_evals
-    #gcv = mse / ((1 - gcv_dof / n)^2)
     gcv = mse / (1 - lambda^d / n)^2
     push!(gcvs, gcv)
     push!(mses, mse)
-    #println("gcv dof: ", gcv_dof)
     println("gcv: ", gcv)
     println("mse: ", mse)
 end
 
 (fig, ax) = plt.subplots(figsize=(3.5, 3.7))
 best_lambda = 5.0
-i = [i for i in 1:length(lambdas) if lambdas[i] == best_lambda][]
+i = [i for i in 1:length(lambdas) if isapprox(lambdas[i], best_lambda, rtol=0.01)][]
 plt.plot([best_lambda, best_lambda], [0.0, gcvs[i] - 0.0001], c="#666677",
          linestyle="dashed", lw=1.0)
 plt.plot(lambdas, mses, lw=1.0, c="#aa44dd",
          label="Mean squared error")
 plt.plot(lambdas, gcvs, lw=1.0, c="#009944",
          label="Generalized cross-validation")
-plt.ylim([0.13 - 0.002, 0.17 + 0.002])
-plt.yticks(range(0.13, stop=0.17, step=0.01))
+plt.ylim([0.11 - 0.002, 0.17 + 0.002])
+plt.yticks(range(0.11, stop=0.17, step=0.01))
 plt.xlabel("Lifetime parameter \$\\lambda\$")
 plt.ylabel("Loss function")
 plt.legend(frameon=false)
 plt.subplots_adjust(left=0.205, right=0.96, top=0.854, bottom=0.165)
-plt.savefig("replication/weather/weather_gcv.png", dpi=500)
+plt.savefig("./replication/weather/weather_gcv.png", dpi=500)
 
 # CIs
 (data, x_min, x_max, y_min, y_max) = load_data(limit=nothing)
@@ -137,8 +129,7 @@ x_evals_original = [(20, 1020), (70, 1000), (80, 990)]
 x_evals = [((x[1] - x_min) / (x_max - x_min), (x[2] - y_min) / (y_max - y_min))
            for x in x_evals_original]
 
-forest = MondrianForest(lambda, n_trees, x_evals, 0,
-                        0.05, X, Y, true, false)
+forest = MondrianForest(best_lambda, n_trees, x_evals, X, Y, true)
 
 for i in 1:length(x_evals)
     println()

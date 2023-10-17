@@ -2,8 +2,6 @@ using MondrianForests
 using PyPlot
 using Random
 
-# TODO
-
 rcParams = PyPlot.PyDict(PyPlot.matplotlib."rcParams")
 rcParams["text.usetex"] = true
 plt.ioff()
@@ -63,7 +61,7 @@ for i in 1:length(lambdas)
     lambda = lambdas[i]
     tree = MondrianTree(d, lambda)
     (fig, ax) = plot_mondrian_tree(tree)
-    savefig(git_root * "/replication/plot_mondrian_process_$i.pgf", bbox_inches="tight")
-    savefig(git_root * "/replication/plot_mondrian_process_$i.pdf", bbox_inches="tight")
+    savefig("./replication/partition_plots/plot_mondrian_process_$i.pgf", bbox_inches="tight")
+    savefig("./replication/partition_plots/plot_mondrian_process_$i.pdf", bbox_inches="tight")
     plt.close("all")
 end
