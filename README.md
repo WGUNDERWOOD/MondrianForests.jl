@@ -38,14 +38,14 @@ The Julia package is named **MondrianForests.jl**
 
 From the Julia General registry:
 
-```
+```julia
 using Pkg
 Pkg.add("MondrianForests")
 ```
 
 ### Usage
 
-```
+```julia
 using MondrianForests
 
 # sample a two-dimensional Mondrian tree

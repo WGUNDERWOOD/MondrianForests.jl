@@ -1,3 +1,5 @@
+# TODO document all functions
+
 struct MondrianCell{d}
     lower::NTuple{d,Float64}
     upper::NTuple{d,Float64}
