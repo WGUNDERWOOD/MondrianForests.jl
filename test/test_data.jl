@@ -4,4 +4,3 @@
     data = MondrianForests.generate_uniform_data_uniform_errors(d, n)
     data = MondrianForests.generate_uniform_data_normal_errors(d, n)
 end
-

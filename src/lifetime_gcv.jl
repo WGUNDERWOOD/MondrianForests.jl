@@ -1,6 +1,6 @@
 function select_lifetime_gcv(lambdas::Vector{Float64}, n_trees::Int, n_subsample::Int,
-        debias_order::Int, X_data::Vector{NTuple{d,Float64}}, Y_data::Vector{Float64}) where {d}
-
+                             debias_order::Int, X_data::Vector{NTuple{d,Float64}},
+                             Y_data::Vector{Float64}) where {d}
     n_lambdas = length(lambdas)
     gcvs = [NaN for _ in 1:n_lambdas]
     for l in 1:n_lambdas
@@ -14,8 +14,7 @@ function select_lifetime_gcv(lambdas::Vector{Float64}, n_trees::Int, n_subsample
 end
 
 function get_gcv(lambda::Float64, n_trees::Int, n_subsample::Int, debias_order::Int,
-        X_data::Vector{NTuple{d,Float64}}, Y_data::Vector{Float64}) where {d}
-
+                 X_data::Vector{NTuple{d,Float64}}, Y_data::Vector{Float64}) where {d}
     n_data = length(X_data)
     a_bar_d = get_a_bar_d(debias_order, d)
     if n_data <= a_bar_d * lambda^d
@@ -27,7 +26,7 @@ function get_gcv(lambda::Float64, n_trees::Int, n_subsample::Int, debias_order::
         Y_evals = Y_data[ids]
         forest = DebiasedMondrianForest(lambda, n_trees, X_evals, debias_order,
                                         X_data, Y_data)
-        gcv = sum((Y_evals - forest.mu_hat).^2) / n_data
+        gcv = sum((Y_evals - forest.mu_hat) .^ 2) / n_data
         gcv /= (1 - a_bar_d * lambda^d / n_data)
         return gcv
     end

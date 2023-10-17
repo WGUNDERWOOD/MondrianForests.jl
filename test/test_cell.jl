@@ -1,5 +1,4 @@
 @testset verbose = true "Cells" begin
-
     @testset verbose = true "Initial cell construction" begin
         for d in 1:5
             cell = MondrianCell(d)
@@ -22,10 +21,10 @@
         upper = ntuple(i -> 1.0, 2)
         @test_throws DomainError MondrianCell(lower, upper)
         lower = ntuple(i -> 1.0, 2)
-        upper = ntuple(i -> -1.0 , 2)
+        upper = ntuple(i -> -1.0, 2)
         @test_throws DomainError MondrianCell(lower, upper)
         lower = ntuple(i -> 1.0, 2)
-        upper = ntuple(i -> 0.0 , 2)
+        upper = ntuple(i -> 0.0, 2)
         @test_throws ArgumentError MondrianCell(lower, upper)
     end
 
@@ -48,4 +47,3 @@
         end
     end
 end
-

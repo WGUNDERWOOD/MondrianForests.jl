@@ -30,7 +30,7 @@ function MondrianForest(lambda::Float64, n_trees::Int, x_evals::Vector{NTuple{d,
     Ns = Matrix{Int}(undef, (n_trees, n_evals))
     @inbounds Threads.@threads for s in 1:n_evals
         @inbounds for b in 1:n_trees
-            Ns[b,s] = sum(are_in_same_cell(X, x_evals[s], forest.trees[b]) for X in forest.X_data)
+            Ns[b, s] = sum(are_in_same_cell(X, x_evals[s], forest.trees[b]) for X in forest.X_data)
         end
     end
     estimate_mu_hat(forest, Ns)
@@ -49,10 +49,11 @@ function estimate_mu_hat(forest::MondrianForest{d}, Ns::Matrix{Int}) where {d}
     @inbounds Threads.@threads for s in 1:(forest.n_evals)
         x_eval = forest.x_evals[s]
         @inbounds for b in 1:(forest.n_trees)
-            if Ns[b,s] > 0
+            if Ns[b, s] > 0
                 I = sum(are_in_same_cell(forest.X_data[i], x_eval, forest.trees[b])
-                        .* forest.Y_data[i] for i in 1:(forest.n_data))
-                mu_hat[s] += I / Ns[b,s]
+                        .*
+                        forest.Y_data[i] for i in 1:(forest.n_data))
+                mu_hat[s] += I / Ns[b, s]
             else
                 mu_hat[s] += Y_bar
             end
@@ -68,10 +69,11 @@ function estimate_sigma2_hat(forest::MondrianForest{d}, Ns::Matrix{Int}) where {
 
     @inbounds Threads.@threads for s in 1:(forest.n_evals)
         @inbounds for b in 1:(forest.n_trees)
-            if Ns[b,s] > 0
+            if Ns[b, s] > 0
                 I = sum(are_in_same_cell(forest.X_data[i], forest.x_evals[s], forest.trees[b])
-                        .* (forest.Y_data[i] - forest.mu_hat[s])^2 for i in 1:(forest.n_data))
-                sigma2_hat[s] += I / Ns[b,s]
+                        .*
+                        (forest.Y_data[i] - forest.mu_hat[s])^2 for i in 1:(forest.n_data))
+                sigma2_hat[s] += I / Ns[b, s]
             end
         end
     end
@@ -90,7 +92,7 @@ function estimate_Sigma_hat(forest::MondrianForest{d}, Ns::Matrix{Int}) where {d
             A = 0.0
             @inbounds for b in 1:(forest.n_trees)
                 if are_in_same_cell(forest.X_data[i], x_eval, forest.trees[b])
-                    A += 1 / Ns[b,s]
+                    A += 1 / Ns[b, s]
                 end
             end
             Sigma_hat[s] += (A / forest.n_trees)^2

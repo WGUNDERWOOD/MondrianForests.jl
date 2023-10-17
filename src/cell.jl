@@ -47,7 +47,8 @@ function get_intersection(cell1::MondrianCell{d}, cell2::MondrianCell{d}) where 
     end
 end
 
-function get_common_refinement(cells1::Vector{MondrianCell{d}}, cells2::Vector{MondrianCell{d}}) where {d}
+function get_common_refinement(cells1::Vector{MondrianCell{d}},
+                               cells2::Vector{MondrianCell{d}}) where {d}
     cells = MondrianCell{d}[]
 
     for c1 in cells1

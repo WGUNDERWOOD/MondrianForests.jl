@@ -2,7 +2,6 @@ using Random
 Random.seed!(0)
 
 @testset verbose = true "Forests" begin
-
     @testset verbose = true "Constant" begin
         n = 50
         lambda = 5.0
@@ -54,9 +53,7 @@ Random.seed!(0)
             ci_lower = [ci[1] for ci in forest.confidence_band]
             ci_upper = [ci[2] for ci in forest.confidence_band]
             @test all(ci_lower .<= forest.mu_hat .<= ci_upper)
-            @test isapprox(forest.mu_hat[], 0.25 * d ^ 2, rtol=0.01)
+            @test isapprox(forest.mu_hat[], 0.25 * d^2, rtol=0.01)
         end
     end
-
 end
-

@@ -1,6 +1,5 @@
 function select_lifetime_polynomial(X_data::Vector{NTuple{d,Float64}}, Y_data::Vector{Float64},
-        debias_order::Int) where {d}
-
+                                    debias_order::Int) where {d}
     n = length(X_data)
     derivative_estimates = get_derivative_estimates_polynomial(X_data, Y_data, debias_order)
     sigma2_hat = get_variance_estimate_polynomial(X_data, Y_data, debias_order)
@@ -16,8 +15,7 @@ function select_lifetime_polynomial(X_data::Vector{NTuple{d,Float64}}, Y_data::V
 end
 
 function make_design_matrix_polynomial(X_data::Vector{NTuple{d,Float64}},
-        debias_order::Int) where {d}
-
+                                       debias_order::Int) where {d}
     n = length(X_data)
     J = debias_order
     design_matrix = ones((n, 1))
@@ -34,9 +32,8 @@ function make_design_matrix_polynomial(X_data::Vector{NTuple{d,Float64}},
 end
 
 function get_derivative_estimates_polynomial(X_data::Vector{NTuple{d,Float64}},
-        Y_data::Vector{Float64},
-        debias_order::Int) where {d}
-
+                                             Y_data::Vector{Float64},
+                                             debias_order::Int) where {d}
     n = length(X_data)
     J = debias_order
     derivative_vectors = [Vector{Float64}[] for i in 1:n]
@@ -67,8 +64,8 @@ function get_derivative_estimates_polynomial(X_data::Vector{NTuple{d,Float64}},
 end
 
 function get_variance_estimate_polynomial(X_data::Vector{NTuple{d,Float64}},
-                                                 Y_data::Vector{Float64},
-                                                 debias_order::Int) where {d}
+                                          Y_data::Vector{Float64},
+                                          debias_order::Int) where {d}
     n = length(X_data)
     design_matrix = make_design_matrix_polynomial(X_data, debias_order)
     regression_vector = (design_matrix' * design_matrix) \ (design_matrix' * Y_data)

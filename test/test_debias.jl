@@ -2,7 +2,6 @@ using Random
 Random.seed!(0)
 
 @testset verbose = true "Debiasing" begin
-
     @testset verbose = true "Constant" begin
         n = 50
         lambda = 5.0
@@ -30,7 +29,8 @@ Random.seed!(0)
             X_data = [ntuple(i -> rand(), d) for _ in 1:n]
             x_evals = [ntuple(i -> 0.5, d)]
             Y_data = sum.(X_data)
-            forest = DebiasedMondrianForest(lambda, n_trees, x_evals, debias_order, X_data, Y_data, estimate_var)
+            forest = DebiasedMondrianForest(lambda, n_trees, x_evals, debias_order, X_data, Y_data,
+                                            estimate_var)
             ci_lower = [ci[1] for ci in forest.confidence_band]
             ci_upper = [ci[2] for ci in forest.confidence_band]
             @test all(ci_lower .<= forest.mu_hat .<= ci_upper)
@@ -49,13 +49,12 @@ Random.seed!(0)
             X_data = [ntuple(i -> rand(), d) for _ in 1:n]
             x_evals = [ntuple(i -> 0.5, d)]
             Y_data = sum.(X_data) .^ 2
-            forest = DebiasedMondrianForest(lambda, n_trees, x_evals, debias_order, X_data, Y_data, estimate_var)
+            forest = DebiasedMondrianForest(lambda, n_trees, x_evals, debias_order, X_data, Y_data,
+                                            estimate_var)
             ci_lower = [ci[1] for ci in forest.confidence_band]
             ci_upper = [ci[2] for ci in forest.confidence_band]
             @test all(ci_lower .<= forest.mu_hat .<= ci_upper)
-            @test isapprox(forest.mu_hat[], 0.25 * d ^ 2, rtol=0.01)
+            @test isapprox(forest.mu_hat[], 0.25 * d^2, rtol=0.01)
         end
     end
-
 end
-

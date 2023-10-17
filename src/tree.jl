@@ -123,7 +123,8 @@ end
 
 function get_split_times(tree::MondrianTree{d}) where {d}
     if !isnothing(tree.split_axis)
-        return [tree.creation_time; get_split_times(tree.tree_left); get_split_times(tree.tree_right)]
+        return [tree.creation_time; get_split_times(tree.tree_left);
+                get_split_times(tree.tree_right)]
     else
         return [tree.creation_time]
     end

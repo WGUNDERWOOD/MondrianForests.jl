@@ -1,5 +1,4 @@
 @testset verbose = true "Trees" begin
-
     @testset verbose = true "Tree construction" begin
         for d in 1:3
             lambda = 2.0
@@ -70,4 +69,3 @@
         end
     end
 end
-

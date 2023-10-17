@@ -21,19 +21,19 @@ mutable struct DebiasedMondrianForest{d}
 end
 
 function DebiasedMondrianForest(lambda::Float64, n_trees::Int, x_evals::Vector{NTuple{d,Float64}},
-        debias_order::Int,
-        X_data::Vector{NTuple{d,Float64}}, Y_data::Vector{Float64},
-        estimate_var::Bool=false,
-        significance_level::Float64=0.05) where {d}
+                                debias_order::Int,
+                                X_data::Vector{NTuple{d,Float64}}, Y_data::Vector{Float64},
+                                estimate_var::Bool=false,
+                                significance_level::Float64=0.05) where {d}
+
     n_data = length(X_data)
     n_evals = length(x_evals)
 
     forest = DebiasedMondrianForest(lambda, n_trees, n_data, n_evals, x_evals,
-                                             debias_order, significance_level, X_data, Y_data,
-                                             Float64[], Float64[], MondrianTree{d}[;;],
-                                             Float64[], Float64[], Float64[],
-                                             Tuple{Float64,Float64}[])
-
+                                    debias_order, significance_level, X_data, Y_data,
+                                    Float64[], Float64[], MondrianTree{d}[;;],
+                                    Float64[], Float64[], Float64[],
+                                    Tuple{Float64,Float64}[])
 
     forest.debias_scaling = get_debias_scaling(debias_order)
     forest.debias_coeffs = get_debias_coeffs(debias_order)
@@ -41,18 +41,18 @@ function DebiasedMondrianForest(lambda::Float64, n_trees::Int, x_evals::Vector{N
     for j in 0:debias_order
         new_lambda = lambda * forest.debias_scaling[j + 1]
         for b in 1:n_trees
-            forest.trees[b, j+1] = MondrianTree(d, new_lambda)
+            forest.trees[b, j + 1] = MondrianTree(d, new_lambda)
         end
     end
 
-    Ns = Array{Int, 3}(undef, (n_trees, debias_order + 1, n_evals))
+    Ns = Array{Int,3}(undef, (n_trees, debias_order + 1, n_evals))
     X_data = forest.X_data
     @inbounds Threads.@threads for s in 1:n_evals
         x_eval = x_evals[s]
         @inbounds for j in 0:debias_order
             @inbounds for b in 1:n_trees
-                tree = forest.trees[b, j+1]
-                Ns[b,j+1,s] = sum(are_in_same_cell(X, x_eval, tree) for X in X_data)
+                tree = forest.trees[b, j + 1]
+                Ns[b, j + 1, s] = sum(are_in_same_cell(X, x_eval, tree) for X in X_data)
             end
         end
     end
@@ -76,8 +76,8 @@ function get_debias_coeffs(debias_order::Int)
     J = debias_order
     debias_scaling = get_debias_scaling(debias_order)
     A = zeros(J + 1, J + 1)
-    for r in 1:(J+1)
-        for s in 1:(J+1)
+    for r in 1:(J + 1)
+        for s in 1:(J + 1)
             A[r, s] = debias_scaling[r]^(2 - 2 * s)
         end
     end
@@ -86,20 +86,21 @@ function get_debias_coeffs(debias_order::Int)
     return debias_coeffs
 end
 
-function estimate_mu_hat(forest::DebiasedMondrianForest{d}, Ns::Array{Int, 3}) where {d}
+function estimate_mu_hat(forest::DebiasedMondrianForest{d}, Ns::Array{Int,3}) where {d}
     mu_hat = [0.0 for _ in 1:(forest.n_evals)]
     Y_bar = sum(forest.Y_data) / forest.n_data
 
     @inbounds Threads.@threads for s in 1:(forest.n_evals)
         x_eval = forest.x_evals[s]
-        @inbounds for j in 0:forest.debias_order
-            coeff = forest.debias_coeffs[j+1]
+        @inbounds for j in 0:(forest.debias_order)
+            coeff = forest.debias_coeffs[j + 1]
             @inbounds for b in 1:(forest.n_trees)
-                if Ns[b,j+1,s] > 0
-                    tree = forest.trees[b,j+1]
+                if Ns[b, j + 1, s] > 0
+                    tree = forest.trees[b, j + 1]
                     I = sum(are_in_same_cell(forest.X_data[i], x_eval, tree)
-                            .* forest.Y_data[i] for i in 1:(forest.n_data))
-                    mu_hat[s] += coeff * I / Ns[b,j+1,s]
+                            .*
+                            forest.Y_data[i] for i in 1:(forest.n_data))
+                    mu_hat[s] += coeff * I / Ns[b, j + 1, s]
                 else
                     mu_hat[s] += coeff * Y_bar
                 end
@@ -111,21 +112,22 @@ function estimate_mu_hat(forest::DebiasedMondrianForest{d}, Ns::Array{Int, 3}) w
     return nothing
 end
 
-function estimate_sigma2_hat(forest::DebiasedMondrianForest{d}, Ns::Array{Int, 3}) where {d}
+function estimate_sigma2_hat(forest::DebiasedMondrianForest{d}, Ns::Array{Int,3}) where {d}
     n_data = forest.n_data
     sigma2_hat = [0.0 for _ in 1:(forest.n_evals)]
     j = 0
-    @assert forest.debias_scaling[j+1] == 1
+    @assert forest.debias_scaling[j + 1] == 1
 
     @inbounds Threads.@threads for s in 1:(forest.n_evals)
         x_eval = forest.x_evals[s]
         mu_hat = forest.mu_hat[s]
         @inbounds for b in 1:(forest.n_trees)
-            if Ns[b,j+1,s] > 0
-                tree = forest.trees[b,j+1]
+            if Ns[b, j + 1, s] > 0
+                tree = forest.trees[b, j + 1]
                 I = sum(are_in_same_cell(forest.X_data[i], x_eval, tree)
-                        .* (forest.Y_data[i] - mu_hat)^2 for i in 1:n_data)
-                sigma2_hat[s] += I / Ns[b,j+1,s]
+                        .*
+                        (forest.Y_data[i] - mu_hat)^2 for i in 1:n_data)
+                sigma2_hat[s] += I / Ns[b, j + 1, s]
             end
         end
     end
@@ -135,7 +137,7 @@ function estimate_sigma2_hat(forest::DebiasedMondrianForest{d}, Ns::Array{Int, 3
     return nothing
 end
 
-function estimate_Sigma_hat(forest::DebiasedMondrianForest{d}, Ns::Array{Int, 3}) where {d}
+function estimate_Sigma_hat(forest::DebiasedMondrianForest{d}, Ns::Array{Int,3}) where {d}
     Sigma_hat = [0.0 for _ in 1:(forest.n_evals)]
 
     @inbounds Threads.@threads for s in 1:(forest.n_evals)
@@ -144,11 +146,11 @@ function estimate_Sigma_hat(forest::DebiasedMondrianForest{d}, Ns::Array{Int, 3}
             X = forest.X_data[i]
             A = 0.0
             @inbounds for j in 0:(forest.debias_order)
-                coeff = forest.debias_coeffs[j+1]
+                coeff = forest.debias_coeffs[j + 1]
                 @inbounds for b in 1:(forest.n_trees)
-                    tree = forest.trees[b,j+1]
+                    tree = forest.trees[b, j + 1]
                     if are_in_same_cell(X, x_eval, tree)
-                        A += coeff / Ns[b,j+1,s]
+                        A += coeff / Ns[b, j + 1, s]
                     end
                 end
             end
@@ -162,7 +164,6 @@ function estimate_Sigma_hat(forest::DebiasedMondrianForest{d}, Ns::Array{Int, 3}
     forest.Sigma_hat = Sigma_hat
     return nothing
 end
-
 
 function construct_confidence_band(forest::DebiasedMondrianForest{d}) where {d}
     n_data = forest.n_data
