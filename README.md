@@ -1,4 +1,4 @@
-# MondrianForests.jl <img src="replication/logo/logo.svg" alt="Mondrian forests logo" align="right" width=120 />
+# MondrianForests.jl <img src="replication/logo/logo.svg" alt="Mondrian forests logo" align="right" width=130 />
 
 Mondrian random forests in Julia
 
@@ -11,9 +11,7 @@ Mondrian random forests in Julia
 
 This repository provides implementations of Mondrian random forests in Julia.
 This code is based on methods detailed in
-[Cattaneo, Klusowski and Underwood, 2023],
-which is available at
-[arXiv:2310.09702](https://arxiv.org/abs/2310.09702).
+[Cattaneo, Klusowski and Underwood, 2023, arXiv:2310:09702](https://arxiv.org/abs/2310.09702).
 This package provides the capability for:
 
 - Fitting Mondrian random forests
@@ -40,6 +38,10 @@ The Julia package is named **MondrianForests.jl**
 
 From the Julia General registry:
 
+### Usage
+
+TODO give some examples here
+
 ```
 using Pkg
 Pkg.add("MondrianForests")
@@ -51,5 +53,5 @@ Pkg.add("MondrianForests")
 - Random
 
 ### Documentation
-Documentation for the **MondrianForests** package is available on 
+Documentation for the **MondrianForests** package is available on
 [the web](https://wgunderwood.github.io/MondrianForests.jl/stable/).
