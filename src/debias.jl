@@ -21,9 +21,10 @@ mutable struct DebiasedMondrianForest{d}
 end
 
 function DebiasedMondrianForest(lambda::Float64, n_trees::Int, x_evals::Vector{NTuple{d,Float64}},
-        debias_order::Int, significance_level::Float64,
+        debias_order::Int,
         X_data::Vector{NTuple{d,Float64}}, Y_data::Vector{Float64},
-        estimate_var::Bool=false) where {d}
+        estimate_var::Bool=false,
+        significance_level::Float64=0.05) where {d}
     n_data = length(X_data)
     n_evals = length(x_evals)
 

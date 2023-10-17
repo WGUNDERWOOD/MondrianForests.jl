@@ -1,10 +1,5 @@
-# TODO significance_level can be nothing if not estimate_var
-
-function select_lifetime_gcv(lambdas::Vector{Float64},
-        n_trees::Int,
-        n_subsample::Int,
-        X_data::Vector{NTuple{d,Float64}}, Y_data::Vector{Float64},
-        debias_order::Int) where {d}
+function select_lifetime_gcv(lambdas::Vector{Float64}, n_trees::Int, n_subsample::Int,
+        debias_order::Int, X_data::Vector{NTuple{d,Float64}}, Y_data::Vector{Float64}) where {d}
 
     n_lambdas = length(lambdas)
     gcvs = [NaN for _ in 1:n_lambdas]
@@ -18,7 +13,6 @@ function select_lifetime_gcv(lambdas::Vector{Float64},
     return best_lambda
 end
 
-
 function get_gcv(lambda::Float64, n_trees::Int, n_subsample::Int, debias_order::Int,
         X_data::Vector{NTuple{d,Float64}}, Y_data::Vector{Float64}) where {d}
 
@@ -28,19 +22,16 @@ function get_gcv(lambda::Float64, n_trees::Int, n_subsample::Int, debias_order::
         return Inf
     else
         @assert 1 <= n_subsample <= n_data
-        significance_level = 0.0
-        estimate_var = false
         ids = sample(1:n_data, n_subsample, replace=false)
         X_evals = X_data[ids]
         Y_evals = Y_data[ids]
         forest = DebiasedMondrianForest(lambda, n_trees, X_evals, debias_order,
-                                        significance_level, X_data, Y_data, estimate_var)
+                                        X_data, Y_data)
         gcv = sum((Y_evals - forest.mu_hat).^2) / n_data
         gcv /= (1 - a_bar_d * lambda^d / n_data)
         return gcv
     end
 end
-
 
 function get_a_bar_d(debias_order::Int, d::Int)
     debias_scaling = MondrianForests.get_debias_scaling(debias_order)

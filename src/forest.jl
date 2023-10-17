@@ -18,8 +18,9 @@ mutable struct MondrianForest{d}
 end
 
 function MondrianForest(lambda::Float64, n_trees::Int, x_evals::Vector{NTuple{d,Float64}},
-                        significance_level::Float64, X_data::Vector{NTuple{d,Float64}},
-                        Y_data::Vector{Float64}, estimate_var::Bool=false) where {d}
+                        X_data::Vector{NTuple{d,Float64}},
+                        Y_data::Vector{Float64}, estimate_var::Bool=false,
+                        significance_level::Float64=0.05) where {d}
     n_data = length(X_data)
     n_evals = length(x_evals)
     forest = MondrianForest(lambda, n_trees, n_data, n_evals, x_evals, significance_level,
