@@ -25,13 +25,15 @@ function DebiasedMondrianForest(lambda::Float64, n_trees::Int, x_evals::Vector{N
                                 X_data::Vector{NTuple{d,Float64}}, Y_data::Vector{Float64},
                                 estimate_var::Bool=false,
                                 significance_level::Float64=0.05) where {d}
-
     n_data = length(X_data)
     n_evals = length(x_evals)
 
     forest = DebiasedMondrianForest(lambda, n_trees, n_data, n_evals, x_evals,
                                     debias_order, significance_level, X_data, Y_data,
-                                    Float64[], Float64[], MondrianTree{d}[;;],
+                                    Float64[], Float64[],
+                                    #! format: off
+                                    MondrianTree{d}[;;],
+                                    #! format: on
                                     Float64[], Float64[], Float64[],
                                     Tuple{Float64,Float64}[])
 
