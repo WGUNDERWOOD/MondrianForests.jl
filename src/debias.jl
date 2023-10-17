@@ -53,11 +53,11 @@ function DebiasedMondrianForest(lambda::Float64, n_trees::Int, x_evals::Vector{N
     end
 
     # TODO define these
-    #estimate_mu_hat(forest, Ns)
+    estimate_mu_hat(debiased_forest, Ns)
     #if estimate_var
-        #estimate_sigma2_hat(forest, Ns)
-        #estimate_Sigma_hat(forest, Ns)
-        #construct_confidence_band(forest)
+        #estimate_sigma2_hat(debiased_forest, Ns)
+        #estimate_Sigma_hat(debiased_forest, Ns)
+        #construct_confidence_band(debiased_forest)
     #end
     #if get_gcv
         #get_gcv_dof(forest)
@@ -76,6 +76,31 @@ function get_debias_params(debiased_forest)
     end
     e0 = [[1]; [0 for _ in 1:J]]
     debiased_forest.debias_coeffs = A \ e0
+    return nothing
+end
+
+function estimate_mu_hat(debiased_forest::DebiasedMondrianForest{d}, Ns::Array{Int, 3}) where {d}
+    mu_hat = [0.0 for _ in 1:(debiased_forest.n_evals)]
+    Y_bar = sum(debiased_forest.Y_data) / debiased_forest.n_data
+
+    @inbounds for j in 0:debiased_forest.debias_order
+        coeff = debiased_forest.debias_coeffs[j+1]
+        @inbounds Threads.@threads for s in 1:(debiased_forest.n_evals)
+            x_eval = debiased_forest.x_evals[s]
+            @inbounds for b in 1:(debiased_forest.n_trees)
+                if Ns[b,s,j+1] > 0
+                    tree = debiased_forest.trees[b,j+1]
+                    I = sum(are_in_same_cell(debiased_forest.X_data[i], x_eval, tree)
+                            .* debiased_forest.Y_data[i] for i in 1:(debiased_forest.n_data))
+                    mu_hat[s] += coeff * I / Ns[b,s,j+1]
+                else
+                    mu_hat[s] += coeff * Y_bar
+                end
+            end
+        end
+    end
+
+    debiased_forest.mu_hat = mu_hat / debiased_forest.n_trees
     return nothing
 end
 

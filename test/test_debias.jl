@@ -15,10 +15,10 @@ Random.seed!(0)
             X = [ntuple(i -> rand(), d) for _ in 1:n]
             x_evals = [ntuple(i -> rand(), d) for _ in 1:n_evals]
             Y = [2.0 for _ in 1:n]
-            forest = DebiasedMondrianForest(lambda, n_trees, x_evals, debias_order,
-                                            significance_level, X, Y, estimate_var)
-            #@suppress show(forest)
-            #@test all(forest.mu_hat .== 2)
+            debiased_forest = DebiasedMondrianForest(lambda, n_trees, x_evals, debias_order,
+                                                     significance_level, X, Y, estimate_var)
+            #@suppress show(debiased_forest)
+            @test all(isapprox.(debiased_forest.mu_hat, 2, rtol=1e-10))
         end
     end
 
