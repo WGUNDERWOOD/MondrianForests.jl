@@ -316,7 +316,7 @@ for i in 1:length(partitions)
     println(i)
     partition = partitions[i]
     global (fig, ax) = plot_mondrian_tree(partition)
-    plt.savefig("replication/construction_diagrams/mondrian_tree_$(i).png", dpi=dpi)
+    plt.savefig("replication/construction_diagrams/construction_mondrian_tree_$(i).png", dpi=dpi)
     plt.close("all")
 end
 
@@ -326,6 +326,6 @@ for i in 1:length(partitions)
     println(i)
     partition = partitions[i]
     global (fig, ax) = plot_mondrian_process(partition)
-    plt.savefig("replication/construction_diagrams/mondrian_process_$(i).png", dpi=dpi)
+    plt.savefig("replication/construction_diagrams/construction_mondrian_partition_$(i).png", dpi=dpi)
     plt.close("all")
 end

@@ -3,6 +3,8 @@ using PyPlot
 using Random
 using Distributions
 
+# TODO
+
 rcParams = PyPlot.PyDict(PyPlot.matplotlib."rcParams")
 rcParams["text.usetex"] = true
 plt.ioff()
