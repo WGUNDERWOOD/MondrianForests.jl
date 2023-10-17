@@ -4,4 +4,5 @@ Manifest.toml
 *.pdf
 *.pgf
 *.png
+*.html
 docs/build
