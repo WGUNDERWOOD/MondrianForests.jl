@@ -1,3 +1,8 @@
+"""
+Select the lifetime parameter for a (debiased) Mondrian random forest
+using polynomial estimation.
+"""
+# TODO consistency with GCV method
 function select_lifetime_polynomial(X_data::Vector{NTuple{d,Float64}}, Y_data::Vector{Float64},
                                     debias_order::Int) where {d}
     n = length(X_data)
@@ -14,6 +19,7 @@ function select_lifetime_polynomial(X_data::Vector{NTuple{d,Float64}}, Y_data::V
     return lambda_hat
 end
 
+"""Make the design matrix for the polynomial regression."""
 function make_design_matrix_polynomial(X_data::Vector{NTuple{d,Float64}},
                                        debias_order::Int) where {d}
     n = length(X_data)
@@ -31,6 +37,7 @@ function make_design_matrix_polynomial(X_data::Vector{NTuple{d,Float64}},
     return design_matrix
 end
 
+"""Get derivative estimates from a polynomial regression."""
 function get_derivative_estimates_polynomial(X_data::Vector{NTuple{d,Float64}},
                                              Y_data::Vector{Float64},
                                              debias_order::Int) where {d}
@@ -63,6 +70,7 @@ function get_derivative_estimates_polynomial(X_data::Vector{NTuple{d,Float64}},
     return derivative_estimates
 end
 
+"""Get variance estimates from a polynomial regression."""
 function get_variance_estimate_polynomial(X_data::Vector{NTuple{d,Float64}},
                                           Y_data::Vector{Float64},
                                           debias_order::Int) where {d}
@@ -74,6 +82,7 @@ function get_variance_estimate_polynomial(X_data::Vector{NTuple{d,Float64}},
     return sigma2_hat
 end
 
+"""Get the limiting variance coefficient."""
 function get_V_omega(debias_order::Int, d::Int)
     J = debias_order
     a = [0.95^r for r in 0:J]
@@ -98,6 +107,7 @@ function get_V_omega(debias_order::Int, d::Int)
     return sum(sum(V[r, s]^d * omega[r] * omega[s] for r in 1:(J + 1)) for s in 1:(J + 1))
 end
 
+"""Get the limiting bias coefficient."""
 function get_omega_bar(debias_order::Int)
     debias_scaling = MondrianForests.get_debias_scaling(debias_order)
     debias_coeffs = MondrianForests.get_debias_coeffs(debias_order)

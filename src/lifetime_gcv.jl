@@ -1,3 +1,7 @@
+"""
+Select the lifetime parameter for a (debiased) Mondrian random forest
+using generalized cross-validation.
+"""
 function select_lifetime_gcv(lambdas::Vector{Float64}, n_trees::Int, n_subsample::Int,
                              debias_order::Int, X_data::Vector{NTuple{d,Float64}},
                              Y_data::Vector{Float64}) where {d}
@@ -13,6 +17,7 @@ function select_lifetime_gcv(lambdas::Vector{Float64}, n_trees::Int, n_subsample
     return best_lambda
 end
 
+"""Get the generalized cross-validation score of a lifetime parameter lambda."""
 function get_gcv(lambda::Float64, n_trees::Int, n_subsample::Int, debias_order::Int,
                  X_data::Vector{NTuple{d,Float64}}, Y_data::Vector{Float64}) where {d}
     n_data = length(X_data)
@@ -32,6 +37,7 @@ function get_gcv(lambda::Float64, n_trees::Int, n_subsample::Int, debias_order::
     end
 end
 
+"""Get the generalized cross-validation coefficient."""
 function get_a_bar_d(debias_order::Int, d::Int)
     debias_scaling = MondrianForests.get_debias_scaling(debias_order)
     J = debias_order

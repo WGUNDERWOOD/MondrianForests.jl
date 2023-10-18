@@ -1,3 +1,4 @@
+"""Struct to represent a debiased Mondrian random forest."""
 mutable struct DebiasedMondrianForest{d}
     # parameters
     const lambda::Float64
@@ -20,6 +21,7 @@ mutable struct DebiasedMondrianForest{d}
     confidence_band::Vector{Tuple{Float64,Float64}}
 end
 
+"""Construct a debiased Mondrian random forest."""
 function DebiasedMondrianForest(lambda::Float64, n_trees::Int, x_evals::Vector{NTuple{d,Float64}},
                                 debias_order::Int,
                                 X_data::Vector{NTuple{d,Float64}}, Y_data::Vector{Float64},
@@ -68,12 +70,14 @@ function DebiasedMondrianForest(lambda::Float64, n_trees::Int, x_evals::Vector{N
     return forest
 end
 
+"""Get the debiasing scale factors `a` for a given debiasing order."""
 function get_debias_scaling(debias_order::Int)
     J = debias_order
     debias_scaling = [1.5^r for r in 0:J]
     return debias_scaling
 end
 
+"""Get the debiasing coefficients `omega` for a given debiasing order."""
 function get_debias_coeffs(debias_order::Int)
     J = debias_order
     debias_scaling = get_debias_scaling(debias_order)
@@ -88,6 +92,7 @@ function get_debias_coeffs(debias_order::Int)
     return debias_coeffs
 end
 
+"""Estimate the regression function `mu` using a debiased Mondrian random forest."""
 function estimate_mu_hat(forest::DebiasedMondrianForest{d}, Ns::Array{Int,3}) where {d}
     mu_hat = [0.0 for _ in 1:(forest.n_evals)]
     Y_bar = sum(forest.Y_data) / forest.n_data
@@ -114,6 +119,7 @@ function estimate_mu_hat(forest::DebiasedMondrianForest{d}, Ns::Array{Int,3}) wh
     return nothing
 end
 
+"""Estimate the residual variance function `sigma2` using a debiased Mondrian random forest."""
 function estimate_sigma2_hat(forest::DebiasedMondrianForest{d}, Ns::Array{Int,3}) where {d}
     n_data = forest.n_data
     sigma2_hat = [0.0 for _ in 1:(forest.n_evals)]
@@ -139,6 +145,7 @@ function estimate_sigma2_hat(forest::DebiasedMondrianForest{d}, Ns::Array{Int,3}
     return nothing
 end
 
+"""Estimate the forest variance function `Sigma` for a debiased Mondrian random forest."""
 function estimate_Sigma_hat(forest::DebiasedMondrianForest{d}, Ns::Array{Int,3}) where {d}
     Sigma_hat = [0.0 for _ in 1:(forest.n_evals)]
 
@@ -167,6 +174,7 @@ function estimate_Sigma_hat(forest::DebiasedMondrianForest{d}, Ns::Array{Int,3})
     return nothing
 end
 
+"""Construct a confidence band for a debiased Mondrian random forest."""
 function construct_confidence_band(forest::DebiasedMondrianForest{d}) where {d}
     n_data = forest.n_data
     n_evals = forest.n_evals
@@ -179,6 +187,7 @@ function construct_confidence_band(forest::DebiasedMondrianForest{d}) where {d}
     return nothing
 end
 
+"""Show a debiased Mondrian random forest."""
 function Base.show(forest::DebiasedMondrianForest{d}) where {d}
     println("lambda: ", forest.lambda)
     println("n_data: ", forest.n_data)
