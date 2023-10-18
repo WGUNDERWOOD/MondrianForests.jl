@@ -1,10 +1,9 @@
 using PyPlot
 
 # plot setup
-#rcParams = PyPlot.PyDict(PyPlot.matplotlib."rcParams")
-#rcParams["text.usetex"] = true
+rcParams = PyPlot.PyDict(PyPlot.matplotlib."rcParams")
+rcParams["text.usetex"] = true
 rcParams["text.latex.preamble"] = "\\usepackage{montserrat}"
-# noto bold
 plt.ioff()
 
 # start plot
@@ -18,7 +17,9 @@ plt.yticks([])
 # curve
 n = 200
 xs = range(0, 1.005, length=n)
-ys = (1.2 .* xs .- 0.63).^3 .+ 0.55 - 0.2 * xs.^2 - 0.05 * (0.5 .* xs .+ 0.5).^10
+ys = (1.2 .* xs .- 0.63).^3 .+ 0.55 - 0.2 * xs.^2 -
+0.05 * (0.5 .* xs .+ 0.5).^10 +
+0.07 * (1 .- xs).^10
 plt.plot(xs, ys, c="k", lw=2)
 
 # box
