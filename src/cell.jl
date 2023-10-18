@@ -1,6 +1,7 @@
-# TODO document all functions in the package
-
-"""Struct to represent a Mondrian cell."""
+"""
+A Mondrian cell is determined by the coordinates of its lower and upper corner points.
+The dimension `d` may be any positive integer.
+"""
 struct MondrianCell{d}
     lower::NTuple{d,Float64}
     upper::NTuple{d,Float64}
@@ -29,22 +30,22 @@ function MondrianCell(d::Int)
     end
 end
 
-"""Construct the cell `[0,1]^d`."""
-function is_in(x::NTuple{d,Float64}, cell::MondrianCell) where {d}
+"""Check if a point `x` is contained in a Mondrian cell."""
+function is_in(x::NTuple{d,Float64}, cell::MondrianCell{d}) where {d}
     return all(cell.lower .<= x .<= cell.upper)
 end
 
-"""Get the center point of a cell."""
-function get_center(cell::MondrianCell)
+"""Get the center point of a Mondrian cell."""
+function get_center(cell::MondrianCell{d}) where {d}
     return (cell.lower .+ cell.upper) ./ 2
 end
 
-"""Get the volume of a cell."""
-function get_volume(cell::MondrianCell)
+"""Get the d-dimensional volume of a Mondrian cell."""
+function get_volume(cell::MondrianCell{d}) where {d}
     return prod(cell.upper .- cell.lower)
 end
 
-"""Get the intersection of two cells."""
+"""Get the intersection of two Mondrian cells."""
 function get_intersection(cell1::MondrianCell{d}, cell2::MondrianCell{d}) where {d}
     lower = max.(cell1.lower, cell2.lower)
     upper = min.(cell1.upper, cell2.upper)
@@ -55,7 +56,7 @@ function get_intersection(cell1::MondrianCell{d}, cell2::MondrianCell{d}) where 
     end
 end
 
-"""Get the common refinement of two sets of cells."""
+"""Get the common refinement of two sets of Mondrian cells."""
 function get_common_refinement(cells1::Vector{MondrianCell{d}},
                                cells2::Vector{MondrianCell{d}}) where {d}
     cells = MondrianCell{d}[]
@@ -70,7 +71,7 @@ function get_common_refinement(cells1::Vector{MondrianCell{d}},
     return unique(cells)
 end
 
-"""Get the common refinement of many sets of cells."""
+"""Get the common refinement of many sets of Mondrian cells."""
 function get_common_refinement(cells::Vector{Vector{MondrianCell{d}}}) where {d}
     if length(cells) == 1
         return cells[1]
@@ -79,7 +80,7 @@ function get_common_refinement(cells::Vector{Vector{MondrianCell{d}}}) where {d}
     end
 end
 
-"""Show a cell."""
+"""Show a Mondrian cell."""
 function Base.show(cell::MondrianCell{d}) where {d}
     lower = round.(cell.lower, digits=4)
     upper = round.(cell.upper, digits=4)

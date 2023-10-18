@@ -1,5 +1,7 @@
 using PyPlot
 
+# TODO makefile to minify then copy to docs
+
 # plot setup
 rcParams = PyPlot.PyDict(PyPlot.matplotlib."rcParams")
 rcParams["text.usetex"] = true

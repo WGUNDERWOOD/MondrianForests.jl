@@ -1,7 +1,17 @@
 using Random
 using Distributions
 
-"""Struct to represent a Mondrian tree."""
+"""
+A Mondrian tree is determined by:
+- `lambda`: the non-negative lifetime parameter
+- `id`: a string by which to identify the tree
+- `creation_time`: the time when the root cell was created during sampling
+- `cell`: the root cell of the tree
+- `split_axis`: the direction in which the root cell was split, if any
+- `split_location`: the location on `split_axis` at which the root cell was split, if any
+- `tree_left`: the left child tree of the root cell, if any
+- `tree_right`: the right child tree of the root cell, if any
+"""
 struct MondrianTree{d}
     lambda::Float64
     id::String
@@ -50,7 +60,7 @@ function MondrianTree(d::Int, lambda::Float64)
     end
 end
 
-"""Get the id of a cell in a tree containing a point `x`."""
+"""Get the id of a cell in a Mondrian tree containing a point `x`."""
 function get_cell_id(x::NTuple{d,Float64}, tree::MondrianTree{d}) where {d}
     if isnothing(tree.split_axis)
         return tree.id
@@ -63,7 +73,7 @@ function get_cell_id(x::NTuple{d,Float64}, tree::MondrianTree{d}) where {d}
     end
 end
 
-"""Check if two points are in the same cell of a tree."""
+"""Check if two points are in the same leaf cell of a Mondrian tree."""
 function are_in_same_cell(x1::NTuple{d,Float64}, x2::NTuple{d,Float64},
                           tree::MondrianTree{d}) where {d}
     if isnothing(tree.split_axis)
@@ -84,7 +94,7 @@ function are_in_same_cell(x1::NTuple{d,Float64}, x2::NTuple{d,Float64},
     end
 end
 
-"""Count the leaf cells in a tree."""
+"""Count the leaf cells in a Mondrian tree."""
 function count_cells(tree::MondrianTree{d}) where {d}
     if isnothing(tree.split_axis)
         return 1
@@ -93,7 +103,7 @@ function count_cells(tree::MondrianTree{d}) where {d}
     end
 end
 
-"""Get a list of the splits made in a tree."""
+"""Get a list of the splits made in a Mondrian tree."""
 function get_splits(tree::MondrianTree{d}) where {d}
     if !isnothing(tree.split_axis)
         lower = tree.tree_right.cell.lower
@@ -104,7 +114,7 @@ function get_splits(tree::MondrianTree{d}) where {d}
     end
 end
 
-"""Get a list of the leaf cells in a tree."""
+"""Get a list of the leaf cells in a Mondrian tree."""
 function get_cells(tree::MondrianTree{d}) where {d}
     if !isnothing(tree.split_axis)
         return [get_cells(tree.tree_left); get_cells(tree.tree_right)]
@@ -113,7 +123,7 @@ function get_cells(tree::MondrianTree{d}) where {d}
     end
 end
 
-"""Get a list of all the subtrees contained in a tree."""
+"""Get a list of all the subtrees contained in a Mondrian tree."""
 function get_subtrees(tree::MondrianTree{d}) where {d}
     if !isnothing(tree.split_axis)
         return [tree; get_subtrees(tree.tree_left); get_subtrees(tree.tree_right)]
@@ -122,7 +132,7 @@ function get_subtrees(tree::MondrianTree{d}) where {d}
     end
 end
 
-"""Get a list of the leaf cell ids in a tree."""
+"""Get a list of the leaf cell ids in a Mondrian tree."""
 function get_ids(tree::MondrianTree{d}) where {d}
     if !isnothing(tree.split_axis)
         return [get_ids(tree.tree_left); get_ids(tree.tree_right)]
@@ -131,7 +141,7 @@ function get_ids(tree::MondrianTree{d}) where {d}
     end
 end
 
-"""Get a list of the split times in a tree."""
+"""Get a list of the split times in a Mondrian tree."""
 function get_split_times(tree::MondrianTree{d}) where {d}
     if !isnothing(tree.split_axis)
         return [tree.creation_time; get_split_times(tree.tree_left);
@@ -141,7 +151,7 @@ function get_split_times(tree::MondrianTree{d}) where {d}
     end
 end
 
-"""Restrict a Mondrian tree to a stopping time."""
+"""Restrict a Mondrian tree to a stopping time to get a new Mondrian tree."""
 function restrict(tree::MondrianTree{d}, time::Float64) where {d}
     if !isnothing(tree.split_axis)
         if tree.tree_left.creation_time > time
