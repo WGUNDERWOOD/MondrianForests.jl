@@ -101,7 +101,7 @@ end
 
 """Get the leaf of a Mondrian tree containing a point `x`."""
 function get_leaf_containing(x::NTuple{d,Float64}, tree::MondrianTree{d}) where {d}
-    return [t for t in get_leaves(tree) if is_in(x, t)]
+    return [t for t in get_leaves(tree) if is_in(x, t.cell)][]
 end
 
 """Count the leaves of a Mondrian tree."""
