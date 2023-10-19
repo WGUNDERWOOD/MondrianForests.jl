@@ -24,8 +24,8 @@ lw = 12
 x_eps = 0.037
 y_eps = 0.020
 top = 0.59
-xs_outer = [-x_eps, 1+x_eps, 1+x_eps, -x_eps, -x_eps]
-ys_outer = [-y_eps, -y_eps, top+y_eps, top+y_eps, -y_eps]
+xs_outer = [0.5, 1+x_eps, 1+x_eps, -x_eps, -x_eps, 0.5]
+ys_outer = [-y_eps, -y_eps, top+y_eps, top+y_eps, -y_eps, -y_eps]
 outer_col = col_purple
 plt.plot(xs_outer, ys_outer, c=outer_col, lw=2*lw, zorder=0)
 plt.fill(xs_outer, ys_outer, c=outer_col, lw=0)
