@@ -41,14 +41,15 @@ all_ys = [[0, 0]; ys; [0, 0]]
 plt.plot(all_xs, all_ys, c="#111111", lw=lw)
 
 # piet lines
+eps = 0.01
 x1 = 0.25
 x2 = 0.80
 y1 = 0.11
 y2 = 0.25
-plt.plot([x1, x1], [0, 0.55], c="#111111", lw=lw)
-plt.plot([0, 1], [y2, y2], c="#111111", lw=lw)
-plt.plot([x2, x2], [0, y2], c="#111111", lw=lw)
-plt.plot([x2, 1.0], [y1, y1], c="#111111", lw=lw)
+plt.plot([x1, x1], [eps, 0.55], c="#111111", lw=lw)
+plt.plot([eps, 1-eps], [y2, y2], c="#111111", lw=lw)
+plt.plot([x2, x2], [eps, y2-eps], c="#111111", lw=lw)
+plt.plot([x2+eps, 1-eps], [y1, y1], c="#111111", lw=lw)
 
 # piet blocks
 red_xs = [xs[i] for i in 1:n if xs[i] >= x1]
