@@ -79,8 +79,8 @@ function plot_theorem_distribution(tree, point)
     plt.plot([u1, l1], [u2, u2], color="k", lw=lw)
 
     # get cell containing point
-    cells = MondrianForests.get_cells(tree)
-    cell = [c for c in cells if MondrianForests.is_in(point, c)][]
+    subtrees = MondrianForests.get_subtrees(tree)
+    cell = [c for c in subtrees if MondrianForests.is_in(point, c)][]
 
     # plot point and distribution
     e1 = 0.03
@@ -131,12 +131,12 @@ d = 2
 lambda = 2.0
 Random.seed!(0)
 min_vol = 0.0
-n_cells = 1
-while min_vol < 0.2 || n_cells != 4
+n_subtrees = 1
+while min_vol < 0.2 || n_subtrees != 4
     global tree = MondrianTree(d, lambda)
-    global cells = MondrianForests.get_cells(tree)
-    global min_vol = minimum(MondrianForests.get_volume(c) for c in cells)
-    global n_cells = length(cells)
+    global subtrees = MondrianForests.get_subtrees(tree)
+    global min_vol = minimum(MondrianForests.get_volume(c.cell) for c in subtrees)
+    global n_subtrees = length(subtrees)
 end
 
 # restriction theorem plot

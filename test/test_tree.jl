@@ -3,7 +3,7 @@
 @testset verbose = true "Trees" begin
     @testset verbose = true "Tree construction" begin
         for d in 1:3
-            lambda = 2.0
+            lambda = 3.0
             tree = MondrianTree(d, lambda)
             @test tree.creation_time == 0.0
             @test tree.cell == MondrianCell(d)
@@ -17,8 +17,20 @@
         end
     end
 
+    @testset verbose = true "get_subtrees" begin
+        for d in 1:3
+            lambda = 3.0
+            tree = MondrianTree(d, lambda)
+            subtrees = get_subtrees(tree)
+            println(subtrees[1])
+            #@test all(collect(cell_id_left) .== 'L')
+            #@test all(collect(cell_id_right) .== 'R')
+        end
+    end
+
     #=
-    @testset verbose = true "get_cell_id" begin
+    #
+    @testset verbose = true "get_subtrees" begin
         for d in 1:3
             lambda = 2.0
             tree = MondrianTree(d, lambda)

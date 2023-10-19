@@ -10,10 +10,12 @@ export show
 
 # TODO tree
 export MondrianTree
-export get_cell_id
-export are_in_same_cell
-export count_cells
-export restrict
+export get_subtrees
+export get_leaves
+#export get_cell_id
+#export are_in_same_cell
+#export count_cells
+#export restrict
 
 # TODO forest
 export MondrianForest
