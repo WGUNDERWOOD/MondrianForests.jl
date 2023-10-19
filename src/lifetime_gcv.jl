@@ -2,9 +2,9 @@
 Select the lifetime parameter for a (debiased) Mondrian random forest
 using generalized cross-validation.
 """
-function select_lifetime_gcv(lambdas::Vector{Float64}, n_trees::Int, n_subsample::Int,
-                             debias_order::Int, X_data::Vector{NTuple{d,Float64}},
-                             Y_data::Vector{Float64}) where {d}
+function select_lifetime_gcv(lambdas::Vector{Float64}, n_trees::Int,
+                             X_data::Vector{NTuple{d,Float64}}, Y_data::Vector{Float64},
+                             debias_order::Int, n_subsample::Int) where {d}
     n_lambdas = length(lambdas)
     gcvs = [NaN for _ in 1:n_lambdas]
     for l in 1:n_lambdas

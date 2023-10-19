@@ -13,8 +13,8 @@
             n_trees = 100
             n_subsample = 20
             lambdas = collect(range(1.0, 20.1, step=1))
-            lambda = select_lifetime_gcv(lambdas, n_trees, n_subsample,
-                                         debias_order, X_data, Y_data)
+            lambda = select_lifetime_gcv(lambdas, n_trees, X_data, Y_data,
+                                         debias_order, n_subsample)
         end
     end
 end

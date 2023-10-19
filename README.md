@@ -75,7 +75,7 @@ n_trees = 50
 n_subsample = 30
 debias_order = 0
 lambdas = collect(range(0.5, 10.0, step=0.5))
-lambda = select_lifetime_gcv(lambdas, n_trees, n_subsample, debias_order, X, Y)
+lambda = select_lifetime_gcv(lambdas, n_trees, X, Y, debias_order, n_subsample)
 println("\nlambda chosen by GCV: ", lambda)
 
 # fit and evaluate a Mondrian random forest
