@@ -1,5 +1,5 @@
 """
-    MondrianCell(lower::NTuple{d,Float64}, upper::NTuple{d,Float64}) where {d}
+    MondrianCell(id::String, lower::NTuple{d,Float64}, upper::NTuple{d,Float64}) where {d}
 
 A Mondrian cell is determined by the coordinates of its lower and upper corner points.
 The dimension `d` may be any positive integer.
@@ -8,17 +8,18 @@ The dimension `d` may be any positive integer.
 ```jldoctest
 lower = ntuple(i -> 0.2, 2)
 upper = ntuple(i -> 0.7, 2)
-MondrianCell(lower, upper)
+MondrianCell("", lower, upper)
 
 # output
-MondrianCell{2}((0.2, 0.2), (0.7, 0.7))
+MondrianCell{2}("", (0.2, 0.2), (0.7, 0.7))
 ```
 """
 struct MondrianCell{d}
+    id::String
     lower::NTuple{d,Float64}
     upper::NTuple{d,Float64}
 
-    function MondrianCell(lower::NTuple{d,Float64}, upper::NTuple{d,Float64}) where {d}
+    function MondrianCell(id::String, lower::NTuple{d,Float64}, upper::NTuple{d,Float64}) where {d}
         if !all(0 .<= lower .<= 1)
             throw(DomainError(lower, "coordinates of lower must be in [0, 1]"))
         elseif !all(0 .<= upper .<= 1)
@@ -26,7 +27,7 @@ struct MondrianCell{d}
         elseif !all(lower .<= upper)
             throw(ArgumentError("lower must be pointwise no greater than upper"))
         else
-            return new{d}(lower, upper)
+            return new{d}(id, lower, upper)
         end
     end
 end
@@ -35,12 +36,13 @@ end
     MondrianCell(d::Int)
 
 Construct the d-dimensional unit hypercube Mondrian cell `[0,1]^d`.
+Uses an empty string for the `id` field.
 
 ```jldoctest
 MondrianCell(2)
 
 # output
-MondrianCell{2}((0.0, 0.0), (1.0, 1.0))
+MondrianCell{2}("", (0.0, 0.0), (1.0, 1.0))
 ```
 """
 function MondrianCell(d::Int)
@@ -49,7 +51,7 @@ function MondrianCell(d::Int)
     else
         lower = ntuple(i -> 0.0, d)
         upper = ntuple(i -> 1.0, d)
-        return MondrianCell(lower, upper)
+        return MondrianCell("", lower, upper)
     end
 end
 

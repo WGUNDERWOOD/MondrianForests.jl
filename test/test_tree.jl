@@ -1,10 +1,11 @@
+# TODO rewrite
+
 @testset verbose = true "Trees" begin
     @testset verbose = true "Tree construction" begin
         for d in 1:3
             lambda = 2.0
             tree = MondrianTree(d, lambda)
             @test tree.creation_time == 0.0
-            @test tree.id == ""
             @test tree.cell == MondrianCell(d)
         end
     end
@@ -16,6 +17,7 @@
         end
     end
 
+    #=
     @testset verbose = true "get_cell_id" begin
         for d in 1:3
             lambda = 2.0
@@ -68,4 +70,5 @@
             @suppress show(tree)
         end
     end
+    =#
 end

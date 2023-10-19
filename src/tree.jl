@@ -1,12 +1,18 @@
 using Random
 using Distributions
 
+# TODO rename some functions to all or leaf
+# TODO rewrite functions based on subtrees
+# TODO use bool to check splits, not isnothing
+# TODO rewrite replication files to use new functions
+# TODO docs
+
 """
 A Mondrian tree is determined by:
 - `lambda`: the non-negative lifetime parameter
-- `id`: a string by which to identify the tree
 - `creation_time`: the time when the root cell was created during sampling
 - `cell`: the root cell of the tree
+- `is_split`: whether the root cell is split
 - `split_axis`: the direction in which the root cell was split, if any
 - `split_location`: the location on `split_axis` at which the root cell was split, if any
 - `tree_left`: the left child tree of the root cell, if any
@@ -14,17 +20,17 @@ A Mondrian tree is determined by:
 """
 struct MondrianTree{d}
     lambda::Float64
-    id::String
     creation_time::Float64
     cell::MondrianCell{d}
+    is_split::Bool
     split_axis::Union{Int,Nothing}
     split_location::Union{Float64,Nothing}
     tree_left::Union{MondrianTree{d},Nothing}
     tree_right::Union{MondrianTree{d},Nothing}
 end
 
-"""Sample a Mondrian tree with a given lifetime, root cell, root cell id and creation time."""
-function MondrianTree(lambda::Float64, id::String, creation_time::Float64,
+"""Sample a Mondrian tree with a given lifetime, root cell and creation time."""
+function MondrianTree(lambda::Float64, creation_time::Float64,
                       cell::MondrianCell{d}) where {d}
     size_cell = sum(cell.upper .- cell.lower)
     E = randexp() / size_cell
@@ -35,17 +41,17 @@ function MondrianTree(lambda::Float64, id::String, creation_time::Float64,
         left_upper = collect(cell.upper)
         left_upper[split_axis] = split_location
         left_upper = ntuple(i -> left_upper[i], d)
-        cell_left = MondrianCell(cell.lower, left_upper)
+        cell_left = MondrianCell(cell.id * "L", cell.lower, left_upper)
         right_lower = collect(cell.lower)
         right_lower[split_axis] = split_location
         right_lower = ntuple(i -> right_lower[i], d)
-        cell_right = MondrianCell(right_lower, cell.upper)
-        tree_left = MondrianTree(lambda, id * "L", creation_time + E, cell_left)
-        tree_right = MondrianTree(lambda, id * "R", creation_time + E, cell_right)
-        tree = MondrianTree(lambda, id, creation_time, cell, split_axis,
+        cell_right = MondrianCell(cell.id * "R", right_lower, cell.upper)
+        tree_left = MondrianTree(lambda, creation_time + E, cell_left)
+        tree_right = MondrianTree(lambda, creation_time + E, cell_right)
+        tree = MondrianTree(lambda, creation_time, cell, true, split_axis,
                             split_location, tree_left, tree_right)
     else
-        tree = MondrianTree(lambda, id, creation_time, cell, nothing,
+        tree = MondrianTree(lambda, creation_time, cell, false, nothing,
                             nothing, nothing, nothing)
     end
     return tree
@@ -56,14 +62,33 @@ function MondrianTree(d::Int, lambda::Float64)
     if lambda < 0
         throw(DomainError(lambda, "lambda must be non-negative"))
     else
-        return MondrianTree(lambda, "", 0.0, MondrianCell(d))
+        return MondrianTree(lambda, 0.0, MondrianCell(d))
+    end
+end
+
+"""Get a list of all the subtrees contained in a Mondrian tree."""
+function get_all_subtrees(tree::MondrianTree{d}) where {d}
+    if tree.split
+        return [tree; get_all_subtrees(tree.tree_left); get_all_subtrees(tree.tree_right)]
+    else
+        return [tree]
+    end
+end
+
+"""Get a list of the leaf subtrees contained in a Mondrian tree."""
+function get_leaf_subtrees(tree::MondrianTree{d}) where {d}
+    if tree.split
+        return [get_leaf_subtrees(tree.tree_left); get_leaf_subtrees(tree.tree_right)]
+    else
+        return [tree]
     end
 end
 
 """Get the id of a cell in a Mondrian tree containing a point `x`."""
-function get_cell_id(x::NTuple{d,Float64}, tree::MondrianTree{d}) where {d}
+function get_leaf_subtree_containing(x::NTuple{d,Float64}, tree::MondrianTree{d}) where {d}
+    # TODO check x in root cell first
     if isnothing(tree.split_axis)
-        return tree.id
+        return tree
     else
         if x[tree.split_axis] <= tree.split_location
             return get_cell_id(x, tree.tree_left)
@@ -120,15 +145,6 @@ function get_cells(tree::MondrianTree{d}) where {d}
         return [get_cells(tree.tree_left); get_cells(tree.tree_right)]
     else
         return [tree.cell]
-    end
-end
-
-"""Get a list of all the subtrees contained in a Mondrian tree."""
-function get_subtrees(tree::MondrianTree{d}) where {d}
-    if !isnothing(tree.split_axis)
-        return [tree; get_subtrees(tree.tree_left); get_subtrees(tree.tree_right)]
-    else
-        return [tree]
     end
 end
 

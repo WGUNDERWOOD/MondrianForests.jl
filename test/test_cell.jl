@@ -6,9 +6,10 @@
             @test length(cell.upper) == d
             @test all(cell.lower .== 0)
             @test all(cell.upper .== 1)
+            id = "LR"
             lower = ntuple(i -> rand() / 2, d)
             upper = ntuple(i -> 0.5 + rand() / 2, d)
-            cell = MondrianCell(lower, upper)
+            cell = MondrianCell(id, lower, upper)
             @test length(cell.lower) == d
             @test length(cell.upper) == d
             @test all(0 .<= cell.lower .<= cell.upper .<= 1)
@@ -19,13 +20,13 @@
         @test_throws DomainError MondrianCell(-1)
         lower = ntuple(i -> -1.0, 2)
         upper = ntuple(i -> 1.0, 2)
-        @test_throws DomainError MondrianCell(lower, upper)
+        @test_throws DomainError MondrianCell("", lower, upper)
         lower = ntuple(i -> 1.0, 2)
         upper = ntuple(i -> -1.0, 2)
-        @test_throws DomainError MondrianCell(lower, upper)
+        @test_throws DomainError MondrianCell("", lower, upper)
         lower = ntuple(i -> 1.0, 2)
         upper = ntuple(i -> 0.0, 2)
-        @test_throws ArgumentError MondrianCell(lower, upper)
+        @test_throws ArgumentError MondrianCell("", lower, upper)
     end
 
     @testset verbose = true "is_in" begin
@@ -42,7 +43,7 @@
         for d in 1:5
             lower = ntuple(i -> rand() / 2, d)
             upper = ntuple(i -> 0.5 + rand() / 2, d)
-            cell = MondrianCell(lower, upper)
+            cell = MondrianCell("", lower, upper)
             @suppress show(cell)
         end
     end
