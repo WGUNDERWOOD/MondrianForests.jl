@@ -3,6 +3,9 @@
 using Documenter
 using MondrianForests
 
+DocMeta.setdocmeta!(MondrianForests, :DocTestSetup,
+                    :(using MondrianForests); recursive=true)
+
 makedocs(sitename="MondrianForests.jl",
          modules=MondrianForests,
          pages=["Home" => "index.md",
