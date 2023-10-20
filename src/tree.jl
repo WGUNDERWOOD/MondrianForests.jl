@@ -9,19 +9,23 @@ using Distributions
 
 """
 A Mondrian tree is determined by:
+- `id`: a string to identify the tree
 - `lambda`: the non-negative lifetime parameter
-- `creation_time`: the time when the root cell was created during sampling
-- `cell`: the root cell of the tree
-- `is_split`: whether the root cell is split
-- `split_axis`: the direction in which the root cell was split, if any
-- `split_location`: the location on `split_axis` at which the root cell was split, if any
-- `tree_left`: the left child tree of the root cell, if any
-- `tree_right`: the right child tree of the root cell, if any
+- `lower`: the lower coordinate of the cell
+- `upper`: the upper coordinate of the cell
+- `creation_time`: the time when the cell was created during sampling
+- `is_split`: whether the cell is split
+- `split_axis`: the direction in which the cell is split, if any
+- `split_location`: the location on `split_axis` at which the cell is split, if any
+- `tree_left`: the left child tree of the cell, if any
+- `tree_right`: the right child tree of the cell, if any
 """
 struct MondrianTree{d}
+    id::String
     lambda::Float64
+    lower::NTuple{d,Float64}
+    upper::NTuple{d,Float64}
     creation_time::Float64
-    cell::MondrianCell{d}
     is_split::Bool
     split_axis::Union{Int,Nothing}
     split_location::Union{Float64,Nothing}
@@ -29,30 +33,30 @@ struct MondrianTree{d}
     tree_right::Union{MondrianTree{d},Nothing}
 end
 
-"""Sample a Mondrian tree with a given lifetime, root cell and creation time."""
-function MondrianTree(lambda::Float64, creation_time::Float64,
-                      cell::MondrianCell{d}) where {d}
-    size_cell = sum(cell.upper .- cell.lower)
+"""
+Sample a Mondrian tree with a given lifetime, lower and upper cell coordinates, and creation time.
+"""
+function MondrianTree(id::String, lambda::Float64, lower::NTuple{d,Float64},
+                      upper::NTuple{d,Float64}, creation_time::Float64) where {d}
+    size_cell = sum(upper .- lower)
     E = randexp() / size_cell
     if creation_time + E <= lambda
-        split_probabilities = collect(cell.upper .- cell.lower) ./ size_cell
+        split_probabilities = collect(upper .- lower) ./ size_cell
         split_axis = rand(DiscreteNonParametric(1:d, split_probabilities))
-        split_location = rand(Uniform(cell.lower[split_axis], cell.upper[split_axis]))
-        left_upper = collect(cell.upper)
+        split_location = rand(Uniform(lower[split_axis], upper[split_axis]))
+        left_upper = collect(upper)
         left_upper[split_axis] = split_location
         left_upper = ntuple(i -> left_upper[i], d)
-        cell_left = MondrianCell(cell.id * "L", cell.lower, left_upper)
-        right_lower = collect(cell.lower)
+        right_lower = collect(lower)
         right_lower[split_axis] = split_location
         right_lower = ntuple(i -> right_lower[i], d)
-        cell_right = MondrianCell(cell.id * "R", right_lower, cell.upper)
-        tree_left = MondrianTree(lambda, creation_time + E, cell_left)
-        tree_right = MondrianTree(lambda, creation_time + E, cell_right)
-        tree = MondrianTree(lambda, creation_time, cell, true, split_axis,
+        tree_left = MondrianTree(id * "L", lambda, lower, left_upper, creation_time + E)
+        tree_right = MondrianTree(id * "R", lambda, right_lower, upper, creation_time + E)
+        tree = MondrianTree(id, lambda, lower, upper, creation_time, true, split_axis,
                             split_location, tree_left, tree_right)
     else
-        tree = MondrianTree(lambda, creation_time, cell, false, nothing,
-                            nothing, nothing, nothing)
+        tree = MondrianTree(id, lambda, lower, upper, creation_time, false,
+                            nothing, nothing, nothing, nothing)
     end
     return tree
 end
@@ -62,24 +66,151 @@ function MondrianTree(d::Int, lambda::Float64)
     if lambda < 0
         throw(DomainError(lambda, "lambda must be non-negative"))
     else
-        return MondrianTree(lambda, 0.0, MondrianCell(d))
+        lower = ntuple(i -> 0.0, d)
+        upper = ntuple(i -> 1.0, d)
+        return MondrianTree("", lambda, lower, upper, 0.0)
     end
 end
 
 """
-Check if two points are in the same leaf cell of a Mondrian tree.
+    is_in(x::NTuple{d,Float64}, tree::MondrianTree{d}) where {d}
+
+Check if a point `x` is contained in a Mondrian tree.
+
+# Examples
+```jldoctest
+x = ntuple(i -> 0.2, 2)
+tree = MondrianTree(2, 3.0)
+is_in(x, tree)
+
+# output
+true
+```
 """
-function are_in_same_cell(x1::Vector{Float64}, x2::Vector{Float64}, tree::MondrianTree)
+function is_in(x::NTuple{d,Float64}, tree::MondrianTree{d}) where {d}
+    return all(tree.lower .<= x .<= tree.upper)
+end
+
+"""
+    get_center(tree::MondrianTree{d}) where {d}
+
+Get the center point of a Mondrian tree.
+
+# Examples
+```jldoctest
+tree = MondrianTree(2, 3.0)
+get_center(tree)
+
+# output
+(0.5, 0.5)
+```
+"""
+function get_center(tree::MondrianTree{d}) where {d}
+    return (tree.lower .+ tree.upper) ./ 2
+end
+
+"""
+    get_volume(tree::MondrianTree{d}) where {d}
+
+Get the d-dimensional volume of a Mondrian tree.
+
+# Examples
+```jldoctest
+tree = MondrianTree(2, 3.0)
+get_volume(tree)
+
+# output
+1.0
+```
+"""
+function get_volume(tree::MondrianTree{d}) where {d}
+    return prod(tree.upper .- tree.lower)
+end
+
+#=
+function get_intersection(tree1::MondrianTree{d}, tree2::MondrianTree{d}) where {d}
+    @assert tree1.lambda == tree2.lambda
+    @assert !tree1.is_split && !tree2.is_split
+    lower = max.(tree1.lower, tree2.lower)
+    upper = min.(tree1.upper, tree2.upper)
+    if all(lower .< upper)
+        return MondrianTree("", tree1.lambda, lower, upper, 0.0, false,
+                            nothing, nothing, nothing, nothing)
+    else
+        return nothing
+    end
+end
+=#
+
+function get_common_refinement(tree1::MondrianTree{d}, tree2::MondrianTree{d}) where {d}
+    @assert tree1.id == tree2.id
+    @assert tree1.lambda == tree2.lambda
+    if !tree1.is_split && !tree2.is_split
+        lower = max.(tree1.lower, tree2.lower)
+        upper = min.(tree1.upper, tree2.upper)
+        if all(lower .< upper)
+            creation_time = max(tree1.creation_time, tree2.creation_time)
+            return MondrianTree(tree1.id, tree1.lambda, lower, upper, creation_time,
+                                false, nothing, nothing, nothing, nothing)
+        else
+            return nothing
+        end
+    elseif !tree1.is_split
+        first_split_time = tree2.tree_left.creation_time
+        refinement_left = get_common_refinement(tree1, tree2.tree_left)
+        refinement_right = get_common_refinement(tree1, tree2.tree_right)
+        return MondrianTree(tree1.id, tree1.lambda, tree1.lower, tree1.upper,
+                            tree1.creation_time, false, nothing, nothing, nothing, nothing)
+    elseif !tree2.is_split
+        first_split_time = tree1.tree_left.creation_time
+    else
+        first_split_time = min(tree1.tree_left.creation_time, tree2.tree_left.creation_time)
+    end
+
+    println(first_split_time)
+        #if first_split_time == tree1.tree_left.creation_time
+            #refinement_left =
+
+
+    #leaves1 = get_leaves(tree1)
+    #leaves2 = get_leaves(tree2)
+    #common_refinement = MondrianTree{d}[]
+    #for c1 in leaves1
+        #for c2 in leaves2
+            #c = get_intersection(c1, c2)
+            #if isa(c, MondrianTree{d})
+                #push!(common_refinement, c)
+            #end
+        #end
+    #end
+    #return unique(common_refinement)
+end
+
+#=
+function get_common_refinement(trees::Vector{MondrianTree{d}}) where {d}
+    if length(trees) == 1
+        return trees[1]
+    else
+        return get_common_refinement(trees[1], get_common_refinement(trees[2:end]))
+    end
+end
+=#
+
+
+"""
+Check if two points are in the same leaf of a Mondrian tree.
+"""
+function are_in_same_leaf(x1::Vector{Float64}, x2::Vector{Float64}, tree::MondrianTree)
     if tree.is_split
-        if is_in(x1, tree.left.cell) && is_in(x2, tree.left.cell)
-            return are_in_same_cell(x1, x2, tree.left)
-        elseif is_in(x1, tree.right.cell) && is_in(x2, tree.right.cell)
-            return are_in_same_cell(x1, x2, tree.right)
+        if is_in(x1, tree.tree_left) && is_in(x2, tree.tree_right)
+            return are_in_same_leaf(x1, x2, tree.left)
+        elseif is_in(x1, tree.tree_right) && is_in(x2, tree.tree_right)
+            return are_in_same_leaf(x1, x2, tree.right)
         else
             return false
         end
     else
-        return is_in(x1, tree.cell) && is_in(x2, tree.cell)
+        return is_in(x1, tree) && is_in(x2, tree)
     end
 end
 
@@ -101,7 +232,7 @@ end
 
 """Get the leaf of a Mondrian tree containing a point `x`."""
 function get_leaf_containing(x::NTuple{d,Float64}, tree::MondrianTree{d}) where {d}
-    return [t for t in get_leaves(tree) if is_in(x, t.cell)][]
+    return [t for t in get_leaves(tree) if is_in(x, t)][]
 end
 
 """Count the leaves of a Mondrian tree."""
@@ -114,23 +245,23 @@ function restrict(tree::MondrianTree{d}, time::Float64) where {d}
     if tree.is_split && tree.tree_left.creation_time <= time
         tree_left = restrict(tree.tree_left, time)
         tree_right = restrict(tree.tree_right, time)
-        return MondrianTree{d}(tree.lambda, tree.creation_time, tree.cell, true,
+        return MondrianTree{d}(tree.lambda, tree.lower, tree.upper, tree.creation_time, true,
                                tree.split_axis, tree.split_location, tree_left, tree_right)
     else
-        return MondrianTree{d}(tree.lambda, tree.creation_time, tree.cell, false,
+        return MondrianTree{d}(tree.lambda, tree.lower, tree.upper, tree.creation_time, false,
                                nothing, nothing, nothing, nothing)
     end
 end
 
 """Show a Mondrian tree."""
 function Base.show(tree::MondrianTree{d}) where {d}
-    depth = length(tree.cell.id)
+    depth = length(tree.id)
     if depth >= 1
-        print(repeat("-", length(tree.cell.id)))
+        print(repeat("-", length(tree.id)))
         print(" ")
     end
     if depth >= 1
-        printstyled("$(tree.cell.id) ", bold=true, color=:light_magenta)
+        printstyled("$(tree.id) ", bold=true, color=:light_magenta)
     else
         printstyled("MondrianTree ", bold=true, color=:yellow)
         print("in ")
@@ -145,8 +276,8 @@ function Base.show(tree::MondrianTree{d}) where {d}
         print("at time $(round(tree.tree_left.creation_time, digits=4)) ")
     else
         print("leaf at ")
-        lower = round.(tree.cell.lower, digits=4)
-        upper = round.(tree.cell.upper, digits=4)
+        lower = round.(tree.lower, digits=4)
+        upper = round.(tree.upper, digits=4)
         printstyled("$lower -- $upper ", color=:green)
     end
     print("\n")

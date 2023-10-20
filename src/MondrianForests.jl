@@ -2,16 +2,15 @@ module MondrianForests
 
 # TODO better docs for exported functions
 
-export MondrianCell
+# TODO tree
+export MondrianTree
 export is_in
 export get_center
 export get_volume
 export show
-
-# TODO tree
-export MondrianTree
 export get_subtrees
 export get_leaves
+export get_common_refinement
 #export get_cell_id
 #export are_in_same_cell
 #export count_cells
@@ -31,7 +30,6 @@ export select_lifetime_gcv
 export select_lifetime_polynomial
 
 # TODO include source files
-include("cell.jl")
 include("tree.jl")
 include("data.jl")
 include("forest.jl")

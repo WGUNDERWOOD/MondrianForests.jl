@@ -6,7 +6,8 @@
             lambda = 3.0
             tree = MondrianTree(d, lambda)
             @test tree.creation_time == 0.0
-            @test tree.cell == MondrianCell(d)
+            @test all(tree.lower .== 0.0)
+            @test all(tree.upper .== 1.0)
         end
     end
 
@@ -17,19 +18,57 @@
         end
     end
 
+    @testset verbose = true "is_in" begin
+        for d in 1:3
+            lambda = 3.0
+            tree = MondrianTree(d, lambda)
+            x_in = ntuple(i -> rand(), d)
+            x_out = ntuple(i -> 2 + rand(), d)
+            @test is_in(x_in, tree)
+            @test !is_in(x_out, tree)
+        end
+    end
+
+    @testset verbose = true "get_center" begin
+        for d in 1:3
+            lambda = 3.0
+            tree = MondrianTree(d, lambda)
+            @test get_center(tree) == ntuple(x -> 0.5, d)
+        end
+    end
+
+    @testset verbose = true "get_volume" begin
+        for d in 1:3
+            lambda = 3.0
+            lower = ntuple(x -> 0.3, d)
+            upper = ntuple(x -> 0.7, d)
+            tree = MondrianTree("", lambda, lower, upper, 0.0)
+            @test isapprox(get_volume(tree), 0.4^d, rtol=1e-10)
+        end
+    end
+
+    @testset verbose = true "get_common_refinement" begin
+        for d in 1:3
+            for B in 2:4
+                lambda = 3.0
+                trees = [MondrianTree(d, lambda) for b in 1:B]
+                refinement = get_common_refinement(trees[1], trees[2])
+                #@test length(refinement) == prod(length(get_leaves(t)) for t in refinement)
+            end
+        end
+    end
+
+    #=
     @testset verbose = true "get_subtrees" begin
         for d in 1:3
             lambda = 3.0
             tree = MondrianTree(d, lambda)
             subtrees = get_subtrees(tree)
-            println(subtrees[1])
-            #@test all(collect(cell_id_left) .== 'L')
-            #@test all(collect(cell_id_right) .== 'R')
+            @test all([t.tree_left.id[end] for t in subtrees if t.is_split] .== 'L')
+            @test all([t.tree_right.id[end] for t in subtrees if t.is_split] .== 'R')
         end
     end
 
-    #=
-    #
     @testset verbose = true "get_subtrees" begin
         for d in 1:3
             lambda = 2.0
