@@ -127,75 +127,60 @@ function get_volume(tree::MondrianTree{d}) where {d}
     return prod(tree.upper .- tree.lower)
 end
 
-#=
-function get_intersection(tree1::MondrianTree{d}, tree2::MondrianTree{d}) where {d}
-    @assert tree1.lambda == tree2.lambda
-    @assert !tree1.is_split && !tree2.is_split
-    lower = max.(tree1.lower, tree2.lower)
-    upper = min.(tree1.upper, tree2.upper)
-    if all(lower .< upper)
-        return MondrianTree("", tree1.lambda, lower, upper, 0.0, false,
-                            nothing, nothing, nothing, nothing)
+function apply_split(tree::MondrianTree{d}, split_lower::NTuple{d,Float64},
+                     split_upper::NTuple{d,Float64}, split_time::Float64,
+                     split_axis::Int, split_location::Float64) where {d}
+    if tree.is_split
+        tree_left = apply_split(tree.tree_left, split_lower, split_upper,
+                                split_time, split_axis, split_location)
+        tree_right = apply_split(tree.tree_right, split_lower, split_upper,
+                                split_time, split_axis, split_location)
+        return MondrianTree(tree.id, tree.lambda, tree.lower, tree.upper, tree.creation_time,
+                            true, tree.split_axis, tree.split_location, tree_left, tree_right)
     else
-        return nothing
+        if all(tree.lower .< split_upper) && all(split_lower .< tree.upper)
+            left_upper = min.(split_upper, tree.upper)
+            right_lower = max.(split_lower, tree.lower)
+            tree_left = MondrianTree(tree.id * "L", tree.lambda, tree.lower, left_upper,
+                                     split_time, false, nothing, nothing, nothing, nothing)
+            tree_right = MondrianTree(tree.id * "R", tree.lambda, right_lower, tree.upper,
+                                      split_time, false, nothing, nothing, nothing, nothing)
+            return MondrianTree(tree.id, tree.lambda, tree.lower, tree.upper, tree.creation_time,
+                                true, split_axis, split_location, tree_left, tree_right)
+        else
+            return tree
+        end
     end
 end
-=#
 
 function get_common_refinement(tree1::MondrianTree{d}, tree2::MondrianTree{d}) where {d}
     @assert tree1.id == tree2.id
     @assert tree1.lambda == tree2.lambda
-    if !tree1.is_split && !tree2.is_split
-        lower = max.(tree1.lower, tree2.lower)
-        upper = min.(tree1.upper, tree2.upper)
-        if all(lower .< upper)
-            creation_time = max(tree1.creation_time, tree2.creation_time)
-            return MondrianTree(tree1.id, tree1.lambda, lower, upper, creation_time,
-                                false, nothing, nothing, nothing, nothing)
-        else
-            return nothing
+    @assert tree1.lower == tree2.lower
+    @assert tree1.upper == tree2.upper
+    @assert tree1.creation_time == tree2.creation_time
+    subtrees1 = get_subtrees(tree1)
+    subtrees2 = get_subtrees(tree2)
+    subtrees = sort([subtrees1; subtrees2], by=(x -> x.creation_time))
+    tree = MondrianTree(tree1.id, tree1.lambda, tree1.lower, tree1.upper, tree1.creation_time,
+                        false, nothing, nothing, nothing, nothing)
+
+    for subtree in subtrees
+        if subtree.is_split
+            split_location = subtree.split_location
+            split_axis = subtree.split_axis
+            lower = subtree.lower
+            upper = subtree.upper
+            split_lower = ntuple(j -> (j == split_axis ? split_location : lower[j]), d)
+            split_upper = ntuple(j -> (j == split_axis ? split_location : upper[j]), d)
+            split_time = subtree.tree_left.creation_time
+            tree = apply_split(tree, split_lower, split_upper, split_time,
+                               split_axis, split_location)
         end
-    elseif !tree1.is_split
-        first_split_time = tree2.tree_left.creation_time
-        refinement_left = get_common_refinement(tree1, tree2.tree_left)
-        refinement_right = get_common_refinement(tree1, tree2.tree_right)
-        return MondrianTree(tree1.id, tree1.lambda, tree1.lower, tree1.upper,
-                            tree1.creation_time, false, nothing, nothing, nothing, nothing)
-    elseif !tree2.is_split
-        first_split_time = tree1.tree_left.creation_time
-    else
-        first_split_time = min(tree1.tree_left.creation_time, tree2.tree_left.creation_time)
     end
 
-    println(first_split_time)
-        #if first_split_time == tree1.tree_left.creation_time
-            #refinement_left =
-
-
-    #leaves1 = get_leaves(tree1)
-    #leaves2 = get_leaves(tree2)
-    #common_refinement = MondrianTree{d}[]
-    #for c1 in leaves1
-        #for c2 in leaves2
-            #c = get_intersection(c1, c2)
-            #if isa(c, MondrianTree{d})
-                #push!(common_refinement, c)
-            #end
-        #end
-    #end
-    #return unique(common_refinement)
+    return tree
 end
-
-#=
-function get_common_refinement(trees::Vector{MondrianTree{d}}) where {d}
-    if length(trees) == 1
-        return trees[1]
-    else
-        return get_common_refinement(trees[1], get_common_refinement(trees[2:end]))
-    end
-end
-=#
-
 
 """
 Check if two points are in the same leaf of a Mondrian tree.

@@ -8,8 +8,8 @@ plt.ioff()
 
 function get_splits(tree::MondrianTree{d}) where {d}
     if !isnothing(tree.split_axis)
-        lower = tree.tree_right.cell.lower
-        upper = tree.tree_left.cell.upper
+        lower = tree.tree_right.lower
+        upper = tree.tree_left.upper
         return [(lower, upper); get_splits(tree.tree_left); get_splits(tree.tree_right)]
     else
         return Tuple{NTuple{d,Float64},NTuple{d,Float64}}[]
@@ -23,8 +23,8 @@ function plot_mondrian_tree(tree::MondrianTree)
 
     # plot root cell
     lw = 0.3
-    (l1, l2) = tree.cell.lower
-    (u1, u2) = tree.cell.upper
+    (l1, l2) = tree.lower
+    (u1, u2) = tree.upper
     plot([l1, l1], [l1, u2], color="k", lw=lw)
     plot([u1, u1], [l2, u1], color="k", lw=lw)
     plot([l1, u1], [l2, l2], color="k", lw=lw)
