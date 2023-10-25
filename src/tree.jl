@@ -1,9 +1,7 @@
 using Random
 using Distributions
 
-# TODO rename some functions to all or leaf
 # TODO rewrite functions based on subtrees
-# TODO use bool to check splits, not isnothing
 # TODO rewrite replication files to use new functions
 # TODO docs
 
@@ -180,6 +178,20 @@ function get_common_refinement(tree1::MondrianTree{d}, tree2::MondrianTree{d}) w
     end
 
     return tree
+end
+
+function get_common_refinement(trees::Vector{MondrianTree{d}}) where {d}
+    # TODO this is giving incorrect results
+    @assert !isempty(trees)
+    if length(trees) == 1
+        return trees[]
+    else
+        refinement = get_common_refinement(trees[1], trees[2])
+        println(length(get_leaves(trees[1])))
+        println(length(get_leaves(refinement)))
+        println()
+        return get_common_refinement([refinement; trees[3:end]])
+    end
 end
 
 """
