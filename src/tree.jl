@@ -159,29 +159,28 @@ function get_common_refinement(tree1::MondrianTree{d}, tree2::MondrianTree{d}) w
     @assert tree1.creation_time == tree2.creation_time
     subtrees1 = get_subtrees(tree1)
     subtrees2 = get_subtrees(tree2)
-    subtrees = sort([subtrees1; subtrees2], by=(x -> x.creation_time))
+    subtrees = [subtrees1; subtrees2]
+    subtrees = [t for t in subtrees if t.is_split]
+    subtrees = sort(subtrees, by=(x -> x.tree_left.creation_time))
     tree = MondrianTree(tree1.id, tree1.lambda, tree1.lower, tree1.upper, tree1.creation_time,
                         false, nothing, nothing, nothing, nothing)
 
     for subtree in subtrees
-        if subtree.is_split
-            split_location = subtree.split_location
-            split_axis = subtree.split_axis
-            lower = subtree.lower
-            upper = subtree.upper
-            split_lower = ntuple(j -> (j == split_axis ? split_location : lower[j]), d)
-            split_upper = ntuple(j -> (j == split_axis ? split_location : upper[j]), d)
-            split_time = subtree.tree_left.creation_time
-            tree = apply_split(tree, split_lower, split_upper, split_time,
-                               split_axis, split_location)
-        end
+        split_location = subtree.split_location
+        split_axis = subtree.split_axis
+        lower = subtree.lower
+        upper = subtree.upper
+        split_lower = ntuple(j -> (j == split_axis ? split_location : lower[j]), d)
+        split_upper = ntuple(j -> (j == split_axis ? split_location : upper[j]), d)
+        split_time = subtree.tree_left.creation_time
+        tree = apply_split(tree, split_lower, split_upper, split_time,
+                           split_axis, split_location)
     end
 
     return tree
 end
 
 function get_common_refinement(trees::Vector{MondrianTree{d}}) where {d}
-    # TODO this is giving incorrect results
     @assert !isempty(trees)
     if length(trees) == 1
         return trees[]
