@@ -125,6 +125,7 @@ function get_volume(tree::MondrianTree{d}) where {d}
     return prod(tree.upper .- tree.lower)
 end
 
+# TODO doc
 function apply_split(tree::MondrianTree{d}, split_lower::NTuple{d,Float64},
                      split_upper::NTuple{d,Float64}, split_time::Float64,
                      split_axis::Int, split_location::Float64) where {d}
@@ -151,6 +152,7 @@ function apply_split(tree::MondrianTree{d}, split_lower::NTuple{d,Float64},
     end
 end
 
+# TODO doc
 function get_common_refinement(tree1::MondrianTree{d}, tree2::MondrianTree{d}) where {d}
     @assert tree1.id == tree2.id
     @assert tree1.lambda == tree2.lambda
@@ -180,6 +182,7 @@ function get_common_refinement(tree1::MondrianTree{d}, tree2::MondrianTree{d}) w
     return tree
 end
 
+# TODO doc
 function get_common_refinement(trees::Vector{MondrianTree{d}}) where {d}
     @assert !isempty(trees)
     if length(trees) == 1
