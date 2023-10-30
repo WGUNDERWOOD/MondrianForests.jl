@@ -12,12 +12,10 @@ plt.yticks([])
 # colors
 col_dark = "#111111"
 col_light = "#f9f9ee"
-col_blue = "#4063d8"
-#col_green = "#389826"
-col_green = "#38a826"
-#col_purple = "#9558b2"
-col_purple = "#a588e2"
-col_red = "#cb3c33"
+col_gray = "#d9c9be"
+col_red = "#FA0000"
+col_blue = "#0E75CF"
+col_yellow = "#FFEC02"
 
 # outer box
 lw = 12
@@ -26,7 +24,7 @@ y_eps = 0.020
 top = 0.59
 xs_outer = [0.5, 1+x_eps, 1+x_eps, -x_eps, -x_eps, 0.5]
 ys_outer = [-y_eps, -y_eps, top+y_eps, top+y_eps, -y_eps, -y_eps]
-outer_col = col_purple
+outer_col = col_gray
 plt.plot(xs_outer, ys_outer, c=outer_col, lw=2*lw, zorder=0)
 plt.fill(xs_outer, ys_outer, c=outer_col, lw=0)
 
@@ -54,12 +52,12 @@ plt.plot([x2+eps, 1-eps], [y1, y1], c="#111111", lw=lw)
 # piet blocks
 red_xs = [xs[i] for i in 1:n if xs[i] >= x1]
 red_ys = [ys[i] for i in 1:n if xs[i] >= x1]
-plt.fill_between(red_xs, y2, red_ys, fc=col_blue)
+plt.fill_between(red_xs, y2, red_ys, fc=col_red)
 white_xs = [xs[i] for i in 1:n if xs[i] <= x1]
 white_ys = [ys[i] for i in 1:n if xs[i] <= x1]
 plt.fill_between(white_xs, y2, white_ys, fc=col_light)
-plt.fill_between([0, x1], 0, y2, fc=col_red)
-plt.fill_between([x2, 1], 0, y1, fc=col_green)
+plt.fill_between([0, x1], 0, y2, fc=col_blue)
+plt.fill_between([x2, 1], 0, y1, fc=col_yellow)
 plt.fill_between([x1, x2], 0, y2, fc=col_light)
 plt.fill_between([x2, 1], y1, y2, fc=col_light)
 
