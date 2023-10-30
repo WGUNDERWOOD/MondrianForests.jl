@@ -12,7 +12,7 @@ export get_subtrees
 export get_leaves
 export get_common_refinement
 #export get_cell_id
-#export are_in_same_cell
+export are_in_same_leaf
 #export count_cells
 #export restrict
 

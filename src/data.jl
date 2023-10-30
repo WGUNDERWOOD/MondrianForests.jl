@@ -1,10 +1,13 @@
 using Distributions
 
 """
+    generate_data(n::Int, X_dist::Distribution, eps_dist::Distribution,
+                  mu::Function, sigma2::Function)
+
 Generate sample data for Mondrian forest estimation.
 
-Draws `n` independent samples from `Y = mu(X) + sigma(X) eps`,
-with `X ~ X_dist` and `eps ~ eps_dist`
+Draws `n` independent samples from \$Y = \\mu(X) + \\sigma(X) \\varepsilon\$,
+with \$X \\sim\$ `X_dist` and \$\\varepsilon \\sim\$ `eps_dist`.
 """
 function generate_data(n::Int, X_dist::Distribution, eps_dist::Distribution,
                        mu::Function, sigma2::Function)
@@ -17,10 +20,13 @@ function generate_data(n::Int, X_dist::Distribution, eps_dist::Distribution,
 end
 
 """
+    generate_uniform_data_uniform_errors(d::Int, n::Int)
+
 Generate uniform sample data with uniform errors for Mondrian forest estimation.
 
-Draws `n` independent samples from `Y = eps`,
-with `X ~ U[0, 1]` and `eps ~ U[-sqrt(3), sqrt(3)]`
+Draws `n` independent samples from \$Y = \\varepsilon\$,
+with \$X \\sim \\mathcal{U}[0, 1]\$ and
+\$\\varepsilon \\sim \\mathcal{U}\\big[-\\sqrt 3, \\sqrt 3\\big]\$.
 """
 function generate_uniform_data_uniform_errors(d::Int, n::Int)
     X_dist = product_distribution([Uniform(0, 1) for _ in 1:d])
@@ -31,10 +37,12 @@ function generate_uniform_data_uniform_errors(d::Int, n::Int)
 end
 
 """
+    generate_uniform_data_normal_errors(d::Int, n::Int)
+
 Generate uniform sample data with normal errors for Mondrian forest estimation.
 
-Draws `n` independent samples from `Y = eps`,
-with `X ~ U[0, 1]` and `eps ~ N(0, 1)`
+Draws `n` independent samples from \$Y = \\varepsilon\$,
+with \$X \\sim \\mathcal{U}[0, 1]\$ and \$\\varepsilon \\sim \\mathcal{N}(0, 1)\$.
 """
 function generate_uniform_data_normal_errors(d::Int, n::Int)
     X_dist = product_distribution([Uniform(0, 1) for _ in 1:d])

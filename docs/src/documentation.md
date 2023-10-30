@@ -1,12 +1,5 @@
 # Documentation
 
-## Mondrian cells
-
-```@autodocs
-Modules = [MondrianForests]
-Pages   = ["cell.jl"]
-```
-
 ## Mondrian trees
 
 ```@autodocs
