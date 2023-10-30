@@ -5,6 +5,7 @@
 ```@autodocs
 Modules = [MondrianForests]
 Pages   = ["tree.jl"]
+Private = false
 ```
 
 ## Mondrian random forests
@@ -12,6 +13,7 @@ Pages   = ["tree.jl"]
 ```@autodocs
 Modules = [MondrianForests]
 Pages   = ["forest.jl"]
+Private = false
 ```
 
 ## Debiased Mondrian random forests
@@ -19,6 +21,7 @@ Pages   = ["forest.jl"]
 ```@autodocs
 Modules = [MondrianForests]
 Pages   = ["debias.jl"]
+Private = false
 ```
 
 ## Lifetime parameter selection
@@ -26,6 +29,7 @@ Pages   = ["debias.jl"]
 ```@autodocs
 Modules = [MondrianForests]
 Pages   = ["lifetime_polynomial.jl", "lifetime_gcv.jl"]
+Private = false
 ```
 
 ## Data generation
@@ -33,4 +37,5 @@ Pages   = ["lifetime_polynomial.jl", "lifetime_gcv.jl"]
 ```@autodocs
 Modules = [MondrianForests]
 Pages   = ["data.jl"]
+Private = false
 ```
