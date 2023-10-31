@@ -14,8 +14,7 @@ based on methods detailed in
 [Cattaneo, Klusowski and Underwood, 2023, arXiv:2310:09702](https://arxiv.org/abs/2310.09702).
 This package provides:
 
-- Fitting Mondrian random forests
-- Fitting debiased Mondrian random forests
+- Fitting (debiased) Mondrian random forests
 - Selecting a lifetime parameter with polynomial estimation or generalized cross-validation
 
 ### Branches

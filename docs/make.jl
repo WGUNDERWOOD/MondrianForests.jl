@@ -11,4 +11,4 @@ makedocs(sitename="MondrianForests.jl",
          pages=["Home" => "index.md",
                 "Documentation" => "documentation.md"])
 
-deploydocs(repo = "github.com/WGUNDERWOOD/MondrianForests.jl.git")
+#deploydocs(repo = "github.com/WGUNDERWOOD/MondrianForests.jl.git")
