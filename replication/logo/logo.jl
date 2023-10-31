@@ -12,10 +12,11 @@ plt.yticks([])
 # colors
 col_dark = "#111111"
 col_light = "#f9f9ee"
-col_gray = "#ddd7da"
 col_red = "#FA0000"
 col_blue = "#0E75CF"
 col_yellow = "#FFEC02"
+#col_purple = "#9558b2"
+col_purple = "#d5b8f5"
 
 # outer box
 lw = 12
@@ -24,7 +25,7 @@ y_eps = 0.020
 top = 0.59
 xs_outer = [0.5, 1 + x_eps, 1 + x_eps, -x_eps, -x_eps, 0.5]
 ys_outer = [-y_eps, -y_eps, top + y_eps, top + y_eps, -y_eps, -y_eps]
-outer_col = col_gray
+outer_col = col_purple
 plt.plot(xs_outer, ys_outer, c=outer_col, lw=2 * lw, zorder=0)
 plt.fill(xs_outer, ys_outer, c=outer_col, lw=0)
 
