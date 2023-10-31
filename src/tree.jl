@@ -158,7 +158,7 @@ function apply_split(tree::MondrianTree{d}, split_tree::MondrianTree{d}) where {
                             tree_left, tree_right)
     else
         if all(tree.lower .< split_tree.tree_left.upper) &&
-            all(split_tree.tree_right.lower .< tree.upper)
+           all(split_tree.tree_right.lower .< tree.upper)
             left_upper = min.(split_tree.tree_left.upper, tree.upper)
             right_lower = max.(split_tree.tree_right.lower, tree.lower)
             tree_left = MondrianTree(tree.id * "L", tree.lambda, tree.lower, left_upper,
@@ -241,7 +241,8 @@ are_in_same_leaf(x1, x2, tree)
 true
 ```
 """
-function are_in_same_leaf(x1::NTuple{d,Float64}, x2::NTuple{d,Float64}, tree::MondrianTree) where {d}
+function are_in_same_leaf(x1::NTuple{d,Float64}, x2::NTuple{d,Float64},
+                          tree::MondrianTree) where {d}
     if tree.is_split
         if is_in(x1, tree.tree_left) && is_in(x2, tree.tree_right)
             return are_in_same_leaf(x1, x2, tree.left)
@@ -338,11 +339,11 @@ function restrict(tree::MondrianTree{d}, time::Float64) where {d}
     if tree.is_split && tree.tree_left.creation_time <= time
         tree_left = restrict(tree.tree_left, time)
         tree_right = restrict(tree.tree_right, time)
-        return MondrianTree{d}(tree.lambda, tree.lower, tree.upper, tree.creation_time, true,
-                               tree.split_axis, tree.split_location, tree_left, tree_right)
+        return MondrianTree{d}(tree.id, tree.lambda, tree.lower, tree.upper, tree.creation_time,
+                               true, tree.split_axis, tree.split_location, tree_left, tree_right)
     else
-        return MondrianTree{d}(tree.lambda, tree.lower, tree.upper, tree.creation_time, false,
-                               nothing, nothing, nothing, nothing)
+        return MondrianTree{d}(tree.id, tree.lambda, tree.lower, tree.upper, tree.creation_time,
+                               false, nothing, nothing, nothing, nothing)
     end
 end
 

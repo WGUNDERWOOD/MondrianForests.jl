@@ -22,18 +22,18 @@ lw = 12
 x_eps = 0.037
 y_eps = 0.020
 top = 0.59
-xs_outer = [0.5, 1+x_eps, 1+x_eps, -x_eps, -x_eps, 0.5]
-ys_outer = [-y_eps, -y_eps, top+y_eps, top+y_eps, -y_eps, -y_eps]
+xs_outer = [0.5, 1 + x_eps, 1 + x_eps, -x_eps, -x_eps, 0.5]
+ys_outer = [-y_eps, -y_eps, top + y_eps, top + y_eps, -y_eps, -y_eps]
 outer_col = col_gray
-plt.plot(xs_outer, ys_outer, c=outer_col, lw=2*lw, zorder=0)
+plt.plot(xs_outer, ys_outer, c=outer_col, lw=2 * lw, zorder=0)
 plt.fill(xs_outer, ys_outer, c=outer_col, lw=0)
 
 # curve
 n = 100
 xs = range(0, 1, length=n)
-ys = (1.2 .* xs .- 0.63).^3 .+ 0.60 - 0.2 * xs.^2 -
-0.05 * (0.5 .* xs .+ 0.5).^10 +
-0.07 * (1 .- xs).^10
+ys = (1.2 .* xs .- 0.63) .^ 3 .+ 0.60 - 0.2 * xs .^ 2 -
+     0.05 * (0.5 .* xs .+ 0.5) .^ 10 +
+     0.07 * (1 .- xs) .^ 10
 all_xs = [[0.5, 0]; xs; [1, 0.5]]
 all_ys = [[0, 0]; ys; [0, 0]]
 plt.plot(all_xs, all_ys, c="#111111", lw=lw)
@@ -45,9 +45,9 @@ x2 = 0.80
 y1 = 0.11
 y2 = 0.25
 plt.plot([x1, x1], [eps, 0.55], c="#111111", lw=lw)
-plt.plot([eps, 1-eps], [y2, y2], c="#111111", lw=lw)
-plt.plot([x2, x2], [eps, y2-eps], c="#111111", lw=lw)
-plt.plot([x2+eps, 1-eps], [y1, y1], c="#111111", lw=lw)
+plt.plot([eps, 1 - eps], [y2, y2], c="#111111", lw=lw)
+plt.plot([x2, x2], [eps, y2 - eps], c="#111111", lw=lw)
+plt.plot([x2 + eps, 1 - eps], [y1, y1], c="#111111", lw=lw)
 
 # piet blocks
 red_xs = [xs[i] for i in 1:n if xs[i] >= x1]

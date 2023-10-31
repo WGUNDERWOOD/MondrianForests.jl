@@ -37,5 +37,4 @@ Private = false
 ```@autodocs
 Modules = [MondrianForests]
 Pages   = ["data.jl"]
-Private = false
 ```

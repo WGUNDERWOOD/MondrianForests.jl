@@ -8,47 +8,23 @@ rcParams["text.usetex"] = true
 rcParams["text.latex.preamble"] = "\\usepackage[sfdefault,light]{FiraSans}"
 plt.ioff()
 
-function get_splits(tree::MondrianTree{d}) where {d}
-    if !isnothing(tree.split_axis)
-        lower = tree.tree_right.cell.lower
-        upper = tree.tree_left.cell.upper
-        return [(lower, upper); get_splits(tree.tree_left); get_splits(tree.tree_right)]
-    else
-        return Tuple{NTuple{d,Float64},NTuple{d,Float64}}[]
-    end
-end
-
-function get_cells(tree::MondrianTree{d}) where {d}
-    if !isnothing(tree.split_axis)
-        return [get_cells(tree.tree_left); get_cells(tree.tree_right)]
-    else
-        return [tree.cell]
-    end
-end
-
-function get_ids(tree::MondrianTree{d}) where {d}
-    if !isnothing(tree.split_axis)
-        return [get_ids(tree.tree_left); get_ids(tree.tree_right)]
-    else
-        return [tree.cell.id]
-    end
-end
-
 function plot_mondrian_process(partition)
     tree = partition["tree"]
-    splits = get_splits(tree)
+    split_trees = [t for t in get_subtrees(tree) if t.is_split]
+    splits = [(t.tree_right.lower, t.tree_left.upper) for t in split_trees]
     (fig, ax) = plt.subplots(figsize=(2.2, 2.2))
 
     # highlight current cell
     if !isnothing(partition["current"])
-        cell = partition["current"]
+        cell = [t for t in get_subtrees(tree) if t.id == partition["current"]][]
         x1s = [cell.lower[1], cell.lower[1], cell.upper[1], cell.upper[1]]
         x2s = [cell.lower[2], cell.upper[2], cell.upper[2], cell.lower[2]]
         fill(x1s, x2s, facecolor="#ecd9ff")
     end
 
     # highlight leaves
-    for cell in partition["terminals"]
+    for id in partition["terminals"]
+        cell = [t for t in get_subtrees(tree) if t.id == id][]
         x1s = [cell.lower[1], cell.lower[1], cell.upper[1], cell.upper[1]]
         x2s = [cell.lower[2], cell.upper[2], cell.upper[2], cell.lower[2]]
         fill(x1s, x2s, facecolor="#b5fdc7")
@@ -56,8 +32,8 @@ function plot_mondrian_process(partition)
 
     # plot root cell
     lw = 0.9
-    (l1, l2) = tree.cell.lower
-    (u1, u2) = tree.cell.upper
+    (l1, l2) = tree.lower
+    (u1, u2) = tree.upper
     plt.plot([l1, l1], [l2, u2], color="k", lw=lw)
     plt.plot([u1, u1], [l2, u2], color="k", lw=lw)
     plt.plot([l1, u1], [l2, l2], color="k", lw=lw)
@@ -71,8 +47,8 @@ function plot_mondrian_process(partition)
     end
 
     # annotate cells
-    ids = get_ids(tree)
-    cells = get_cells(tree)
+    cells = get_leaves(tree)
+    ids = [t.id for t in cells]
     centers = MondrianForests.get_center.(cells)
     for i in 1:length(cells)
         if ids[i] == ""
@@ -88,8 +64,8 @@ function plot_mondrian_process(partition)
     subtrees = MondrianForests.get_subtrees(tree)
     current = partition["current"]
     if !isnothing(current)
-        if !(current in cells)
-            subtree = [c for c in subtrees if c.cell == current][]
+        if !(current in [t.id for t in cells])
+            subtree = [c for c in subtrees if c.id == current][]
             J = subtree.split_axis
             S = subtree.split_location
             J == 1 ? x = S - 0.005 : x = -0.06
@@ -129,15 +105,6 @@ function plot_mondrian_process(partition)
     return (fig, ax)
 end
 
-function get_tree_info(tree::MondrianTree)
-    info = (tree.cell.id, tree.creation_time, tree.cell, tree.cell.id, tree.split_axis)
-    if !isnothing(tree.split_axis)
-        return [info; get_tree_info(tree.tree_left); get_tree_info(tree.tree_right)]
-    else
-        return [info]
-    end
-end
-
 function get_horizontal_value(id::String)
     value = 0.0
     for i in 1:length(id)
@@ -152,19 +119,18 @@ function get_horizontal_value(id::String)
 end
 
 function plot_mondrian_tree(partition)
-    tree = partition["tree"]
     (fig, ax) = plt.subplots(figsize=(2.2, 2.2))
-    info = get_tree_info(tree)
-    ids = [i[1] for i in info]
-    times = [i[2] for i in info]
-    cells = [i[3] for i in info]
+    tree = partition["tree"]
+    cells = get_subtrees(tree)
+    ids = [t.id for t in cells]
+    times = [t.creation_time for t in cells]
     n = length(times)
 
     # plot split points
     for i in 1:n
-        if cells[i] == partition["current"]
+        if ids[i] == partition["current"]
             color = "#ecd9ff"
-        elseif cells[i] in partition["terminals"]
+        elseif ids[i] in partition["terminals"]
             color = "#b5fdc7"
         else
             color = "white"
@@ -198,15 +164,14 @@ function plot_mondrian_tree(partition)
     end
 
     # add split time
-    cells = get_cells(tree)
-    subtrees = MondrianForests.get_subtrees(tree)
+    leaves = [t.id for t in get_leaves(partition["tree"])]
     current = partition["current"]
     if !isnothing(current)
-        if !(current in cells)
-            subtree = [c for c in subtrees if c.cell == current][]
+        if !(current in leaves)
+            subtree = [c for c in cells if c.id == current][]
             t = subtree.tree_left.creation_time
-            x_left = x_locs[subtree.tree_left.cell.id]
-            x_right = x_locs[subtree.tree_right.cell.id]
+            x_left = x_locs[subtree.tree_left.id]
+            x_right = x_locs[subtree.tree_right.id]
             if x_left > 1
                 plt.text(x_left - 0.8, t, "\$t + E\$", fontsize=10,
                          ha="center", va="center")
@@ -222,7 +187,7 @@ function plot_mondrian_tree(partition)
     end
 
     # time label
-    plt.text(2.84, 2.47, "\$t\$", fontsize=10)
+    #plt.text(2.84, 2.47, "\$t\$", fontsize=10)
 
     # format
     ax.invert_yaxis()
@@ -242,37 +207,21 @@ function plot_mondrian_tree(partition)
 end
 
 function update_partitions(partitions, tree)
+    subtrees = get_subtrees(tree)
+    times = sort(unique([t.creation_time for t in subtrees]))
     p = partitions[end]
-    info = get_tree_info(p["tree"])
-    cells = get_cells(tree)
-    leaves = get_cells(p["tree"])
+    cells = [t.id for t in get_leaves(tree)]
+    leaves = [t.id for t in get_leaves(p["tree"])]
     current_split = !isnothing(p["current"]) && !(p["current"] in cells)
-    current_parent = !(p["current"] in leaves)
+    current_parent = !isnothing(p["current"]) && !(p["current"] in leaves)
 
     # update time and tree
     if current_split && !current_parent
         new_time = minimum(t for t in times if t > p["time"])
-        new_tree = MondrianForests.restrict(tree, new_time)
+        new_tree = restrict(tree, new_time)
     else
         new_time = p["time"]
         new_tree = p["tree"]
-    end
-
-    # update current
-    if isnothing(p["current"]) || current_parent || !current_split
-        ids = [i[4]
-               for i in info
-               if i[3] in leaves &&
-                  !(i[3] in p["terminals"]) && !(i[3] == p["current"])]
-        ids = [i for i in ids if length(i) == minimum(length(j) for j in ids)]
-        if !isempty(ids)
-            new_current_id = minimum(ids)
-            new_current = [i[3] for i in info if i[4] == new_current_id][]
-        else
-            new_current = nothing
-        end
-    else
-        new_current = p["current"]
     end
 
     # update terminals
@@ -282,10 +231,22 @@ function update_partitions(partitions, tree)
         new_terminals = [p["terminals"]; [p["current"]]]
     end
 
-    new_partition = Dict("time" => new_time,
-                         "tree" => new_tree,
-                         "current" => new_current,
-                         "terminals" => new_terminals)
+    # update current
+    if isnothing(p["current"]) || current_parent || !current_split
+        ids = [i for i in leaves if !(i in new_terminals)]
+        ids = [i for i in ids if !(i in p["terminals"])]
+        ids = [i for i in ids if length(i) == minimum(length(j) for j in ids)]
+        if !isempty(ids)
+            new_current = minimum(ids)
+        else
+            new_current = nothing
+        end
+    else
+        new_current = p["current"]
+    end
+
+    new_partition = Dict("time" => new_time, "tree" => new_tree,
+                         "current" => new_current, "terminals" => new_terminals)
 
     return [partitions; [new_partition]]
 end
@@ -295,17 +256,17 @@ d = 2
 lambda = 2.0
 Random.seed!(0)
 min_vol = 0.0
-n_cells = 1
-while min_vol < 0.2 || n_cells != 4
+n_leaves = 1
+while min_vol < 0.2 || n_leaves != 4
     global tree = MondrianTree(d, lambda)
-    global cells = get_cells(tree)
-    global min_vol = minimum(MondrianForests.get_volume(c) for c in cells)
-    global n_cells = length(cells)
+    global leaves = get_leaves(tree)
+    global min_vol = minimum(MondrianForests.get_volume(l) for l in leaves)
+    global n_leaves = length(leaves)
 end
 
 # get locations of tree nodes for diagram
-info = get_tree_info(tree)
-ids = [i[1] for i in info]
+subtrees = get_subtrees(tree)
+ids = unique([t.id for t in subtrees])
 xs = get_horizontal_value.(ids)
 xs = invperm(sortperm(xs)) / 3
 x_locs = Dict()
@@ -314,13 +275,9 @@ for i in 1:length(ids)
 end
 
 # calculate the current and terminal nodes
-partitions = [Dict("time" => 0.0,
-                   "tree" => MondrianForests.restrict(tree, 0.0),
-                   "current" => nothing,
-                   "terminals" => [])]
+partitions = [Dict("time" => 0.0, "tree" => restrict(tree, 0.0),
+                   "current" => nothing, "terminals" => [])]
 
-info = get_tree_info(tree)
-times = [i[2] for i in info]
 for rep in 1:11
     global partitions = update_partitions(partitions, tree)
 end
@@ -329,7 +286,6 @@ end
 println("plotting trees")
 dpi = 500
 for i in 1:length(partitions)
-    println(i)
     partition = partitions[i]
     global (fig, ax) = plot_mondrian_tree(partition)
     plt.savefig("replication/construction_diagrams/construction_mondrian_tree_$(i).png", dpi=dpi)
@@ -342,6 +298,7 @@ for i in 1:length(partitions)
     println(i)
     partition = partitions[i]
     global (fig, ax) = plot_mondrian_process(partition)
-    plt.savefig("replication/construction_diagrams/construction_mondrian_partition_$(i).png", dpi=dpi)
+    plt.savefig("replication/construction_diagrams/construction_mondrian_partition_$(i).png",
+                dpi=dpi)
     plt.close("all")
 end
