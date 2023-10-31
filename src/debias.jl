@@ -49,6 +49,22 @@ end
 Fit a debiased Mondrian random forest to data.
 If `estimate_var` is `false`, do not estimate the variance or construct confidence bands.
 This can speed up computation significantly.
+
+# Examples
+
+```julia
+lambda = 3.0
+n_trees = 20
+x_evals = [(0.5, 0.5), (0.2, 0.8)]
+debias_order = 1
+data = generate_uniform_data_uniform_errors(2, 50)
+X_data = data["X"]
+Y_data= data["Y"]
+estimate_var = true
+significance_level = 0.05
+forest = DebiasedMondrianForest(lambda, n_trees, x_evals, debias_order, X_data, Y_data,
+                                estimate_var, significance_level)
+```
 """
 function DebiasedMondrianForest(lambda::Float64, n_trees::Int, x_evals::Vector{NTuple{d,Float64}},
                                 debias_order::Int,
@@ -144,7 +160,6 @@ function estimate_mu_hat(forest::DebiasedMondrianForest{d}, Ns::Array{Int,3}) wh
     return nothing
 end
 
-"""Estimate the residual variance function `sigma2` using a debiased Mondrian random forest."""
 function estimate_sigma2_hat(forest::DebiasedMondrianForest{d}, Ns::Array{Int,3}) where {d}
     n_data = forest.n_data
     sigma2_hat = [0.0 for _ in 1:(forest.n_evals)]
@@ -170,7 +185,6 @@ function estimate_sigma2_hat(forest::DebiasedMondrianForest{d}, Ns::Array{Int,3}
     return nothing
 end
 
-"""Estimate the forest variance function `Sigma` for a debiased Mondrian random forest."""
 function estimate_Sigma_hat(forest::DebiasedMondrianForest{d}, Ns::Array{Int,3}) where {d}
     Sigma_hat = [0.0 for _ in 1:(forest.n_evals)]
 
@@ -199,7 +213,6 @@ function estimate_Sigma_hat(forest::DebiasedMondrianForest{d}, Ns::Array{Int,3})
     return nothing
 end
 
-"""Construct a confidence band for a debiased Mondrian random forest."""
 function construct_confidence_band(forest::DebiasedMondrianForest{d}) where {d}
     n_data = forest.n_data
     n_evals = forest.n_evals
@@ -212,7 +225,11 @@ function construct_confidence_band(forest::DebiasedMondrianForest{d}) where {d}
     return nothing
 end
 
-"""Show a debiased Mondrian random forest."""
+"""
+    Base.show(forest::DebiasedMondrianForest{d}) where {d}
+
+Show a debiased Mondrian random forest.
+"""
 function Base.show(forest::DebiasedMondrianForest{d}) where {d}
     println("lambda: ", forest.lambda)
     println("n_data: ", forest.n_data)

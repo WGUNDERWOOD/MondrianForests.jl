@@ -8,6 +8,17 @@ Generate sample data for Mondrian forest estimation.
 
 Draws `n` independent samples from \$Y = \\mu(X) + \\sigma(X) \\varepsilon\$,
 with \$X \\sim\$ `X_dist` and \$\\varepsilon \\sim\$ `eps_dist`.
+
+# Examples
+
+```julia
+n = 20
+X_dist = product_distribution([Uniform(0, 1) for _ in 1:2])
+eps_dist = Uniform(-1, 1)
+mu = (x -> x[1]^2)
+sigma2 = (x -> 1 + x[2]^4)
+generate_data(n, X_dist, eps_dist, mu, sigma2)
+```
 """
 function generate_data(n::Int, X_dist::Distribution, eps_dist::Distribution,
                        mu::Function, sigma2::Function)
@@ -27,6 +38,14 @@ Generate uniform sample data with uniform errors for Mondrian forest estimation.
 Draws `n` independent samples from \$Y = \\varepsilon\$,
 with \$X \\sim \\mathcal{U}[0, 1]\$ and
 \$\\varepsilon \\sim \\mathcal{U}\\big[-\\sqrt 3, \\sqrt 3\\big]\$.
+
+# Examples
+
+```julia
+d = 3
+n = 20
+generate_uniform_data_uniform_errors(d, n)
+```
 """
 function generate_uniform_data_uniform_errors(d::Int, n::Int)
     X_dist = product_distribution([Uniform(0, 1) for _ in 1:d])
@@ -43,6 +62,14 @@ Generate uniform sample data with normal errors for Mondrian forest estimation.
 
 Draws `n` independent samples from \$Y = \\varepsilon\$,
 with \$X \\sim \\mathcal{U}[0, 1]\$ and \$\\varepsilon \\sim \\mathcal{N}(0, 1)\$.
+
+# Examples
+
+```julia
+d = 3
+n = 20
+generate_uniform_data_normal_errors(d, n)
+```
 """
 function generate_uniform_data_normal_errors(d::Int, n::Int)
     X_dist = product_distribution([Uniform(0, 1) for _ in 1:d])

@@ -1,35 +1,33 @@
 module MondrianForests
 
-# TODO better docs for exported functions
-
-# TODO tree
+# tree
 export MondrianTree
 export is_in
 export get_center
 export get_volume
-export show
+export get_common_refinement
+export are_in_same_leaf
 export get_subtrees
 export get_leaves
-export get_common_refinement
-#export get_cell_id
-export are_in_same_leaf
-#export count_cells
-#export restrict
+export get_leaf_containing
+export count_leaves
+export restrict
+export show
 
-# TODO forest
+# forest
 export MondrianForest
-export fit
 
-# TODO debias
+# debias
 export DebiasedMondrianForest
 
-# TODO lifetime_gcv
+# lifetime_gcv
 export select_lifetime_gcv
+export get_gcv
 
-# TODO lifetime_polynomial
+# lifetime_polynomial
 export select_lifetime_polynomial
 
-# TODO include source files
+# include source files
 include("tree.jl")
 include("data.jl")
 include("forest.jl")
