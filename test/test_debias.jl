@@ -40,7 +40,7 @@ Random.seed!(0)
 
     @testset verbose = true "Quadratic" begin
         Random.seed!(0)
-        n = 2000
+        n = 3000
         lambda = 20.0
         n_trees = 500
         debias_order = 1

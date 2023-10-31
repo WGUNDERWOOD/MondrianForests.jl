@@ -1,2 +1,3 @@
 all:
-	julia --project --threads 6 make.jl
+	@rm src/*.cov
+	@julia --project --threads 6 make.jl
