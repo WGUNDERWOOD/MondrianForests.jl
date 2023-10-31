@@ -230,11 +230,11 @@ for i in 1:length(seeds)
     Random.seed!(seed)
 
     if i <= 5
-        min_vol = 0.0
+        global min_vol = 0.0
         while min_vol < 0.009
             tree = MondrianTree(2, lambda)
-            cells = MondrianForests.get_leaves(tree)
-            min_vol = minimum(MondrianForests.get_volume(c) for c in cells)
+            global cells = MondrianForests.get_leaves(tree)
+            global min_vol = minimum(MondrianForests.get_volume(c) for c in cells)
         end
     else
         tree = MondrianTree(2, lambda)

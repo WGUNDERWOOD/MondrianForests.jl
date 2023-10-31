@@ -58,9 +58,9 @@ Random.seed!(314159)
 git_root = strip(read(`git rev-parse --show-toplevel`, String), '\n')
 
 for i in 1:length(lambdas)
-    lambda = lambdas[i]
-    tree = MondrianTree(d, lambda)
-    (fig, ax) = plot_mondrian_tree(tree)
+    global lambda = lambdas[i]
+    global tree = MondrianTree(d, lambda)
+    global (fig, ax) = plot_mondrian_tree(tree)
     savefig("./replication/partition_plots/plot_mondrian_process_$i.pgf", bbox_inches="tight")
     savefig("./replication/partition_plots/plot_mondrian_process_$i.pdf", bbox_inches="tight")
     plt.close("all")

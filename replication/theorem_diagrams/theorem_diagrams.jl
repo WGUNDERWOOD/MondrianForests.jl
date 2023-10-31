@@ -136,7 +136,6 @@ while min_vol < 0.2 || n_leaves != 4
     global leaves = MondrianForests.get_leaves(tree)
     global min_vol = minimum(MondrianForests.get_volume(c) for c in leaves)
     global n_leaves = length(leaves)
-    println(n_leaves)
 end
 
 # restriction theorem plot
@@ -144,14 +143,14 @@ println("plotting restriction theorem")
 dpi = 500
 tree = MondrianForests.restrict(tree, 1.5)
 cell = MondrianTree("", 0.0, (0.5, 0.3), (0.9, 0.85), 0.0, false,
-                   nothing, nothing, nothing, nothing)
+                    nothing, nothing, nothing, nothing)
 (fig, ax) = plot_theorem_restriction(tree, cell)
-plt.savefig("replication/theorem_diagrams/theorem_restriction.png", dpi=dpi)
+PyPlot.savefig("replication/theorem_diagrams/theorem_restriction.png", dpi=dpi)
 plt.close("all")
 
 # distribution theorem plot
 println("plotting distribution theorem")
 point = (0.4, 0.25)
 (fig, ax) = plot_theorem_distribution(tree, point)
-plt.savefig("replication/theorem_diagrams/theorem_distribution.png", dpi=dpi)
+PyPlot.savefig("replication/theorem_diagrams/theorem_distribution.png", dpi=dpi)
 plt.close("all")
