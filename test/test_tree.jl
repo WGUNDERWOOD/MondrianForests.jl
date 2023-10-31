@@ -82,20 +82,20 @@
         end
     end
 
-    @testset verbose = true "are_in_same_cell" begin
+    @testset verbose = true "are_in_same_leaf" begin
         for d in 1:3
             lambda = 10.0
             tree = MondrianTree(d, lambda)
             x_left = ntuple(i -> 0.0, d)
             x_right = ntuple(i -> 1.0, d)
-            @test MondrianForests.are_in_same_cell(x_left, x_left, tree)
-            @test !MondrianForests.are_in_same_cell(x_left, x_right, tree)
+            @test MondrianForests.are_in_same_leaf(x_left, x_left, tree)
+            @test !MondrianForests.are_in_same_leaf(x_left, x_right, tree)
             lambda = 0.0
             tree = MondrianTree(d, lambda)
             x_left = ntuple(i -> 0.0, d)
             x_right = ntuple(i -> 1.0, d)
-            @test MondrianForests.are_in_same_cell(x_left, x_left, tree)
-            @test MondrianForests.are_in_same_cell(x_left, x_right, tree)
+            @test MondrianForests.are_in_same_leaf(x_left, x_left, tree)
+            @test MondrianForests.are_in_same_leaf(x_left, x_right, tree)
         end
     end
 

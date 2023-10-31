@@ -10,8 +10,8 @@ plt.ioff()
 
 function get_splits(tree::MondrianTree{d}) where {d}
     if !isnothing(tree.split_axis)
-        lower = tree.tree_right.cell.lower
-        upper = tree.tree_left.cell.upper
+        lower = tree.tree_right.lower
+        upper = tree.tree_left.upper
         return [(lower, upper); get_splits(tree.tree_left); get_splits(tree.tree_right)]
     else
         return Tuple{NTuple{d,Float64},NTuple{d,Float64}}[]
@@ -24,8 +24,8 @@ function plot_piet_mondrian(tree)
 
     # plot root cell
     lw = 0.9
-    (l1, l2) = tree.cell.lower
-    (u1, u2) = tree.cell.upper
+    (l1, l2) = tree.lower
+    (u1, u2) = tree.upper
     plt.plot([l1, l1], [l2, u2], color="k", lw=lw)
     plt.plot([u1, u1], [l2, u2], color="k", lw=lw)
     plt.plot([l1, u1], [l2, l2], color="k", lw=lw)
@@ -52,14 +52,15 @@ function plot_piet_mondrian(tree)
 end
 
 # piet plot
+Random.seed!(0)
 println("plotting piet")
 lambda = 4.0
 min_vol = 0.0
 best_min_vol = 0.0
 dpi = 500
-while min_vol < 0.01 || n_cells < 10
+while min_vol < 0.03 || n_cells < 9
     global tree = MondrianTree(2, lambda)
-    global cells = MondrianForests.get_cells(tree)
+    global cells = get_leaves(tree)
     global min_vol = minimum(MondrianForests.get_volume(c) for c in cells)
     global n_cells = length(cells)
     if min_vol > best_min_vol

@@ -71,10 +71,11 @@ end
 
 function plot_splits(tree)
     # plot root cell
-    splits = MondrianForests.get_splits(tree)
+    split_trees = [t for t in get_subtrees(tree) if t.is_split]
+    splits = [(t.tree_right.lower, t.tree_left.upper) for t in split_trees]
     lw = 0.7
-    (l1, l2) = tree.cell.lower
-    (u1, u2) = tree.cell.upper
+    (l1, l2) = tree.lower
+    (u1, u2) = tree.upper
     PyPlot.plot([l1, l1], [l1, u2], color="k", lw=lw)
     PyPlot.plot([u1, u1], [l2, u1], color="k", lw=lw)
     PyPlot.plot([l1, u1], [l2, l2], color="k", lw=lw)
@@ -92,14 +93,14 @@ function get_cell_colormap()
 end
 
 function plot_cells(tree)
-    cells = MondrianForests.get_cells(tree)
+    cells = MondrianForests.get_leaves(tree)
     X = [ntuple(j -> data[i, [:Humidity3pm, :Pressure3pm][j]], 2) for i in 1:nrow(data)]
     Y = [data[i, :RainTomorrow] for i in 1:nrow(data)]
     n = length(X)
     cell_centers = MondrianForests.get_center.(cells)
-    counts = [sum(MondrianForests.are_in_same_cell(c, X[i], tree)
+    counts = [sum(MondrianForests.are_in_same_leaf(c, X[i], tree)
                   for i in 1:n) for c in cell_centers]
-    ones = [sum(MondrianForests.are_in_same_cell(c, X[i], tree) *
+    ones = [sum(MondrianForests.are_in_same_leaf(c, X[i], tree) *
                 Y[i] for i in 1:n) for c in cell_centers]
     colormap = get_cell_colormap()
     colors = colormap.(ones ./ counts)
@@ -113,8 +114,9 @@ end
 
 function plot_forest(trees, ax)
     # get all cells and refinement
-    all_cells = [MondrianForests.get_cells(tree) for tree in trees]
-    refined_cells = MondrianForests.get_common_refinement(all_cells)
+    refined_tree = get_common_refinement(trees)
+    refined_cells = get_leaves(refined_tree)
+    all_cells = [get_leaves(t) for t in trees]
     # get counts
     X = [ntuple(j -> data[i, [:Humidity3pm, :Pressure3pm][j]], 2) for i in 1:nrow(data)]
     Y = [data[i, :RainTomorrow] for i in 1:nrow(data)]
@@ -221,7 +223,7 @@ dpi = 500
 
 # make trees
 seeds = 4:54
-trees = []
+trees = MondrianTree{2}[]
 lambda = 5.0
 for i in 1:length(seeds)
     seed = seeds[i]
@@ -231,7 +233,7 @@ for i in 1:length(seeds)
         min_vol = 0.0
         while min_vol < 0.009
             tree = MondrianTree(2, lambda)
-            cells = MondrianForests.get_cells(tree)
+            cells = MondrianForests.get_leaves(tree)
             min_vol = minimum(MondrianForests.get_volume(c) for c in cells)
         end
     else
@@ -271,14 +273,14 @@ n_trees = 2
 X = [ntuple(j -> data[i, [:Humidity3pm, :Pressure3pm][j]], 2) for i in 1:nrow(data)]
 Y = [data[i, :RainTomorrow] for i in 1:nrow(data)]
 x_evals = Tuple{Float64,Float64}[]
-for i in [2, 10, 50]
+for i in [2, 10, 30]
     println("plotting forest with ", i, " trees")
     global filename = "./replication/weather/weather_forest_" * string(i) * ".png"
     make_forest_plot(data, trees[1:i], x_min, x_max, y_min, y_max, filename)
 end
 
 # plot forest with design points
-i = 50
+i = 30
 println("plotting forest with ", i, " trees and design points")
 global filename = "./replication/weather/weather_forest_design.png"
 

@@ -12,7 +12,7 @@ plt.yticks([])
 # colors
 col_dark = "#111111"
 col_light = "#f9f9ee"
-col_gray = "#d9c9be"
+col_gray = "#dfd5ce"
 col_red = "#FA0000"
 col_blue = "#0E75CF"
 col_yellow = "#FFEC02"

@@ -217,10 +217,7 @@ function get_common_refinement(trees::Vector{MondrianTree{d}}) where {d}
         return trees[]
     else
         refinement = get_common_refinement(trees[1], trees[2])
-        println(length(get_leaves(trees[1])))
-        println(length(get_leaves(refinement)))
-        println()
-        return get_common_refinement([refinement; trees[3:end]])
+        return get_common_refinement([trees[3:end]; refinement])
     end
 end
 
@@ -244,10 +241,10 @@ true
 function are_in_same_leaf(x1::NTuple{d,Float64}, x2::NTuple{d,Float64},
                           tree::MondrianTree) where {d}
     if tree.is_split
-        if is_in(x1, tree.tree_left) && is_in(x2, tree.tree_right)
-            return are_in_same_leaf(x1, x2, tree.left)
+        if is_in(x1, tree.tree_left) && is_in(x2, tree.tree_left)
+            return are_in_same_leaf(x1, x2, tree.tree_left)
         elseif is_in(x1, tree.tree_right) && is_in(x2, tree.tree_right)
-            return are_in_same_leaf(x1, x2, tree.right)
+            return are_in_same_leaf(x1, x2, tree.tree_right)
         else
             return false
         end

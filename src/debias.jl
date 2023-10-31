@@ -100,7 +100,7 @@ function DebiasedMondrianForest(lambda::Float64, n_trees::Int, x_evals::Vector{N
         @inbounds for j in 0:debias_order
             @inbounds for b in 1:n_trees
                 tree = forest.trees[b, j + 1]
-                Ns[b, j + 1, s] = sum(are_in_same_cell(X, x_eval, tree) for X in X_data)
+                Ns[b, j + 1, s] = sum(are_in_same_leaf(X, x_eval, tree) for X in X_data)
             end
         end
     end
@@ -145,7 +145,7 @@ function estimate_mu_hat(forest::DebiasedMondrianForest{d}, Ns::Array{Int,3}) wh
             @inbounds for b in 1:(forest.n_trees)
                 if Ns[b, j + 1, s] > 0
                     tree = forest.trees[b, j + 1]
-                    I = sum(are_in_same_cell(forest.X_data[i], x_eval, tree)
+                    I = sum(are_in_same_leaf(forest.X_data[i], x_eval, tree)
                             .*
                             forest.Y_data[i] for i in 1:(forest.n_data))
                     mu_hat[s] += coeff * I / Ns[b, j + 1, s]
@@ -172,7 +172,7 @@ function estimate_sigma2_hat(forest::DebiasedMondrianForest{d}, Ns::Array{Int,3}
         @inbounds for b in 1:(forest.n_trees)
             if Ns[b, j + 1, s] > 0
                 tree = forest.trees[b, j + 1]
-                I = sum(are_in_same_cell(forest.X_data[i], x_eval, tree)
+                I = sum(are_in_same_leaf(forest.X_data[i], x_eval, tree)
                         .*
                         (forest.Y_data[i] - mu_hat)^2 for i in 1:n_data)
                 sigma2_hat[s] += I / Ns[b, j + 1, s]
@@ -197,7 +197,7 @@ function estimate_Sigma_hat(forest::DebiasedMondrianForest{d}, Ns::Array{Int,3})
                 coeff = forest.debias_coeffs[j + 1]
                 @inbounds for b in 1:(forest.n_trees)
                     tree = forest.trees[b, j + 1]
-                    if are_in_same_cell(X, x_eval, tree)
+                    if are_in_same_leaf(X, x_eval, tree)
                         A += coeff / Ns[b, j + 1, s]
                     end
                 end

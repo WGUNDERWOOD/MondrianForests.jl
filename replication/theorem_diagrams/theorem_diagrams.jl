@@ -10,8 +10,8 @@ plt.ioff()
 
 function get_splits(tree::MondrianTree{d}) where {d}
     if !isnothing(tree.split_axis)
-        lower = tree.tree_right.cell.lower
-        upper = tree.tree_left.cell.upper
+        lower = tree.tree_right.lower
+        upper = tree.tree_left.upper
         return [(lower, upper); get_splits(tree.tree_left); get_splits(tree.tree_right)]
     else
         return Tuple{NTuple{d,Float64},NTuple{d,Float64}}[]
@@ -27,7 +27,7 @@ function plot_theorem_restriction(tree, cell)
     styles = ["solid", "dashed"]
     lw = 0.9
     for i in 1:2
-        c = [tree.cell, cell][i]
+        c = [tree, cell][i]
         color = colors[i]
         style = styles[i]
         (l1, l2) = c.lower
@@ -71,15 +71,15 @@ function plot_theorem_distribution(tree, point)
 
     # plot root cell
     lw = 0.9
-    (l1, l2) = tree.cell.lower
-    (u1, u2) = tree.cell.upper
+    (l1, l2) = tree.lower
+    (u1, u2) = tree.upper
     plt.plot([l1, l1], [l2, u2], color="k", lw=lw)
     plt.plot([u1, u1], [l2, u2], color="k", lw=lw)
     plt.plot([l1, u1], [l2, l2], color="k", lw=lw)
     plt.plot([u1, l1], [u2, u2], color="k", lw=lw)
 
     # get cell containing point
-    cell = MondrianForests.get_leaf_containing(point, tree).cell
+    cell = MondrianForests.get_leaf_containing(point, tree)
 
     # plot point and distribution
     e1 = 0.03
@@ -134,7 +134,7 @@ n_leaves = 1
 while min_vol < 0.2 || n_leaves != 4
     global tree = MondrianTree(d, lambda)
     global leaves = MondrianForests.get_leaves(tree)
-    global min_vol = minimum(MondrianForests.get_volume(c.cell) for c in leaves)
+    global min_vol = minimum(MondrianForests.get_volume(c) for c in leaves)
     global n_leaves = length(leaves)
     println(n_leaves)
 end
@@ -143,7 +143,8 @@ end
 println("plotting restriction theorem")
 dpi = 500
 tree = MondrianForests.restrict(tree, 1.5)
-cell = MondrianCell("", (0.5, 0.3), (0.9, 0.85))
+cell = MondrianTree("", 0.0, (0.5, 0.3), (0.9, 0.85), 0.0, false,
+                   nothing, nothing, nothing, nothing)
 (fig, ax) = plot_theorem_restriction(tree, cell)
 plt.savefig("replication/theorem_diagrams/theorem_restriction.png", dpi=dpi)
 plt.close("all")
