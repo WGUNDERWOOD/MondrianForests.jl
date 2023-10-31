@@ -150,19 +150,6 @@ function get_volume(tree::MondrianTree{d}) where {d}
     return prod(tree.upper .- tree.lower)
 end
 
-"""
-    apply_split(tree::MondrianTree{d}, split_tree::MondrianTree{d}) where {d}
-
-Take the split which occurred in `split_tree` and apply it to `tree`.
-Returns a new `MondrianTree`.
-
-# Examples
-```julia
-tree = MondrianTree(2, 3.0)
-split_tree = MondrianTree(2, 3.0)
-new_tree = apply_split(tree, split_tree)
-```
-"""
 function apply_split(tree::MondrianTree{d}, split_tree::MondrianTree{d}) where {d}
     if tree.is_split
         tree_left = apply_split(tree.tree_left, split_tree)
@@ -190,21 +177,6 @@ function apply_split(tree::MondrianTree{d}, split_tree::MondrianTree{d}) where {
     end
 end
 
-"""
-    get_common_refinement(tree1::MondrianTree{d}, tree2::MondrianTree{d}) where {d}
-
-Get the common refinement of two Mondrian trees,
-whose leaf cells are the intersections of all leaf cells in `tree1`
-and `tree2`. Preserves the split times and
-returns a new equivalent `MondrianTree`.
-
-# Examples
-```julia
-tree1 = MondrianTree(2, 3.0)
-tree2 = MondrianTree(2, 3.0)
-refined_tree = get_common_refinement(tree1, tree2)
-```
-"""
 function get_common_refinement(tree1::MondrianTree{d}, tree2::MondrianTree{d}) where {d}
     @assert tree1.id == tree2.id
     @assert tree1.lambda == tree2.lambda

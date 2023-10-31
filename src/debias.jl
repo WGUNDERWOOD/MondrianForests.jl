@@ -1,4 +1,22 @@
-"""Struct to represent a debiased Mondrian random forest."""
+"""
+A debiased Mondrian random forest is determined by:
+- `lambda`: the non-negative lifetime parameter
+- `n_trees`: the number of Mondrian trees in the forest
+- `n_data`: the number of data points
+- `n_evals`: the number of evaluation points
+- `x_evals`: the evaluation points
+- `debias_order`: the order of debiasing to apply
+- `significance_level`: the significance level for confidence intervals
+- `X_data`: the covariate data
+- `Y_data`: the response data
+- `debias_scaling`: the lifetime scaling values
+- `debias_coeffs`: the debiasing coefficients
+- `trees`: a list of the trees used in the forest
+- `mu_hat`: the estimated regression function
+- `sigma2_hat`: the estimated residual variance function
+- `Sigma_hat`: the estimated forest variance function
+- `confidence_band`: a confidence band for the regression function
+"""
 mutable struct DebiasedMondrianForest{d}
     # parameters
     const lambda::Float64
@@ -21,7 +39,17 @@ mutable struct DebiasedMondrianForest{d}
     confidence_band::Vector{Tuple{Float64,Float64}}
 end
 
-"""Construct a debiased Mondrian random forest."""
+"""
+    DebiasedMondrianForest(lambda::Float64, n_trees::Int, x_evals::Vector{NTuple{d,Float64}},
+                           debias_order::Int,
+                           X_data::Vector{NTuple{d,Float64}}, Y_data::Vector{Float64},
+                           estimate_var::Bool=false,
+                           significance_level::Float64=0.05) where {d}
+
+Fit a debiased Mondrian random forest to data.
+If `estimate_var` is `false`, do not estimate the variance or construct confidence bands.
+This can speed up computation significantly.
+"""
 function DebiasedMondrianForest(lambda::Float64, n_trees::Int, x_evals::Vector{NTuple{d,Float64}},
                                 debias_order::Int,
                                 X_data::Vector{NTuple{d,Float64}}, Y_data::Vector{Float64},
@@ -70,14 +98,12 @@ function DebiasedMondrianForest(lambda::Float64, n_trees::Int, x_evals::Vector{N
     return forest
 end
 
-"""Get the debiasing scale factors `a` for a given debiasing order."""
 function get_debias_scaling(debias_order::Int)
     J = debias_order
     debias_scaling = [1.5^r for r in 0:J]
     return debias_scaling
 end
 
-"""Get the debiasing coefficients `omega` for a given debiasing order."""
 function get_debias_coeffs(debias_order::Int)
     J = debias_order
     debias_scaling = get_debias_scaling(debias_order)
@@ -92,7 +118,6 @@ function get_debias_coeffs(debias_order::Int)
     return debias_coeffs
 end
 
-"""Estimate the regression function `mu` using a debiased Mondrian random forest."""
 function estimate_mu_hat(forest::DebiasedMondrianForest{d}, Ns::Array{Int,3}) where {d}
     mu_hat = [0.0 for _ in 1:(forest.n_evals)]
     Y_bar = sum(forest.Y_data) / forest.n_data

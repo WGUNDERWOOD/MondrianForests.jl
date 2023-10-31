@@ -136,7 +136,11 @@ function construct_confidence_band(forest::MondrianForest{d}) where {d}
     return nothing
 end
 
-"""Show a Mondrian random forest."""
+"""
+    Base.show(forest::MondrianForest{d}) where {d}
+
+Show a Mondrian random forest.
+"""
 function Base.show(forest::MondrianForest{d}) where {d}
     println("lambda: ", forest.lambda)
     println("n_data: ", forest.n_data)
