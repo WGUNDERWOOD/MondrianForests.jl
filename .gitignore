@@ -5,4 +5,5 @@ Manifest.toml
 *.pgf
 *.png
 *.html
+*.cov
 docs/build
