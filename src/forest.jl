@@ -53,7 +53,8 @@ X_data = data["X"]
 Y_data= data["Y"]
 estimate_var = true
 significance_level = 0.05
-forest = MondrianForest(lambda, n_trees, x_evals, X_data, Y_data, estimate_var, significance_level)
+forest = MondrianForest(lambda, n_trees, x_evals, X_data, Y_data,
+                        estimate_var, significance_level)
 ```
 """
 function MondrianForest(lambda::Float64, n_trees::Int, x_evals::Vector{NTuple{d,Float64}},
