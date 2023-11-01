@@ -103,7 +103,7 @@ function DebiasedMondrianForest(lambda::Float64, n_trees::Int, x_evals::Vector{N
                 Ns[b, j + 1, s] = sum(are_in_same_leaf(X, x_eval, tree) for X in X_data)
             end
         end
-    end
+    end # COV_EXCL_LINE
 
     estimate_mu_hat(forest, Ns)
     if estimate_var
@@ -154,7 +154,7 @@ function estimate_mu_hat(forest::DebiasedMondrianForest{d}, Ns::Array{Int,3}) wh
                 end
             end
         end
-    end
+    end # COV_EXCL_LINE
 
     forest.mu_hat = mu_hat / forest.n_trees
     return nothing
@@ -178,7 +178,7 @@ function estimate_sigma2_hat(forest::DebiasedMondrianForest{d}, Ns::Array{Int,3}
                 sigma2_hat[s] += I / Ns[b, j + 1, s]
             end
         end
-    end
+    end # COV_EXCL_LINE
 
     sigma2_hat ./= forest.n_trees
     forest.sigma2_hat = sigma2_hat
@@ -204,7 +204,7 @@ function estimate_Sigma_hat(forest::DebiasedMondrianForest{d}, Ns::Array{Int,3})
             end
             Sigma_hat[s] += (A / forest.n_trees)^2
         end
-    end
+    end # COV_EXCL_LINE
 
     n_data = forest.n_data
     lambda = forest.lambda

@@ -71,7 +71,7 @@ function MondrianForest(lambda::Float64, n_trees::Int, x_evals::Vector{NTuple{d,
         @inbounds for b in 1:n_trees
             Ns[b, s] = sum(are_in_same_leaf(X, x_evals[s], forest.trees[b]) for X in forest.X_data)
         end
-    end
+    end # COV_EXCL_LINE
     estimate_mu_hat(forest, Ns)
     if estimate_var
         estimate_sigma2_hat(forest, Ns)
@@ -97,7 +97,7 @@ function estimate_mu_hat(forest::MondrianForest{d}, Ns::Matrix{Int}) where {d}
                 mu_hat[s] += Y_bar
             end
         end
-    end
+    end # COV_EXCL_LINE
 
     forest.mu_hat = mu_hat / forest.n_trees
     return nothing
@@ -115,7 +115,7 @@ function estimate_sigma2_hat(forest::MondrianForest{d}, Ns::Matrix{Int}) where {
                 sigma2_hat[s] += I / Ns[b, s]
             end
         end
-    end
+    end # COV_EXCL_LINE
 
     sigma2_hat ./= forest.n_trees
     forest.sigma2_hat = sigma2_hat
@@ -136,7 +136,7 @@ function estimate_Sigma_hat(forest::MondrianForest{d}, Ns::Matrix{Int}) where {d
             end
             Sigma_hat[s] += (A / forest.n_trees)^2
         end
-    end
+    end # COV_EXCL_LINE
 
     Sigma_hat .*= forest.sigma2_hat .* forest.n_data / forest.lambda^d
     forest.Sigma_hat = Sigma_hat
