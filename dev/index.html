@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Home · MondrianForests.jl</title><script data-outdated-warner src="assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.045/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.24/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="assets/documenter.js"></script><script src="siteinfo.js"></script><script src="../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href><img src="assets/logo.svg" alt="MondrianForests.jl logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href>MondrianForests.jl</a></span></div><form class="docs-search" action="search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li class="is-active"><a class="tocitem" href>Home</a><ul class="internal"><li><a class="tocitem" href="#Introduction"><span>Introduction</span></a></li><li><a class="tocitem" href="#Julia-package"><span>Julia package</span></a></li></ul></li><li><a class="tocitem" href="documentation/">Documentation</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href>Home</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Home</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/WGUNDERWOOD/MondrianForests.jl/blob/main/docs/src/index.md" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="MondrianForests"><a class="docs-heading-anchor" href="#MondrianForests">MondrianForests</a><a id="MondrianForests-1"></a><a class="docs-heading-anchor-permalink" href="#MondrianForests" title="Permalink"></a></h1><p>Mondrian random forests in Julia</p><h2 id="Introduction"><a class="docs-heading-anchor" href="#Introduction">Introduction</a><a id="Introduction-1"></a><a class="docs-heading-anchor-permalink" href="#Introduction" title="Permalink"></a></h2><p>This repository provides implementations of Mondrian random forests in Julia, based on methods detailed in <a href="https://arxiv.org/abs/2310.09702">Cattaneo, Klusowski and Underwood, 2023, arXiv:2310:09702</a>. This package provides:</p><ul><li>Fitting Mondrian random forests</li><li>Fitting debiased Mondrian random forests</li><li>Selecting a lifetime parameter with polynomial estimation or generalized cross-validation</li></ul><h3 id="Branches"><a class="docs-heading-anchor" href="#Branches">Branches</a><a id="Branches-1"></a><a class="docs-heading-anchor-permalink" href="#Branches" title="Permalink"></a></h3><p>The main branch contains stable versions. Other branches may be unstable, and are for development purposes only.</p><h3 id="License"><a class="docs-heading-anchor" href="#License">License</a><a id="License-1"></a><a class="docs-heading-anchor-permalink" href="#License" title="Permalink"></a></h3><p>This repository and its included Julia package are licensed under <a href="http://gplv3.fsf.org/">GPLv3</a>.</p><h2 id="Julia-package"><a class="docs-heading-anchor" href="#Julia-package">Julia package</a><a id="Julia-package-1"></a><a class="docs-heading-anchor-permalink" href="#Julia-package" title="Permalink"></a></h2><p>The Julia package is named <strong>MondrianForests.jl</strong></p><h3 id="Installation"><a class="docs-heading-anchor" href="#Installation">Installation</a><a id="Installation-1"></a><a class="docs-heading-anchor-permalink" href="#Installation" title="Permalink"></a></h3><p>From the Julia General registry:</p><pre><code class="language-julia hljs">using Pkg
+Pkg.add(&quot;MondrianForests&quot;)</code></pre><h3 id="Usage"><a class="docs-heading-anchor" href="#Usage">Usage</a><a id="Usage-1"></a><a class="docs-heading-anchor-permalink" href="#Usage" title="Permalink"></a></h3><pre><code class="language-julia hljs">using MondrianForests
+
+# sample a two-dimensional Mondrian tree
+d = 2
+lambda = 2.0
+tree = MondrianTree(d, lambda)
+println()
+show(tree)
+println()
+
+# generate some data
+# covariates X_data are two-dimensional
+# response Y_data is one-dimensional
+# true regression function is zero
+n_data = 100
+data = MondrianForests.generate_uniform_data_uniform_errors(d, n_data)
+X_data = data[&quot;X&quot;]
+Y_data = data[&quot;Y&quot;]
+println(&quot;covariates: &quot;)
+display(X_data[1:5])
+println(&quot;\nresponses: &quot;)
+display(Y_data[1:5])
+
+# select a lifetime parameter
+# with generalized cross-validation
+n_trees = 50
+n_subsample = 30
+debias_order = 0
+lambdas = collect(range(0.5, 10.0, step=0.5))
+lambda = select_lifetime_gcv(lambdas, n_trees, X_data, Y_data, debias_order, n_subsample)
+println(&quot;\nlambda chosen by GCV: &quot;, lambda)
+
+# fit and evaluate a Mondrian random forest
+x_evals = [(0.5, 0.5), (0.2, 0.8)]
+estimate_var = true
+forest = MondrianForest(lambda, n_trees, x_evals, X_data, Y_data, estimate_var)
+println(&quot;\nestimated regression function:&quot;)
+display(forest.mu_hat)
+println(&quot;\nestimated estimator variance:&quot;)
+display(forest.Sigma_hat)
+println(&quot;\nestimated confidence band:&quot;)
+display(forest.confidence_band)
+
+# fit and evaluate a debiased Mondrian random forest
+debiased_forest = DebiasedMondrianForest(lambda, n_trees, x_evals, debias_order,
+                                         X_data, Y_data, estimate_var)
+println(&quot;\ndebiased estimated regression function:&quot;)
+display(debiased_forest.mu_hat)
+println(&quot;\ndebiased estimated estimator variance:&quot;)
+display(debiased_forest.Sigma_hat)
+println(&quot;\ndebiased estimated confidence band:&quot;)
+display(debiased_forest.confidence_band)</code></pre><h3 id="Dependencies"><a class="docs-heading-anchor" href="#Dependencies">Dependencies</a><a id="Dependencies-1"></a><a class="docs-heading-anchor-permalink" href="#Dependencies" title="Permalink"></a></h3><ul><li>Distributions</li><li>Random</li><li>Suppressor</li><li>Test</li></ul><h3 id="Documentation"><a class="docs-heading-anchor" href="#Documentation">Documentation</a><a id="Documentation-1"></a><a class="docs-heading-anchor-permalink" href="#Documentation" title="Permalink"></a></h3><p>Documentation for the <strong>MondrianForests</strong> package is available on <a href="https://wgunderwood.github.io/MondrianForests.jl/stable/">the web</a>.</p></article><nav class="docs-footer"><a class="docs-footer-nextpage" href="documentation/">Documentation »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.25 on <span class="colophon-date" title="Wednesday 1 November 2023 16:07">Wednesday 1 November 2023</span>. Using Julia version 1.9.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
