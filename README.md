@@ -5,7 +5,8 @@ Mondrian random forests in Julia
 [![CI](https://github.com/WGUNDERWOOD/MondrianForests.jl/actions/workflows/CI.yml/badge.svg)](https://github.com/WGUNDERWOOD/MondrianForests.jl/actions/workflows/CI.yml)
 [![license: GPLv3](https://img.shields.io/badge/license-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![codecov](https://codecov.io/gh/WGUNDERWOOD/MondrianForests.jl/branch/main/graph/badge.svg?token=DbGSOsocw6)](https://codecov.io/gh/WGUNDERWOOD/MondrianForests.jl/)
-[![docs](https://img.shields.io/readthedocs/MondrianForests.jl?label=Julia%20docs)](https://wgunderwood.github.io/MondrianForests.jl/stable/)
+[![docs stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://WGUNDERWOOD.github.io/MondrianForests.jl/stable)
+[![docs dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://WGUNDERWOOD.github.io/MondrianForests.jl/dev)
 
 ## Introduction
 
