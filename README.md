@@ -7,6 +7,7 @@ Mondrian random forests in Julia
 [![codecov](https://codecov.io/gh/WGUNDERWOOD/MondrianForests.jl/branch/main/graph/badge.svg?token=DbGSOsocw6)](https://codecov.io/gh/WGUNDERWOOD/MondrianForests.jl/)
 [![docs stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://WGUNDERWOOD.github.io/MondrianForests.jl/stable)
 [![docs dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://WGUNDERWOOD.github.io/MondrianForests.jl/dev)
+[![Aqua QA](https://raw.githubusercontent.com/JuliaTesting/Aqua.jl/master/badge.svg)](https://github.com/JuliaTesting/Aqua.jl)
 
 ## Introduction
 
