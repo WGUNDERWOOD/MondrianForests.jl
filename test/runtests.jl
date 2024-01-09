@@ -10,7 +10,7 @@ Aqua.test_ambiguities(MondrianForests)
 Aqua.test_unbound_args(MondrianForests)
 Aqua.test_undefined_exports(MondrianForests)
 Aqua.test_project_extras(MondrianForests)
-Aqua.test_stale_deps(MondrianForests, ignore=[:Aqua, :Suppressor, :JuliaFormatter])
+Aqua.test_stale_deps(MondrianForests, ignore=[:Aqua, :Suppressor, :JuliaFormatter, :Test])
 Aqua.test_deps_compat(MondrianForests)
 
 @testset verbose = true "JuliaFormatter" begin
