@@ -15,7 +15,6 @@ col_light = "#f9f9ee"
 col_red = "#FA0000"
 col_blue = "#0E75CF"
 col_yellow = "#FFEC02"
-#col_purple = "#9558b2"
 col_purple = "#d5b8f5"
 
 # outer box

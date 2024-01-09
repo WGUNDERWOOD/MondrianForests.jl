@@ -1,4 +1,4 @@
-# MondrianForests.jl <img src="docs/src/assets/logo.svg" alt="Mondrian forests logo" align="right" width=200 />
+# MondrianForests.jl <img src="docs/src/assets/logo.svg" alt="MondrianForests logo" align="right" width=200 />
 
 Mondrian random forests in Julia
 
