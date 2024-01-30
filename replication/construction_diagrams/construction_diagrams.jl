@@ -1,7 +1,6 @@
 using MondrianForests
 using PyPlot
 using Random
-using Revise
 
 rcParams = PyPlot.PyDict(PyPlot.matplotlib."rcParams")
 rcParams["text.usetex"] = true

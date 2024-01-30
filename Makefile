@@ -1,3 +1,3 @@
 all:
 	@rm -f src/*.cov
-	@julia --project --threads 6 make.jl
+	@julia --project --color=yes --threads 6 make.jl
