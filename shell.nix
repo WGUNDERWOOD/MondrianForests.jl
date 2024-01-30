@@ -2,8 +2,9 @@ let
 pkgs = import <nixpkgs> { };
 in pkgs.mkShell {
     buildInputs = with pkgs; [
-        cacert
         julia
+        cacert
+        python3
         python3Packages.matplotlib
         texlive.combined.scheme-full
         git
