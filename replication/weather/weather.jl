@@ -10,7 +10,8 @@ using MondrianForests
 # plot setup
 rcParams = PyPlot.PyDict(PyPlot.matplotlib."rcParams")
 rcParams["text.usetex"] = true
-rcParams["text.latex.preamble"] = "\\usepackage[sfdefault,light]{FiraSans}"
+rcParams["font.family"] = "serif"
+#rcParams["text.latex.preamble"] = "\\usepackage[sfdefault,light]{FiraSans}"
 plt.ioff()
 
 function load_data(; limit=nothing)
@@ -66,7 +67,7 @@ end
 function plot_data()
     colors = [dry_color, wet_color][Int.(data.RainTomorrow) .+ 1]
     return plt.scatter(data.Humidity3pm, data.Pressure3pm, c=colors,
-                       s=5, alpha=0.3, marker=".", ec=nothing)
+                       s=1, alpha=0.3, marker=".", ec=nothing)
 end
 
 function plot_splits(tree)
@@ -215,7 +216,9 @@ function make_forest_design_plot(data, trees, x_min, x_max,
 end
 
 # get data and plot params
-(data, x_min, x_max, y_min, y_max) = load_data(limit=nothing)
+#limit = 1000
+limit = nothing
+(data, x_min, x_max, y_min, y_max) = load_data(limit=limit)
 dry_color = "#da6200"
 wet_color = "#0080d0"
 figsize = (3.5, 3.7)

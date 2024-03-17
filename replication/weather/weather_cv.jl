@@ -10,7 +10,8 @@ using MondrianForests
 # plot setup
 rcParams = PyPlot.PyDict(PyPlot.matplotlib."rcParams")
 rcParams["text.usetex"] = true
-rcParams["text.latex.preamble"] = "\\usepackage[sfdefault,light]{FiraSans}"
+rcParams["font.family"] = "serif"
+#rcParams["text.latex.preamble"] = "\\usepackage[sfdefault,light]{FiraSans}"
 plt.ioff()
 
 function load_data(; limit=nothing)
@@ -117,7 +118,9 @@ plt.subplots_adjust(left=0.205, right=0.96, top=0.854, bottom=0.165)
 plt.savefig("./replication/weather/weather_gcv.png", dpi=500)
 
 # CIs
-(data, x_min, x_max, y_min, y_max) = load_data(limit=nothing)
+#limit = 1000
+limit = nothing
+(data, x_min, x_max, y_min, y_max) = load_data(limit=limit)
 n = nrow(data)
 X = [ntuple(j -> data[i, [:Humidity3pm, :Pressure3pm][j]], 2) for i in 1:nrow(data)]
 Y = [data[i, :RainTomorrow] for i in 1:nrow(data)]
