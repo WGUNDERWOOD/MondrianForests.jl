@@ -226,7 +226,7 @@ limit = nothing
 dry_color = "#da6200"
 wet_color = "#0080d0"
 figsize = (4, 4.2)
-dpi = 500
+dpi = 350
 
 # make trees
 seeds = 4:54

@@ -77,7 +77,7 @@ Y = [data[i, :RainTomorrow] for i in 1:nrow(data)]
 
 n_evals = 200
 lambdas = range(0.1, stop=8.0, step=0.1)
-n_trees = 200
+n_trees = 300
 debias_order = 0
 
 eval_ids = sort(shuffle(1:n)[1:n_evals])
@@ -116,7 +116,7 @@ plt.xlabel("Lifetime parameter \$\\lambda\$", fontsize=12)
 plt.ylabel("Loss function", fontsize=12)
 plt.legend(fontsize=12)
 plt.subplots_adjust(left=0.205, right=0.96, top=0.842, bottom=0.140)
-plt.savefig("./replication/weather/weather_gcv.png", dpi=500)
+plt.savefig("./replication/weather/weather_gcv.png", dpi=350)
 
 # CIs
 limit = nothing
