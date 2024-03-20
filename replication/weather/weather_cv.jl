@@ -100,7 +100,7 @@ for lambda in lambdas
     println("mse: ", mse)
 end
 
-(fig, ax) = plt.subplots(figsize=(3.5, 3.7))
+(fig, ax) = plt.subplots(figsize=(4, 4.4))
 best_lambda = 5.0
 i = [i for i in 1:length(lambdas) if isapprox(lambdas[i], best_lambda, rtol=0.01)][]
 plt.plot([best_lambda, best_lambda], [0.0, gcvs[i] - 0.0001], c="#666677",
@@ -110,15 +110,15 @@ plt.plot(lambdas, mses, lw=1.0, c="#aa44dd",
 plt.plot(lambdas, gcvs, lw=1.0, c="#009944",
          label="Generalized cross-validation")
 plt.ylim([0.11 - 0.002, 0.17 + 0.002])
-plt.yticks(range(0.11, stop=0.17, step=0.01))
-plt.xlabel("Lifetime parameter \$\\lambda\$")
-plt.ylabel("Loss function")
-plt.legend(frameon=false)
-plt.subplots_adjust(left=0.205, right=0.96, top=0.854, bottom=0.165)
+plt.yticks(range(0.11, stop=0.17, step=0.01), fontsize=11)
+plt.xticks(fontsize=11)
+plt.xlabel("Lifetime parameter \$\\lambda\$", fontsize=12)
+plt.ylabel("Loss function", fontsize=12)
+plt.legend(fontsize=12)
+plt.subplots_adjust(left=0.205, right=0.96, top=0.842, bottom=0.140)
 plt.savefig("./replication/weather/weather_gcv.png", dpi=500)
 
 # CIs
-#limit = 1000
 limit = nothing
 (data, x_min, x_max, y_min, y_max) = load_data(limit=limit)
 n = nrow(data)

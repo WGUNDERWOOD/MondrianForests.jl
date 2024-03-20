@@ -48,16 +48,20 @@ function format_plot(ax)
     yticks = [990 + i * 10 for i in 0:5]
     xticklabels = "\$" .* string.(xticks) .* "\$"
     yticklabels = "\$" .* string.(yticks) .* "\$"
-    plt.xticks((xticks .- x_min) ./ (x_max - x_min), labels=xticklabels)
-    plt.yticks((yticks .- y_min) ./ (y_max - y_min), labels=yticklabels)
-    plt.xlabel("Relative humidity at 3pm (\\%)")
-    plt.ylabel("Pressure at 3pm (mbar)")
+    plt.xticks((xticks .- x_min) ./ (x_max - x_min), labels=xticklabels, fontsize=11)
+    plt.yticks((yticks .- y_min) ./ (y_max - y_min), labels=yticklabels, fontsize=11)
+    plt.xlabel("Relative humidity at 3pm (\\%)", fontsize=12)
+    plt.ylabel("Pressure at 3pm (mbar)", fontsize=12)
     # color key
+    #handle = plt.scatter([], [], c="white")
     dry_handle = plt.scatter([], [], c=dry_color)
     wet_handle = plt.scatter([], [], c=wet_color)
-    ax.legend([dry_handle, wet_handle], ["Dry tomorrow", "Wet tomorrow"],
+    ax.legend([wet_handle, dry_handle],
+              ["Rain next day", "No rain next day"],
               handletextpad=0.1, frameon=false,
-              bbox_to_anchor=(1.01, 1.16), ncol=2)
+              bbox_to_anchor=(1.04, 1.13), ncol=3,
+              fontsize=12,
+              columnspacing=0.8)
     # layout
     plt.xlim([-0.05, 1.05])
     plt.ylim([-0.05, 1.05])
@@ -221,7 +225,7 @@ limit = nothing
 (data, x_min, x_max, y_min, y_max) = load_data(limit=limit)
 dry_color = "#da6200"
 wet_color = "#0080d0"
-figsize = (3.5, 3.7)
+figsize = (4, 4.2)
 dpi = 500
 
 # make trees
