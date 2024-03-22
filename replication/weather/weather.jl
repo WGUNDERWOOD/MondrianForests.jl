@@ -358,7 +358,7 @@ global filename = "./replication/weather/weather_forest_" * string(n_trees) * ".
 make_forest_plot(data, trees[1:n_trees], x_min, x_max, y_min, y_max, filename)
 
 # plot debiased forest with design points
-n_trees = 15
+n_trees = 20
 debias_order = 1
 debias_scaling = MondrianForests.get_debias_scaling(debias_order)
 lambda2 = lambda * debias_scaling[2]
@@ -373,7 +373,7 @@ make_debiased_forest_design_plot(data, trees[1:n_trees], trees2[1:n_trees],
                                  filename)
 
 # plot forest with design points
-n_trees = 30
+n_trees = 40
 println("plotting forest with ", n_trees, " trees and design points")
 global filename = "./replication/weather/weather_forest_design.png"
 make_forest_design_plot(data, trees[1:n_trees], x_min, x_max, y_min,

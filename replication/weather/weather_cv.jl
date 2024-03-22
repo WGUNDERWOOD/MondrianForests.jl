@@ -68,16 +68,17 @@ y_evals = Y[eval_ids]
 
 # GCV
 Random.seed!()
-gcvs = Float64[]
-mses = Float64[]
+gcvs = zeros(length(lambdas))
+mses = zeros(length(lambdas))
 d = 2
-for lambda in lambdas
-    println("lambda: ", lambda)
+Threads.@threads for i in 1:length(lambdas)
+    lambda = lambdas[i]
     local forest = MondrianForest(lambda, n_trees, x_evals, X, Y)
     mse = sum((y_evals .- forest.mu_hat) .^ 2) / n_evals
     gcv = mse / (1 - lambda^d / n)^2
-    push!(gcvs, gcv)
-    push!(mses, mse)
+    gcvs[i] = gcv
+    mses[i] = mse
+    println("lambda: ", lambda)
     println("gcv: ", gcv)
     println("mse: ", mse)
 end
@@ -107,6 +108,7 @@ n = nrow(data)
 X = [ntuple(j -> data[i, [:Humidity3pm, :Pressure3pm][j]], 2) for i in 1:nrow(data)]
 Y = [data[i, :RainTomorrow] for i in 1:nrow(data)]
 
+n_trees = 400
 debias_order = 0
 x_evals_original = [(20, 1020), (70, 1000), (80, 990)]
 x_evals = [((x[1] - x_min) / (x_max - x_min), (x[2] - y_min) / (y_max - y_min))
@@ -123,6 +125,7 @@ for i in 1:length(x_evals)
 end
 
 # debiased CIs
+n_trees = 200
 debias_order = 1
 debiased_forest = DebiasedMondrianForest(best_lambda, n_trees, x_evals,
                                          debias_order, X, Y, true)
