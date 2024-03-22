@@ -178,7 +178,6 @@ end
 
 function get_common_refinement(tree1::MondrianTree{d}, tree2::MondrianTree{d}) where {d}
     @assert tree1.id == tree2.id
-    @assert tree1.lambda == tree2.lambda
     @assert tree1.lower == tree2.lower
     @assert tree1.upper == tree2.upper
     @assert tree1.creation_time == tree2.creation_time

@@ -160,6 +160,79 @@ function plot_forest(trees, ax)
     end
 end
 
+function plot_debiased_forest(trees1, trees2, ax)
+    # TODO
+    # get all cells and refinement
+    refined_tree = get_common_refinement([trees1; trees2])
+    refined_cells = get_leaves(refined_tree)
+    all_cells1 = [get_leaves(t) for t in trees1]
+    all_cells2 = [get_leaves(t) for t in trees2]
+    # get counts
+    X = [ntuple(j -> data[i, [:Humidity3pm, :Pressure3pm][j]], 2) for i in 1:nrow(data)]
+    Y = [data[i, :RainTomorrow] for i in 1:nrow(data)]
+    n = length(X)
+    all_counts1 = [[sum(MondrianForests.is_in(X[i], cell) for i in 1:n)
+                   for cell in all_cells1[j]] for j in 1:length(trees1)]
+    all_counts2 = [[sum(MondrianForests.is_in(X[i], cell) for i in 1:n)
+                   for cell in all_cells2[j]] for j in 1:length(trees2)]
+    all_ones1 = [[sum(MondrianForests.is_in(X[i], cell) * Y[i] for i in 1:n)
+                  for cell in all_cells1[j]] for j in 1:length(trees1)]
+    all_ones2 = [[sum(MondrianForests.is_in(X[i], cell) * Y[i] for i in 1:n)
+                  for cell in all_cells2[j]] for j in 1:length(trees2)]
+    ratios = zeros(length(refined_cells))
+    ratios1 = zeros(length(refined_cells))
+    ratios2 = zeros(length(refined_cells))
+    debias_order = 1
+    debias_coeffs = MondrianForests.get_debias_coeffs(debias_order)
+
+    for c in 1:length(refined_cells)
+        r_cell = refined_cells[c]
+        x = MondrianForests.get_center(r_cell)
+        cell_ids1 = [[c for c in 1:length(all_cells1[j]) if
+                     MondrianForests.is_in(x, all_cells1[j][c])][] for j in 1:length(trees1)]
+        cell_ids2 = [[c for c in 1:length(all_cells2[j]) if
+                     MondrianForests.is_in(x, all_cells2[j][c])][] for j in 1:length(trees2)]
+        counts1 = [all_counts1[j][cell_ids1[j]] for j in 1:length(trees1)]
+        counts2 = [all_counts2[j][cell_ids2[j]] for j in 1:length(trees2)]
+        ones1 = [all_ones1[j][cell_ids1[j]] for j in 1:length(trees1)]
+        ones2 = [all_ones2[j][cell_ids2[j]] for j in 1:length(trees2)]
+        rs1 = ones1 ./ counts1
+        rs2 = ones2 ./ counts2
+        if !all(isnan.(rs1))
+            # TODO is this right
+            ratios1[c] = sum(r for r in rs1 if !isnan(r)) / sum(1 for r in rs1 if !isnan(r))
+        else
+            ratios1[c] = NaN
+        end
+        if !all(isnan.(rs2))
+            ratios2[c] = sum(r for r in rs2 if !isnan(r)) / sum(1 for r in rs2 if !isnan(r))
+        else
+            ratios2[c] = NaN
+        end
+
+        if !isnan(ratios1[c]) && !isnan(ratios2[c])
+            ratios[c] = ratios1[c] * debias_coeffs[1] + ratios2[c] * debias_coeffs[2]
+        elseif !isnan(ratios1[c])
+            ratios[c] = ratios1[c]
+        elseif !isnan(ratios2[c])
+            ratios[c] = ratios2[c]
+        else
+            ratios[c] = NaN
+        end
+    end
+
+    # plot
+    colormap = get_cell_colormap()
+    colors = colormap.(ratios)
+    for i in 1:length(refined_cells)
+        println(i, " / ", length(refined_cells))
+        cell = refined_cells[i]
+        x1s = [cell.lower[1], cell.lower[1], cell.upper[1], cell.upper[1]]
+        x2s = [cell.lower[2], cell.upper[2], cell.upper[2], cell.lower[2]]
+        fill(x1s, x2s, facecolor=colors[i])
+    end
+end
+
 function make_data_plot(data, x_min, x_max, y_min, y_max, filename)
     (fig, ax) = plt.subplots(figsize=figsize)
     plot_data()
@@ -219,6 +292,22 @@ function make_forest_design_plot(data, trees, x_min, x_max,
     return plt.close("all")
 end
 
+function make_debiased_forest_design_plot(data, trees1, trees2, x_min, x_max,
+                                 y_min, y_max, design_points, filename)
+    # TODO
+    (fig, ax) = plt.subplots(figsize=figsize)
+    plot_debiased_forest(trees1, trees2, ax)
+    for i in 1:length(design_points)
+        p = design_points[i]
+        plt.scatter(p[1], p[2], c="k", s=30, marker="x", linewidths=1)
+        plt.text(p[1] + 0.07, p[2] - 0.003, "\$$(string(i))\$", fontsize=12,
+                 ha="center", va="center")
+    end
+    format_plot(ax)
+    PyPlot.savefig(filename, dpi=dpi)
+    return plt.close("all")
+end
+
 # get data and plot params
 #limit = 1000
 limit = nothing
@@ -250,49 +339,54 @@ for i in 1:length(seeds)
     push!(trees, tree)
 end
 
+#=
 # plot data
 println("plotting data")
 filename = "./replication/weather/weather_data.png"
 make_data_plot(data, x_min, x_max, y_min, y_max, filename)
-
-# plot data and partition
-println("plotting data and partition")
-filename = "./replication/weather/weather_data_partition.png"
-make_data_partition_plot(data, trees[1], x_min, x_max, y_min, y_max, filename)
 
 # plot data and filled partition
 println("plotting data and filled partition")
 filename = "./replication/weather/weather_data_filled_partition.png"
 make_data_filled_partition_plot(data, trees[1], x_min, x_max, y_min, y_max, filename)
 
-# plot filled partitions
-for i in 1:3
-    println("plotting filled partition for tree ", i, " / ", length(trees))
-    global filename = "./replication/weather/weather_filled_partition_" * string(i) * ".png"
-    make_filled_partition_plot(data, trees[i], x_min, x_max, y_min, y_max, filename)
-end
-
 # plot forests
-debias_order = 0
 significance_level = 0.95
 estimate_var = false
 n_trees = 2
 X = [ntuple(j -> data[i, [:Humidity3pm, :Pressure3pm][j]], 2) for i in 1:nrow(data)]
 Y = [data[i, :RainTomorrow] for i in 1:nrow(data)]
 x_evals = Tuple{Float64,Float64}[]
-for i in [2, 10, 30]
+for i in [2]
     println("plotting forest with ", i, " trees")
     global filename = "./replication/weather/weather_forest_" * string(i) * ".png"
     make_forest_plot(data, trees[1:i], x_min, x_max, y_min, y_max, filename)
 end
+=#
 
-# plot forest with design points
-i = 30
-println("plotting forest with ", i, " trees and design points")
-global filename = "./replication/weather/weather_forest_design.png"
+# plot debiased forest with design points
+i = 15
+debias_order = 1
+debias_scaling = MondrianForests.get_debias_scaling(debias_order)
+debias_coeffs = MondrianForests.get_debias_coeffs(debias_order)
+println(debias_scaling)
+println(debias_coeffs)
+lambda2 = lambda * debias_scaling[2]
+trees2 = [MondrianTree(2, lambda2) for _ in 1:i]
 
+println("plotting debiased forest with ", i, " trees and design points")
 design_points = [(20, 1020), (70, 1000), (80, 990)]
 design_points = [((x[1] - x_min) / (x_max - x_min), (x[2] - y_min) / (y_max - y_min))
                  for x in design_points]
+global filename = "./replication/weather/weather_debiased_forest_design.png"
+make_debiased_forest_design_plot(data, trees[1:i], trees2[1:i], x_min, x_max,
+                                 y_min, y_max, design_points, filename)
+
+#=
+i = 30
+# plot forest with design points
+println("plotting forest with ", i, " trees and design points")
+global filename = "./replication/weather/weather_forest_design.png"
 make_forest_design_plot(data, trees[1:i], x_min, x_max, y_min,
                         y_max, design_points, filename)
+=#
