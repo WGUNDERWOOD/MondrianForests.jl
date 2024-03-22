@@ -11,7 +11,6 @@ using MondrianForests
 rcParams = PyPlot.PyDict(PyPlot.matplotlib."rcParams")
 rcParams["text.usetex"] = true
 rcParams["font.family"] = "serif"
-#rcParams["text.latex.preamble"] = "\\usepackage[sfdefault,light]{FiraSans}"
 plt.ioff()
 
 function load_data(; limit=nothing)

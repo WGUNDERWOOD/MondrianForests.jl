@@ -11,6 +11,6 @@ in pkgs.mkShell {
     ];
     shellHook = ''
         # run this to link Julia PyCall package to nixpkgs python3
-        #julia --color=yes -e 'using Pkg; ENV["PYTHON"]="${pkgs.python3}/bin/python3"; Pkg.build("PyCall")'
+        julia --color=yes -e 'using Pkg; ENV["PYTHON"]="${pkgs.python3}/bin/python3"; Pkg.build("PyCall")'
     '';
 }
