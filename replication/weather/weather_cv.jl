@@ -107,7 +107,6 @@ n = nrow(data)
 X = [ntuple(j -> data[i, [:Humidity3pm, :Pressure3pm][j]], 2) for i in 1:nrow(data)]
 Y = [data[i, :RainTomorrow] for i in 1:nrow(data)]
 
-n_trees = 400
 debias_order = 0
 x_evals_original = [(20, 1020), (70, 1000), (80, 990)]
 x_evals = [((x[1] - x_min) / (x_max - x_min), (x[2] - y_min) / (y_max - y_min))

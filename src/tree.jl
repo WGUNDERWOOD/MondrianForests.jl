@@ -1,8 +1,6 @@
 using Random
 using Distributions
 
-# TODO rewrite replication files to use new functions
-
 """
 A Mondrian tree is determined by:
 - `id`: a string to identify the tree
@@ -181,10 +179,9 @@ function get_common_refinement(tree1::MondrianTree{d}, tree2::MondrianTree{d}) w
     @assert tree1.lower == tree2.lower
     @assert tree1.upper == tree2.upper
     @assert tree1.creation_time == tree2.creation_time
-    subtrees1 = get_subtrees(tree1)
-    subtrees2 = get_subtrees(tree2)
+    subtrees1 = [t for t in get_subtrees(tree1) if t.is_split]
+    subtrees2 = [t for t in get_subtrees(tree2) if t.is_split]
     subtrees = [subtrees1; subtrees2]
-    subtrees = [t for t in subtrees if t.is_split]
     subtrees = sort(subtrees, by=(x -> x.tree_left.creation_time))
     tree = MondrianTree(tree1.id, tree1.lambda, tree1.lower, tree1.upper, tree1.creation_time,
                         false, nothing, nothing, nothing, nothing)
@@ -212,6 +209,7 @@ refined_tree = get_common_refinement(trees)
 """
 function get_common_refinement(trees::Vector{MondrianTree{d}}) where {d}
     @assert !isempty(trees)
+    println(length(trees))
     if length(trees) == 1
         return trees[]
     else
