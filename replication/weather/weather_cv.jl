@@ -92,8 +92,8 @@ plt.plot(lambdas, mses, lw=1.0, c="#aa44dd",
          label="Mean squared error")
 plt.plot(lambdas, gcvs, lw=1.0, c="#009944",
          label="Generalized cross-validation")
-plt.ylim([0.11 - 0.002, 0.17 + 0.002])
-plt.yticks(range(0.11, stop=0.17, step=0.01), fontsize=11)
+plt.ylim([0.12 - 0.002, 0.17 + 0.002])
+plt.yticks(range(0.12, stop=0.17, step=0.01), fontsize=11)
 plt.xticks(fontsize=11)
 plt.xlabel("Lifetime parameter \$\\lambda\$", fontsize=12)
 plt.ylabel("Loss function", fontsize=12)
