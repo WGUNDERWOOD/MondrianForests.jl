@@ -35,7 +35,7 @@ function load_data(; limit=nothing)
     y_max = maximum(data.Pressure3pm)
     data.Humidity3pm = (data.Humidity3pm .- x_min) ./ (x_max - x_min)
     data.Pressure3pm = (data.Pressure3pm .- y_min) ./ (y_max - y_min)
-    Random.seed!(1)
+    Random.seed!(2)
     data = shuffle(data)
     return (data, x_min, x_max, y_min, y_max)
 end
@@ -92,14 +92,16 @@ plt.plot(lambdas, mses, lw=1.0, c="#aa44dd",
          label="Mean squared error")
 plt.plot(lambdas, gcvs, lw=1.0, c="#009944",
          label="Generalized cross-validation")
-plt.ylim([0.12 - 0.002, 0.17 + 0.002])
-plt.yticks(range(0.12, stop=0.17, step=0.01), fontsize=11)
+plt.ylim([0.11 - 0.002, 0.19 + 0.002])
+plt.yticks(range(0.11, stop=0.19, step=0.01), fontsize=11)
 plt.xticks(fontsize=11)
 plt.xlabel("Lifetime parameter \$\\lambda\$", fontsize=12)
 plt.ylabel("Loss function", fontsize=12)
 plt.legend(fontsize=12)
 plt.subplots_adjust(left=0.205, right=0.96, top=0.842, bottom=0.140)
 plt.savefig("./replication/weather/weather_gcv.png", dpi=350)
+
+sdfsdf
 
 # CIs
 limit = nothing
