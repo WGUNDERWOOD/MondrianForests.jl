@@ -179,8 +179,6 @@ function get_common_refinement(tree1::MondrianTree{d}, tree2::MondrianTree{d}) w
     @assert tree1.lower == tree2.lower
     @assert tree1.upper == tree2.upper
     @assert tree1.creation_time == tree2.creation_time
-    println("tree1 has ", count_leaves(tree1), " cells")
-    println("tree2 has ", count_leaves(tree2), " cells")
     subtrees1 = [t for t in get_subtrees(tree1) if t.is_split]
     subtrees2 = [t for t in get_subtrees(tree2) if t.is_split]
     subtrees = [subtrees1; subtrees2]
@@ -211,7 +209,6 @@ refined_tree = get_common_refinement(trees)
 """
 function get_common_refinement(trees::Vector{MondrianTree{d}}) where {d}
     @assert !isempty(trees)
-    println(length(trees))
     if length(trees) == 1
         return trees[]
     else

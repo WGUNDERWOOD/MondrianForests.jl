@@ -101,8 +101,6 @@ plt.legend(fontsize=12)
 plt.subplots_adjust(left=0.205, right=0.96, top=0.842, bottom=0.140)
 plt.savefig("./replication/weather/weather_gcv.png", dpi=350)
 
-sdfsdf
-
 # CIs
 limit = nothing
 (data, x_min, x_max, y_min, y_max) = load_data(limit=limit)
