@@ -21,7 +21,6 @@ rand(X_dist)
 X = [ntuple(j -> rand(X_dist), d) for i in 1:n]
 Y = [X[i][1]^2 + rand(eps_dist) for i in 1:n]
 
-
 (fig, ax) = plt.subplots(figsize=(5, 5))
 plt.scatter(X, Y)
 savefig("replication/debiasing/plot.png", dpi=150)
@@ -34,12 +33,11 @@ n_trees = 100
 #println(lambda)
 for debias_order in [0, 1]
     #lambda = select_lifetime_polynomial(X, Y, debias_order)
-    gamma = d + 4*(debias_order + 1)
+    gamma = d + 4 * (debias_order + 1)
     println(gamma)
-    lambda = n^(-1/gamma)
+    lambda = n^(-1 / gamma)
     println(lambda)
     forest = MondrianForest(lambda, n_trees, x_evals, X, Y)
     mse = forest.mu_hat[]^2
     println(mse)
 end
-
