@@ -18,7 +18,6 @@ X_dist = Uniform(-1, 1)
 sigma = 0.001
 eps_dist = Normal(0, sigma)
 
-
 # plot data
 #(fig, ax) = plt.subplots(figsize=(5, 5))
 #plt.scatter(X, Y)
