@@ -17,8 +17,8 @@ end
 
 @enum LambdaMethod begin
     optimal
-    polynomial
-    gcv
+    #polynomial
+    #gcv
 end
 
 mutable struct Experiment
@@ -103,8 +103,8 @@ function run_all()
     lambda_candidates = [4.0, 5.0]
     n_subsample = 10
     d = 1
-    ns = [10, 20]
-    Bs = [10, 20]
+    ns = [1000]
+    Bs = [500]
     x_evals = [ntuple(j -> 0.5, d)]
     X_dist = Uniform(0, 1)
     mu = (x -> sum(sin.(x)))
@@ -114,22 +114,22 @@ function run_all()
     blocks = [(0, rmse::LambdaTarget), (1, rmse::LambdaTarget),
               (1, undersmooth::LambdaTarget)]
     for (J_estimator, lambda_target) in blocks
-    for lambda_method in lambda_methods
-        for n in ns
-            for B in Bs
-                for lambda_multiplier in lambda_multipliers
-                    B_estimator = B
-                    B_lifetime = B
-                    experiment = Experiment(J_estimator, lambda_target, lambda_method,
-                                            lambda_multiplier, lambda_candidates,
-                                            n_subsample, d, n, B_estimator,
-                                            B_lifetime, x_evals, X_dist, mu, eps_dist)
-                    run(experiment)
-                    push!(experiments, experiment)
+        for lambda_method in lambda_methods
+            for n in ns
+                for B in Bs
+                    for lambda_multiplier in lambda_multipliers
+                        B_estimator = B
+                        B_lifetime = B
+                        experiment = Experiment(J_estimator, lambda_target, lambda_method,
+                                                lambda_multiplier, lambda_candidates,
+                                                n_subsample, d, n, B_estimator,
+                                                B_lifetime, x_evals, X_dist, mu, eps_dist)
+                        run(experiment)
+                        push!(experiments, experiment)
+                    end
                 end
             end
         end
-    end
     end
     save(experiments)
 end
@@ -223,7 +223,7 @@ function select_lifetime(X, Y, experiment)
 end
 
 function run(experiment::Experiment)
-    n_rep = 5
+    n_rep = 200
     n = experiment.n
     d = experiment.d
     x_evals = experiment.x_evals
@@ -235,7 +235,7 @@ function run(experiment::Experiment)
     coverage = 0.0
     average_width = 0.0
     average_lambda = 0.0
-    for rep in 1:n_rep 
+    for rep in 1:n_rep
         println(rep)
         X = [ntuple(j -> rand(experiment.X_dist), d) for i in 1:n]
         Y = [mu(X[i]) + rand(experiment.eps_dist) for i in 1:n]
@@ -243,8 +243,6 @@ function run(experiment::Experiment)
         forest = DebiasedMondrianForest(lambda, experiment.B_estimator,
                                         x_evals,
                                         experiment.J_estimator, X, Y, true)
-        #println(forest.debias_scaling)
-        #println(forest.debias_coeffs)
         ci = forest.confidence_band
         mse += (forest.mu_hat[] - mu(x_evals[]))^2 / n_rep
         bias += (forest.mu_hat[] - mu(x_evals[])) / n_rep
