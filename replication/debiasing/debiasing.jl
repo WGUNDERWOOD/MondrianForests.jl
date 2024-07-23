@@ -136,7 +136,6 @@ function get_theory(experiment::Experiment)
     if experiment.J_estimator == 0
         C0 = (4 - 4 * log(2)) / 3
         experiment.sd_theory = sqrt(lambda^d * sigma2 * C0^d / n)
-        # TODO calculate sin bias
         experiment.bias_theory = - sum(sin.(x_evals[])) / (2 * lambda^2)
     elseif experiment.J_estimator == 1
         C1 = (4/3 - 4*log(2)/3)
@@ -144,28 +143,35 @@ function get_theory(experiment::Experiment)
         C3 = (5/3 - log(5/2) - 3*log(5/3)/2)
         C_all = 16/5 * C1^d + 81/25 * C2^d - 72/5 * C3^d
         experiment.sd_theory = sqrt(lambda^d * sigma2 * C_all / n)
-        # TODO calculate sin bias
-        experiment.bias_theory = d / lambda^2
+        experiment.bias_theory = sum(sin.(x_evals[])) / (3 * lambda^4)
     end
 end
 
 function select_lifetime(X, Y, experiment)
-    J = experiment.J_lifetime
+    J_lifetime = experiment.J_lifetime
     lambda_candidates = experiment.lambda_candidates
     B = experiment.B_lifetime
+    d = experiment.d
+    n = experiment.n
     n_subsample = experiment.n_subsample
+    sigma2 = var(experiment.eps_dist)
     if experiment.lambda_method == optimal::LambdaMethod
-        # TODO
-        return 10.0
+        if J_lifetime == 0
+            numerator = d * sin(1/2)^2 * n
+            denominator = sigma2 * ((4 - 4*log(2)) / 3)^d
+            return (numerator / denominator)^(1 / (4+d))
+        elseif J_lifetime == 1
+            # TODO
+        end
     elseif experiment.lambda_method == polynomial::LambdaMethod
-        return select_lifetime_polynomial(X, Y, J)
+        return select_lifetime_polynomial(X, Y, J_lifetime)
     elseif experiment.lambda_method == gcv::LambdaMethod
         return select_lifetime_gcv(lambdas, n_trees, X, Y, J)
     end
 end
 
 function run(experiment::Experiment)
-    n_rep = 200
+    n_rep = 100
     n = experiment.n
     d = experiment.d
     x_evals = experiment.x_evals
