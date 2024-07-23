@@ -99,7 +99,7 @@ end
 
 function run_all()
     lambda_methods = instances(LambdaMethod)
-    lambda_multipliers = [0.9, 1.0]
+    lambda_multipliers = [1.0]
     lambda_candidates = [4.0, 5.0]
     n_subsample = 10
     d = 1
