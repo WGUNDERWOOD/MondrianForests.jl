@@ -103,11 +103,11 @@ function run_all()
     lambda_candidates = [4.0, 5.0]
     n_subsample = 10
     d = 1
-    ns = [1000]
-    Bs = [500]
+    ns = [500]
+    Bs = [300]
     x_evals = [ntuple(j -> 0.5, d)]
     X_dist = Uniform(0, 1)
-    mu = (x -> sum(sin.(x)))
+    mu = (x -> sum(sin.(pi .* x)))
     sigma = 0.1
     eps_dist = Normal(0, sigma)
     experiments = []
@@ -181,14 +181,14 @@ function get_theory(experiment::Experiment)
     if experiment.J_estimator == 0
         C0 = (4 - 4 * log(2)) / 3
         experiment.sd_theory = sqrt(lambda^d * sigma2 * C0^d / n)
-        experiment.bias_theory = - sum(sin.(x_evals[])) / (2 * lambda^2)
+        experiment.bias_theory = - pi^2 * sum(sin.(pi .* x_evals[])) / (2 * lambda^2)
     elseif experiment.J_estimator == 1
         C1 = (4/3 - 4*log(2)/3)
         C2 = (2 - 2*log(2))
         C3 = (5/3 - log(5/2) - 3*log(5/3)/2)
         C_all = 16/5 * C1^d + 81/25 * C2^d - 72/5 * C3^d
         experiment.sd_theory = sqrt(lambda^d * sigma2 * C_all / n)
-        experiment.bias_theory = sum(sin.(x_evals[])) / (3 * lambda^4)
+        experiment.bias_theory = pi^4 * sum(sin.(pi .* x_evals[])) / (3 * lambda^4)
     end
 end
 
@@ -202,7 +202,7 @@ function select_lifetime(X, Y, experiment)
     sigma2 = var(experiment.eps_dist)
     if experiment.lambda_method == optimal::LambdaMethod
         if J_lifetime == 0
-            numerator = d * sin(1/2)^2 * n
+            numerator = d * pi^4 * n
             denominator = sigma2 * ((4 - 4*log(2)) / 3)^d
             return (numerator / denominator)^(1 / (4+d))
         elseif J_lifetime == 1
@@ -210,7 +210,7 @@ function select_lifetime(X, Y, experiment)
             C2 = (2 - 2*log(2))
             C3 = (5/3 - log(5/2) - 3*log(5/3)/2)
             C_all = 16/5 * C1^d + 81/25 * C2^d - 72/5 * C3^d
-            numerator = 8 * d * sin(1/2)^2 * n
+            numerator = 8 * d * pi^8 * n
             denominator = 9 * sigma2 * C_all
             return (numerator / denominator)^(1 / (8+d))
         end
@@ -223,7 +223,7 @@ function select_lifetime(X, Y, experiment)
 end
 
 function run(experiment::Experiment)
-    n_rep = 200
+    n_rep = 500
     n = experiment.n
     d = experiment.d
     x_evals = experiment.x_evals
