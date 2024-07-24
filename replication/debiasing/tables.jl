@@ -25,7 +25,7 @@ data = CSV.read("./replication/debiasing/results.csv", DataFrame)
 data = select!(data, sort(names(data)))
 data = select!(data, [:d, :n, :J_estimator, :lambda_target, :lambda_method, :J_lifetime,
                       :B_estimator, :B_lifetime, :n_subsample,
-                      :lambda_multiplier, :lambda, :rmse, :bias, :sd, :bias_over_sd, :sd_hat,
+                      :lambda_multiplier, :lambda, :rmse, :bias, :sd, :bias_over_sd, :sd_hat, :sigma2_hat,
                       :bias_theory, :sd_theory, :coverage, :average_width])
 data = sort!(data, [:J_estimator, :lambda_target, order(:lambda_method, by=lambda_method_order),
                     :J_lifetime, :d, :n, :B_estimator, :B_lifetime, :n_subsample,
@@ -33,9 +33,9 @@ data = sort!(data, [:J_estimator, :lambda_target, order(:lambda_method, by=lambd
 display(data)
 
 function make_table(df)
-    tex = "\\begin{tabular}{ccccccccccccccc}\n"
+    tex = "\\begin{tabular}{cccccccccccccccc}\n"
     tex *= "\\hline\n"
-    tex *= "\$J\$ & LS & \$B\$ & \$\\lambda\$ & RMSE & Bias & SD & Bias/SD & \$\\widehat{\\textrm{SD}}\$ & OBias & OSD & CR & CIW \\\\\n"
+    tex *= "\$J\$ & LS & \$B\$ & \$\\lambda\$ & RMSE & Bias & SD & Bias/SD & \$\\widehat{\\textrm{SD}}\$ & \$\\hat\\sigma^2\$ & OBias & OSD & CR & CIW \\\\\n"
 
     display(df)
     for i in 1:nrow(df)
@@ -62,10 +62,10 @@ function make_table(df)
         end
 
         for cell in df[i, [:B_estimator, :lambda, :rmse, :bias, :sd,
-                        :bias_over_sd, :sd_hat, :bias_theory, :sd_theory,
+                        :bias_over_sd, :sd_hat, :sigma2_hat, :bias_theory, :sd_theory,
                         :coverage, :average_width]]
             if isa(cell, Float64)
-                cell = round(cell, digits=3)
+                cell = round(cell, digits=4)
             end
             tex *= "& $cell"
         end

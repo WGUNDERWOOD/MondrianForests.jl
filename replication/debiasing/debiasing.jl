@@ -46,6 +46,7 @@ mutable struct Experiment
     bias::Float64
     sd::Float64
     sd_hat::Float64
+    sigma2_hat::Float64
     bias_over_sd::Float64
     coverage::Float64
     average_width::Float64
@@ -95,6 +96,7 @@ function Experiment(
                NaN,
                NaN,
                NaN,
+               NaN,
                NaN
               )
 end
@@ -105,12 +107,12 @@ function run_all()
     lambda_candidates = [4.0, 5.0]
     n_subsample = 10
     d = 1
-    ns = [200]
-    Bs = [200]
+    ns = [1000]
+    Bs = [20]
     x_evals = [ntuple(j -> 0.5, d)]
     X_dist = Uniform(0, 1)
     mu = (x -> sum(sin.(pi .* x)))
-    sigma = 0.1
+    sigma = 0.3
     eps_dist = Normal(0, sigma)
     experiments = []
     blocks = [(0, rmse::LambdaTarget), (1, rmse::LambdaTarget),
@@ -154,6 +156,7 @@ function save(experiments)
                     "bias" => experiment.bias,
                     "sd" => experiment.sd,
                     "sd_hat" => experiment.sd_hat,
+                    "sigma2_hat" => experiment.sigma2_hat,
                     "bias_over_sd" => experiment.bias_over_sd,
                     "coverage" => experiment.coverage,
                     "average_width" => experiment.average_width,
@@ -182,16 +185,12 @@ function get_theory(experiment::Experiment)
     x_evals = experiment.x_evals
     sigma2 = var(experiment.eps_dist)
     if experiment.J_estimator == 0
-        C0 = (4 - 4 * log(2)) / 3
-        experiment.sd_theory = sqrt(lambda^d * sigma2 * C0^d / n)
-        experiment.bias_theory = - pi^2 * sum(sin.(pi .* x_evals[])) / (2 * lambda^2)
+        experiment.sd_theory = sqrt(lambda^d * sigma2 * 0.4091^d / n)
+        experiment.bias_theory = - pi^2 * d / (2 * lambda^2)
     elseif experiment.J_estimator == 1
-        C1 = (4/3 - 4*log(2)/3)
-        C2 = (2 - 2*log(2))
-        C3 = (5/3 - log(5/2) - 3*log(5/3)/2)
-        C_all = 16/5 * C1^d + 81/25 * C2^d - 72/5 * C3^d
-        experiment.sd_theory = sqrt(lambda^d * sigma2 * C_all / n)
-        experiment.bias_theory = pi^4 * sum(sin.(pi .* x_evals[])) / (3 * lambda^4)
+        C = 3.2 * 0.4091^d - 2.88 * 0.4932^d + 3.24 * 0.6137^d
+        experiment.sd_theory = sqrt(lambda^d * sigma2 * C / n)
+        experiment.bias_theory = -4 * pi^4 * d / (27 * lambda^4)
     end
 end
 
@@ -226,7 +225,7 @@ function select_lifetime(X, Y, experiment)
 end
 
 function run(experiment::Experiment)
-    n_rep = 500
+    n_rep = 1000
     n = experiment.n
     d = experiment.d
     x_evals = experiment.x_evals
@@ -236,6 +235,7 @@ function run(experiment::Experiment)
     mse = 0.0
     bias = 0.0
     sd_hat = 0.0
+    sigma2_hat = 0.0
     coverage = 0.0
     average_width = 0.0
     average_lambda = 0.0
@@ -249,6 +249,7 @@ function run(experiment::Experiment)
                                         experiment.J_estimator, X, Y, true)
         ci = forest.confidence_band
         sd_hat += sqrt(forest.Sigma_hat[] * lambda^d / n) / n_rep
+        sigma2_hat += forest.sigma2_hat[] / n_rep
         mse += (forest.mu_hat[] - mu(x_evals[]))^2 / n_rep
         bias += (forest.mu_hat[] - mu(x_evals[])) / n_rep
         coverage += (ci[][1] <= mu(x_evals[]) <= ci[][2]) / n_rep
@@ -259,6 +260,7 @@ function run(experiment::Experiment)
     experiment.bias = bias
     experiment.sd = sqrt(mse - bias^2)
     experiment.sd_hat = sd_hat
+    experiment.sigma2_hat = sigma2_hat
     experiment.bias_over_sd = abs(bias) / experiment.sd
     experiment.coverage = coverage
     experiment.average_width = average_width

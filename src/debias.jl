@@ -166,9 +166,14 @@ function estimate_sigma2_hat(forest::DebiasedMondrianForest{d}, Ns::Array{Int,3}
     j = 0
     @assert forest.debias_scaling[j + 1] == 1
 
+    # TODO might not need this line
+    forest_no_debias = MondrianForest(forest.lambda, forest.n_trees, forest.x_evals,
+                                      forest.X_data, forest.Y_data)
+
     @inbounds Threads.@threads for s in 1:(forest.n_evals)
         x_eval = forest.x_evals[s]
-        mu_hat = forest.mu_hat[s]
+        #mu_hat = forest.mu_hat[s]
+        mu_hat = forest_no_debias.mu_hat[s]
         @inbounds for b in 1:(forest.n_trees)
             if Ns[b, j + 1, s] > 0
                 tree = forest.trees[b, j + 1]
