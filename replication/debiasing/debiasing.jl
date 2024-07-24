@@ -1,182 +1,140 @@
 using Distributions
-using PyPlot
 using MondrianForests
 using DataFrames
 using CSV
 
-# plot setup
-rcParams = PyPlot.PyDict(PyPlot.matplotlib."rcParams")
-rcParams["text.usetex"] = true
-rcParams["font.family"] = "serif"
-plt.ioff()
-
-@enum LambdaTarget begin
-    rmse
-    undersmooth
-end
-
-@enum LambdaMethod begin
-    optimal
-    #polynomial
-    #gcv
+@enum LifetimeMethod begin
+    opt
+    poly
 end
 
 mutable struct Experiment
     # parameters
     J_estimator::Int
     J_lifetime::Int
-    lambda_target::LambdaTarget
-    lambda_method::LambdaMethod
-    lambda_multiplier::Float64
-    lambda_candidates::Vector{Float64}
-    n_subsample::Int
+    lifetime_method::LifetimeMethod
+    lifetime_multiplier::Float64
 
     # distribution
     d::Int
     n::Int
-    B_estimator::Int
-    B_lifetime::Int
+    B::Int
     x_evals
     X_dist::Distribution
     mu::Function
     eps_dist::Distribution
 
+    # data
+    X
+    Y
+
     # outputs
-    rmse::Float64
-    bias::Float64
-    sd::Float64
+    mu_hat::Float64
     sd_hat::Float64
     sigma2_hat::Float64
-    bias_over_sd::Float64
-    coverage::Float64
-    average_width::Float64
+    coverage::Bool
+    width::Float64
     lambda::Float64
     sd_theory::Float64
     bias_theory::Float64
 end
 
-function Experiment(
-        J_estimator::Int,
-        lambda_target::LambdaTarget,
-        lambda_method::LambdaMethod,
-        lambda_multiplier::Float64,
-        lambda_candidates::Vector{Float64},
-        n_subsample::Int,
-        d::Int,
-        n::Int,
-        B_estimator::Int,
-        B_lifetime::Int,
-        x_evals,
-        X_dist::Distribution,
-        mu::Function,
-        eps_dist::Distribution,
-    )
-    Experiment(
-               J_estimator,
-               0,
-               lambda_target,
-               lambda_method,
-               lambda_multiplier,
-               lambda_candidates,
-               n_subsample,
-               d,
-               n,
-               B_estimator,
-               B_lifetime,
-               x_evals,
-               X_dist,
-               mu,
-               eps_dist,
-               NaN,
-               NaN,
-               NaN,
-               NaN,
-               NaN,
-               NaN,
-               NaN,
-               NaN,
-               NaN,
-               NaN,
-               NaN
-              )
+function Experiment(J_estimator::Int, J_lifetime::Int, lifetime_method::LifetimeMethod,
+        lifetime_multiplier::Float64, d::Int, n::Int, B::Int, x_evals,
+        X_dist::Distribution, mu::Function, eps_dist::Distribution, X, Y)
+    Experiment(J_estimator, J_lifetime, lifetime_method, lifetime_multiplier, d, n, B,
+               x_evals, X_dist, mu, eps_dist, X, Y, NaN, NaN, NaN, false, NaN,
+               NaN, NaN, NaN)
 end
 
 function run_all()
-    lambda_methods = instances(LambdaMethod)
-    lambda_multipliers = [1.0]
-    lambda_candidates = [4.0, 5.0]
-    n_subsample = 10
-    d = 1
-    ns = [1000]
-    Bs = [20]
-    x_evals = [ntuple(j -> 0.5, d)]
+    # tables format is (d, n, B)
+    tables = [(1, 500, 500)]
+    n_reps = 3
+    lifetime_methods = instances(LifetimeMethod)
     X_dist = Uniform(0, 1)
     mu = (x -> sum(sin.(pi .* x)))
     sigma = 0.3
     eps_dist = Normal(0, sigma)
+    J_blocks = [(0, 0), (1, 1), (1, 0)]
     experiments = []
-    blocks = [(0, rmse::LambdaTarget), (1, rmse::LambdaTarget),
-              (1, undersmooth::LambdaTarget)]
-    for (J_estimator, lambda_target) in blocks
-        for lambda_method in lambda_methods
-            for n in ns
-                for B in Bs
-                    for lambda_multiplier in lambda_multipliers
-                        B_estimator = B
-                        B_lifetime = B
-                        experiment = Experiment(J_estimator, lambda_target, lambda_method,
-                                                lambda_multiplier, lambda_candidates,
-                                                n_subsample, d, n, B_estimator,
-                                                B_lifetime, x_evals, X_dist, mu, eps_dist)
-                        run(experiment)
+
+    for (d, n, B) in tables
+        x_evals = [ntuple(j -> 0.5, d)]
+        for rep in 1:n_reps
+            println(rep)
+            X = [ntuple(j -> rand(X_dist), d) for i in 1:n]
+            Y = [mu(X[i]) + rand(eps_dist) for i in 1:n]
+            for (J_estimator, J_lifetime) in J_blocks
+                for lifetime_method in instances(LifetimeMethod)
+                    if lifetime_method == poly::LifetimeMethod
+                        lifetime_multipliers = [0.9, 1.0, 1.1]
+                    else
+                        lifetime_multipliers = [1.0]
+                    end
+                    for lifetime_multiplier in lifetime_multipliers
+                        experiment = Experiment(J_estimator, J_lifetime, lifetime_method,
+                                                lifetime_multiplier, d, n, B,
+                                                x_evals, X_dist, mu, eps_dist, X, Y)
                         push!(experiments, experiment)
                     end
                 end
             end
         end
     end
-    save(experiments)
-end
 
-function save(experiments)
-    datas = []
     for experiment in experiments
-        data = Dict(
-                    "J_estimator" => experiment.J_estimator,
-                    "J_lifetime" => experiment.J_lifetime,
-                    "lambda_target" => experiment.lambda_target,
-                    "lambda_method" => experiment.lambda_method,
-                    "lambda_multiplier" => experiment.lambda_multiplier,
-                    "n_subsample" => experiment.n_subsample,
-                    "d" => experiment.d,
-                    "n" => experiment.n,
-                    "B_estimator" => experiment.B_estimator,
-                    "B_lifetime" => experiment.B_lifetime,
-                    "rmse" => experiment.rmse,
-                    "bias" => experiment.bias,
-                    "sd" => experiment.sd,
-                    "sd_hat" => experiment.sd_hat,
-                    "sigma2_hat" => experiment.sigma2_hat,
-                    "bias_over_sd" => experiment.bias_over_sd,
-                    "coverage" => experiment.coverage,
-                    "average_width" => experiment.average_width,
-                    "lambda" => experiment.lambda,
-                    "sd_theory" => experiment.sd_theory,
-                    "bias_theory" => experiment.bias_theory,
-                   )
-        push!(datas, data)
+        run(experiment)
     end
-    df = DataFrame(datas)
+
+    # summarize the results of each experiment
+    results = []
+    for (d, n, B) in tables
+        for (J_estimator, J_lifetime) in J_blocks
+            for lifetime_method in instances(LifetimeMethod)
+                if lifetime_method == poly::LifetimeMethod
+                    lifetime_multipliers = [0.9, 1.0, 1.1]
+                else
+                    lifetime_multipliers = [1.0]
+                end
+                for lifetime_multiplier in lifetime_multipliers
+                    experiments_small = [e for e in experiments if
+                                         (e.d, e.n, e.B, e.J_estimator, e.J_lifetime,
+                                          e.lifetime_method, e.lifetime_multiplier)
+                                         == (d, n, B, J_estimator, J_lifetime, lifetime_method,
+                                             lifetime_multiplier)]
+                    n_small = length(experiments_small)
+                    result = Dict(
+                                "d" => d,
+                                "n" => n,
+                                "B" => B,
+                                "J_estimator" => J_estimator,
+                                "J_lifetime" => J_lifetime,
+                                "lifetime_method" => lifetime_method,
+                                "lifetime_multiplier" => lifetime_multiplier,
+                                "lambda" => sum(e.lambda for e in experiments_small) / n_small,
+                                "rmse" => sqrt(sum((e.mu_hat - e.mu(e.x_evals[]))^2 for e in experiments_small) / n_small),
+                                "bias" => sum(e.mu_hat - e.mu(e.x_evals[]) for e in experiments_small) / n_small,
+                                "sd_hat" => sum(e.sd_hat for e in experiments_small) / n_small,
+                                "sigma2_hat" => sum(e.sigma2_hat for e in experiments_small) / n_small,
+                                "bias_theory" => sum(e.bias_theory for e in experiments_small) / n_small,
+                                "sd_theory" => sum(e.sd_theory for e in experiments_small) / n_small,
+                                "coverage" => sum(e.coverage for e in experiments_small) / n_small,
+                                "average_width" => sum(e.width for e in experiments_small) / n_small,
+                               )
+                    result["sd"] = sqrt(result["rmse"]^2 - result["bias"]^2)
+                    result["bias_over_sd"] = abs(result["bias"]) / result["sd"]
+                    push!(results, result)
+                end
+            end
+        end
+    end
+
+    df = DataFrame(results)
+    display(df)
     CSV.write("./replication/debiasing/results.csv", df)
 end
 
-function get_J_lifetime(experiment)
-    if experiment.lambda_target == rmse::LambdaTarget
-        return experiment.J_estimator
-    elseif experiment.lambda_target == undersmooth::LambdaTarget
-        return experiment.J_estimator - 1
-    end
-end
 
 function get_theory(experiment::Experiment)
     n = experiment.n
@@ -195,14 +153,11 @@ function get_theory(experiment::Experiment)
 end
 
 function select_lifetime(X, Y, experiment)
-    J_lifetime = experiment.J_lifetime
-    lambda_candidates = experiment.lambda_candidates
-    B_lifetime = experiment.B_lifetime
     d = experiment.d
     n = experiment.n
-    n_subsample = experiment.n_subsample
     sigma2 = var(experiment.eps_dist)
-    if experiment.lambda_method == optimal::LambdaMethod
+    J_lifetime = experiment.J_lifetime
+    if experiment.lifetime_method == opt::LifetimeMethod
         if J_lifetime == 0
             numerator = d * pi^4 * n
             denominator = sigma2 * ((4 - 4*log(2)) / 3)^d
@@ -216,89 +171,33 @@ function select_lifetime(X, Y, experiment)
             denominator = 9 * sigma2 * C_all
             return (numerator / denominator)^(1 / (8+d))
         end
-    elseif experiment.lambda_method == polynomial::LambdaMethod
+    elseif experiment.lifetime_method == poly::LifetimeMethod
         return select_lifetime_polynomial(X, Y, J_lifetime)
-    elseif experiment.lambda_method == gcv::LambdaMethod
-        return select_lifetime_gcv(lambda_candidates, B_lifetime, X, Y,
-                                   J_lifetime, n_subsample)
     end
 end
 
 function run(experiment::Experiment)
-    n_rep = 1000
     n = experiment.n
     d = experiment.d
+    B = experiment.B
+    J_estimator = experiment.J_estimator
     x_evals = experiment.x_evals
+    X = experiment.X
+    Y = experiment.Y
     mu = experiment.mu
-    experiment.J_lifetime = get_J_lifetime(experiment)
-    lambda_multiplier = experiment.lambda_multiplier
-    mse = 0.0
-    bias = 0.0
-    sd_hat = 0.0
-    sigma2_hat = 0.0
-    coverage = 0.0
-    average_width = 0.0
-    average_lambda = 0.0
-    for rep in 1:n_rep
-        println(rep)
-        X = [ntuple(j -> rand(experiment.X_dist), d) for i in 1:n]
-        Y = [mu(X[i]) + rand(experiment.eps_dist) for i in 1:n]
-        lambda = select_lifetime(X, Y, experiment) * lambda_multiplier
-        forest = DebiasedMondrianForest(lambda, experiment.B_estimator,
-                                        x_evals,
-                                        experiment.J_estimator, X, Y, true)
-        ci = forest.confidence_band
-        sd_hat += sqrt(forest.Sigma_hat[] * lambda^d / n) / n_rep
-        sigma2_hat += forest.sigma2_hat[] / n_rep
-        mse += (forest.mu_hat[] - mu(x_evals[]))^2 / n_rep
-        bias += (forest.mu_hat[] - mu(x_evals[])) / n_rep
-        coverage += (ci[][1] <= mu(x_evals[]) <= ci[][2]) / n_rep
-        average_width += (ci[][2] - ci[][1]) / n_rep
-        average_lambda += lambda / n_rep
-    end
-    experiment.rmse = sqrt(mse)
-    experiment.bias = bias
-    experiment.sd = sqrt(mse - bias^2)
-    experiment.sd_hat = sd_hat
-    experiment.sigma2_hat = sigma2_hat
-    experiment.bias_over_sd = abs(bias) / experiment.sd
-    experiment.coverage = coverage
-    experiment.average_width = average_width
-    experiment.lambda = average_lambda
+    lifetime_multiplier = experiment.lifetime_multiplier
+    lambda = select_lifetime(X, Y, experiment) * lifetime_multiplier
+    forest = DebiasedMondrianForest(lambda, B, x_evals, J_estimator, X, Y, true)
+    experiment.mu_hat = forest.mu_hat[]
+    ci = forest.confidence_band
+    experiment.sd_hat = sqrt(forest.Sigma_hat[] * lambda^d / n)
+    experiment.sigma2_hat = forest.sigma2_hat[]
+    experiment.coverage = (ci[][1] <= mu(x_evals[]) <= ci[][2])
+    experiment.width = ci[][2] - ci[][1]
+    experiment.lambda = lambda
     get_theory(experiment)
-
-    for f in fieldnames(Experiment)
-        v = getfield(experiment, f)
-        println("$f: $v")
-    end
-
 end
 
 run_all()
 
-# params
-#d = 1
-#n = 50
-#x_evals = [ntuple(j -> 0.0, d)]
-#y_evals = [0.0]
-#n_evals = 1
-#X_dist = Uniform(-1, 1)
-#sigma = 0.001
-#eps_dist = Normal(0, sigma)
-#X = [ntuple(j -> rand(X_dist), d) for i in 1:n]
-#Y = [X[i][1]^2 + rand(eps_dist) for i in 1:n]
-
-# plot data
-#(fig, ax) = plt.subplots(figsize=(5, 5))
-#plt.scatter(X, Y)
-#savefig("replication/debiasing/plot.png", dpi=150)
-#plt.close()
-
-
-# run experiment
-#lambdas = collect(1:0.1:4)
-#n_trees = 100
-#n_reps = 50
-#n_subsample = n
-#lambda = select_lifetime_gcv(lambdas, n_trees, X, Y, debias_order, n_subsample)
-#println(lambda)
+# TODO use medians?
