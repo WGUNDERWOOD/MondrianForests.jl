@@ -45,6 +45,7 @@ mutable struct Experiment
     rmse::Float64
     bias::Float64
     sd::Float64
+    sd_hat::Float64
     bias_over_sd::Float64
     coverage::Float64
     average_width::Float64
@@ -93,6 +94,7 @@ function Experiment(
                NaN,
                NaN,
                NaN,
+               NaN,
                NaN
               )
 end
@@ -103,8 +105,8 @@ function run_all()
     lambda_candidates = [4.0, 5.0]
     n_subsample = 10
     d = 1
-    ns = [500]
-    Bs = [300]
+    ns = [200]
+    Bs = [200]
     x_evals = [ntuple(j -> 0.5, d)]
     X_dist = Uniform(0, 1)
     mu = (x -> sum(sin.(pi .* x)))
@@ -151,6 +153,7 @@ function save(experiments)
                     "rmse" => experiment.rmse,
                     "bias" => experiment.bias,
                     "sd" => experiment.sd,
+                    "sd_hat" => experiment.sd_hat,
                     "bias_over_sd" => experiment.bias_over_sd,
                     "coverage" => experiment.coverage,
                     "average_width" => experiment.average_width,
@@ -232,6 +235,7 @@ function run(experiment::Experiment)
     lambda_multiplier = experiment.lambda_multiplier
     mse = 0.0
     bias = 0.0
+    sd_hat = 0.0
     coverage = 0.0
     average_width = 0.0
     average_lambda = 0.0
@@ -244,6 +248,7 @@ function run(experiment::Experiment)
                                         x_evals,
                                         experiment.J_estimator, X, Y, true)
         ci = forest.confidence_band
+        sd_hat += sqrt(forest.Sigma_hat[] * lambda^d / n) / n_rep
         mse += (forest.mu_hat[] - mu(x_evals[]))^2 / n_rep
         bias += (forest.mu_hat[] - mu(x_evals[])) / n_rep
         coverage += (ci[][1] <= mu(x_evals[]) <= ci[][2]) / n_rep
@@ -253,12 +258,12 @@ function run(experiment::Experiment)
     experiment.rmse = sqrt(mse)
     experiment.bias = bias
     experiment.sd = sqrt(mse - bias^2)
+    experiment.sd_hat = sd_hat
     experiment.bias_over_sd = abs(bias) / experiment.sd
     experiment.coverage = coverage
     experiment.average_width = average_width
     experiment.lambda = average_lambda
     get_theory(experiment)
-    #show(experiment)
 
     for f in fieldnames(Experiment)
         v = getfield(experiment, f)
