@@ -2,10 +2,11 @@ using Distributions
 using MondrianForests
 using DataFrames
 using CSV
+using Random
 
 @enum LifetimeMethod begin
     opt
-    poly
+    pol
 end
 
 mutable struct Experiment
@@ -27,6 +28,7 @@ mutable struct Experiment
     # data
     X
     Y
+    rep::Int
 
     # outputs
     mu_hat::Float64
@@ -41,16 +43,20 @@ end
 
 function Experiment(J_estimator::Int, J_lifetime::Int, lifetime_method::LifetimeMethod,
         lifetime_multiplier::Float64, d::Int, n::Int, B::Int, x_evals,
-        X_dist::Distribution, mu::Function, eps_dist::Distribution, X, Y)
+        X_dist::Distribution, mu::Function, eps_dist::Distribution, X, Y, rep)
     Experiment(J_estimator, J_lifetime, lifetime_method, lifetime_multiplier, d, n, B,
-               x_evals, X_dist, mu, eps_dist, X, Y, NaN, NaN, NaN, false, NaN,
+               x_evals, X_dist, mu, eps_dist, X, Y, rep, NaN, NaN, NaN, false, NaN,
                NaN, NaN, NaN)
 end
 
 function run_all()
     # tables format is (d, n, B)
-    tables = [(1, 500, 500)]
-    n_reps = 3
+    tables = [
+              (1, 1000, 500), # good
+              (2, 1000, 500), # good
+              #(1, 10, 10), # small test
+             ]
+    n_reps = 2000
     lifetime_methods = instances(LifetimeMethod)
     X_dist = Uniform(0, 1)
     mu = (x -> sum(sin.(pi .* x)))
@@ -62,20 +68,19 @@ function run_all()
     for (d, n, B) in tables
         x_evals = [ntuple(j -> 0.5, d)]
         for rep in 1:n_reps
-            println(rep)
             X = [ntuple(j -> rand(X_dist), d) for i in 1:n]
             Y = [mu(X[i]) + rand(eps_dist) for i in 1:n]
             for (J_estimator, J_lifetime) in J_blocks
                 for lifetime_method in instances(LifetimeMethod)
-                    if lifetime_method == poly::LifetimeMethod
-                        lifetime_multipliers = [0.9, 1.0, 1.1]
+                    if lifetime_method == opt::LifetimeMethod
+                        lifetime_multipliers = [0.8, 0.9, 1.0, 1.1, 1.2]
                     else
                         lifetime_multipliers = [1.0]
                     end
                     for lifetime_multiplier in lifetime_multipliers
                         experiment = Experiment(J_estimator, J_lifetime, lifetime_method,
                                                 lifetime_multiplier, d, n, B,
-                                                x_evals, X_dist, mu, eps_dist, X, Y)
+                                                x_evals, X_dist, mu, eps_dist, X, Y, rep)
                         push!(experiments, experiment)
                     end
                 end
@@ -83,7 +88,22 @@ function run_all()
         end
     end
 
-    for experiment in experiments
+    shuffle!(experiments)
+    count = 1
+    t0 = time()
+    n_exp = length(experiments)
+    Threads.@threads for experiment in experiments
+        f = "d = $(experiment.d), n = $(experiment.n), B = $(experiment.B), "
+        f *= "Je = $(experiment.J_estimator), Jl = $(experiment.J_lifetime), "
+        f *= "rep = $(experiment.rep)"
+        t1 = time() - t0
+        rate = count / t1
+        t_left = (n_exp - count) / rate
+        println(round(t_left, digits=0), "s left, ",
+                round(t_left / 60, digits=2), "min left")
+        println(f)
+        println("$count / $n_exp")
+        count += 1 
         run(experiment)
     end
 
@@ -92,8 +112,8 @@ function run_all()
     for (d, n, B) in tables
         for (J_estimator, J_lifetime) in J_blocks
             for lifetime_method in instances(LifetimeMethod)
-                if lifetime_method == poly::LifetimeMethod
-                    lifetime_multipliers = [0.9, 1.0, 1.1]
+                if lifetime_method == opt::LifetimeMethod
+                    lifetime_multipliers = [0.8, 0.9, 1.0, 1.1, 1.2]
                 else
                     lifetime_multipliers = [1.0]
                 end
@@ -131,7 +151,7 @@ function run_all()
     end
 
     df = DataFrame(results)
-    display(df)
+    #display(df)
     CSV.write("./replication/debiasing/results.csv", df)
 end
 
@@ -171,7 +191,7 @@ function select_lifetime(X, Y, experiment)
             denominator = 9 * sigma2 * C_all
             return (numerator / denominator)^(1 / (8+d))
         end
-    elseif experiment.lifetime_method == poly::LifetimeMethod
+    elseif experiment.lifetime_method == pol::LifetimeMethod
         return select_lifetime_polynomial(X, Y, J_lifetime)
     end
 end
