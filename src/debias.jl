@@ -136,27 +136,28 @@ end
 
 function estimate_mu_hat(forest::DebiasedMondrianForest{d}, Ns::Array{Int,3}) where {d}
     mu_hat = [0.0 for _ in 1:(forest.n_evals)]
-    Y_bar = sum(forest.Y_data) / forest.n_data
 
     @inbounds Threads.@threads for s in 1:(forest.n_evals)
         x_eval = forest.x_evals[s]
         @inbounds for j in 0:(forest.debias_order)
             coeff = forest.debias_coeffs[j + 1]
+            numer = 0.0
+            denom = 0
             @inbounds for b in 1:(forest.n_trees)
                 if Ns[b, j + 1, s] > 0
                     tree = forest.trees[b, j + 1]
                     I = sum(are_in_same_leaf(forest.X_data[i], x_eval, tree)
                             .*
                             forest.Y_data[i] for i in 1:(forest.n_data))
-                    mu_hat[s] += coeff * I / Ns[b, j + 1, s]
-                else
-                    mu_hat[s] += coeff * Y_bar
+                    numer += coeff * I / Ns[b, j + 1, s]
+                    denom += 1
                 end
             end
+            mu_hat[s] += numer / denom
         end
     end # COV_EXCL_LINE
 
-    forest.mu_hat = mu_hat / forest.n_trees
+    forest.mu_hat = mu_hat
     return nothing
 end
 
@@ -169,18 +170,21 @@ function estimate_sigma2_hat(forest::DebiasedMondrianForest{d}, Ns::Array{Int,3}
     @inbounds Threads.@threads for s in 1:(forest.n_evals)
         x_eval = forest.x_evals[s]
         mu_hat = forest.mu_hat[s]
+        numer = 0.0
+        denom = 0
         @inbounds for b in 1:(forest.n_trees)
             if Ns[b, j + 1, s] > 0
                 tree = forest.trees[b, j + 1]
                 I = sum(are_in_same_leaf(forest.X_data[i], x_eval, tree)
                         .*
                         (forest.Y_data[i] - mu_hat)^2 for i in 1:n_data)
-                sigma2_hat[s] += I / Ns[b, j + 1, s]
+                numer += I / Ns[b, j + 1, s]
+                denom += 1
             end
         end
+        sigma2_hat[s] += numer / denom
     end # COV_EXCL_LINE
 
-    sigma2_hat ./= forest.n_trees
     forest.sigma2_hat = sigma2_hat
     return nothing
 end

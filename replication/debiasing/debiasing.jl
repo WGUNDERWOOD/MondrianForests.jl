@@ -54,15 +54,21 @@ function run_all()
     tables = [
               (1, 1000, 500), # good
               (2, 1000, 500), # good
+              #(1, 1000, 501), # medium test
+              #(2, 1000, 200), # medium test
               #(1, 10, 10), # small test
              ]
     n_reps = 2000
-    lifetime_methods = instances(LifetimeMethod)
+    #lifetime_methods = [opt::LifetimeMethod, pol::LifetimeMethod]
+    lifetime_methods = [opt::LifetimeMethod]
+    #lifetime_multipliers = [0.8, 0.9, 1.0, 1.1, 1.2]
+    lifetime_multipliers = [1.0]
     X_dist = Uniform(0, 1)
     mu = (x -> sum(sin.(pi .* x)))
     sigma = 0.3
     eps_dist = Normal(0, sigma)
     J_blocks = [(0, 0), (1, 1), (1, 0)]
+    #J_blocks = [(1, 0)]
     experiments = []
 
     for (d, n, B) in tables
@@ -71,13 +77,13 @@ function run_all()
             X = [ntuple(j -> rand(X_dist), d) for i in 1:n]
             Y = [mu(X[i]) + rand(eps_dist) for i in 1:n]
             for (J_estimator, J_lifetime) in J_blocks
-                for lifetime_method in instances(LifetimeMethod)
+                for lifetime_method in lifetime_methods
                     if lifetime_method == opt::LifetimeMethod
-                        lifetime_multipliers = [0.8, 0.9, 1.0, 1.1, 1.2]
+                        lifetime_mults = lifetime_multipliers
                     else
-                        lifetime_multipliers = [1.0]
+                        lifetime_mults = [1.0]
                     end
-                    for lifetime_multiplier in lifetime_multipliers
+                    for lifetime_multiplier in lifetime_mults
                         experiment = Experiment(J_estimator, J_lifetime, lifetime_method,
                                                 lifetime_multiplier, d, n, B,
                                                 x_evals, X_dist, mu, eps_dist, X, Y, rep)
@@ -124,27 +130,29 @@ function run_all()
                                          == (d, n, B, J_estimator, J_lifetime, lifetime_method,
                                              lifetime_multiplier)]
                     n_small = length(experiments_small)
-                    result = Dict(
-                                "d" => d,
-                                "n" => n,
-                                "B" => B,
-                                "J_estimator" => J_estimator,
-                                "J_lifetime" => J_lifetime,
-                                "lifetime_method" => lifetime_method,
-                                "lifetime_multiplier" => lifetime_multiplier,
-                                "lambda" => sum(e.lambda for e in experiments_small) / n_small,
-                                "rmse" => sqrt(sum((e.mu_hat - e.mu(e.x_evals[]))^2 for e in experiments_small) / n_small),
-                                "bias" => sum(e.mu_hat - e.mu(e.x_evals[]) for e in experiments_small) / n_small,
-                                "sd_hat" => sum(e.sd_hat for e in experiments_small) / n_small,
-                                "sigma2_hat" => sum(e.sigma2_hat for e in experiments_small) / n_small,
-                                "bias_theory" => sum(e.bias_theory for e in experiments_small) / n_small,
-                                "sd_theory" => sum(e.sd_theory for e in experiments_small) / n_small,
-                                "coverage" => sum(e.coverage for e in experiments_small) / n_small,
-                                "average_width" => sum(e.width for e in experiments_small) / n_small,
-                               )
-                    result["sd"] = sqrt(result["rmse"]^2 - result["bias"]^2)
-                    result["bias_over_sd"] = abs(result["bias"]) / result["sd"]
-                    push!(results, result)
+                    if n_small > 0
+                        result = Dict(
+                                      "d" => d,
+                                      "n" => n,
+                                      "B" => B,
+                                      "J_estimator" => J_estimator,
+                                      "J_lifetime" => J_lifetime,
+                                      "lifetime_method" => lifetime_method,
+                                      "lifetime_multiplier" => lifetime_multiplier,
+                                      "lambda" => sum(e.lambda for e in experiments_small) / n_small,
+                                      "rmse" => sqrt(sum((e.mu_hat - e.mu(e.x_evals[]))^2 for e in experiments_small) / n_small),
+                                      "bias" => sum(e.mu_hat - e.mu(e.x_evals[]) for e in experiments_small) / n_small,
+                                      "sd_hat" => sum(e.sd_hat for e in experiments_small) / n_small,
+                                      "sigma2_hat" => sum(e.sigma2_hat for e in experiments_small) / n_small,
+                                      "bias_theory" => sum(e.bias_theory for e in experiments_small) / n_small,
+                                      "sd_theory" => sum(e.sd_theory for e in experiments_small) / n_small,
+                                      "coverage" => sum(e.coverage for e in experiments_small) / n_small,
+                                      "average_width" => sum(e.width for e in experiments_small) / n_small,
+                                     )
+                        result["sd"] = sqrt(result["rmse"]^2 - result["bias"]^2)
+                        result["bias_over_sd"] = abs(result["bias"]) / result["sd"]
+                        push!(results, result)
+                    end
                 end
             end
         end
