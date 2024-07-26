@@ -52,17 +52,17 @@ end
 function run_all()
     # tables format is (d, n, B)
     tables = [
-              (1, 1000, 500), # good
-              (2, 1000, 500), # good
-              #(1, 1000, 501), # medium test
+              #(1, 1000, 600), # good
+              #(2, 1000, 600), # good
+              (1, 200, 200), # medium test
               #(2, 1000, 200), # medium test
               #(1, 10, 10), # small test
              ]
     n_reps = 2000
-    #lifetime_methods = [opt::LifetimeMethod, pol::LifetimeMethod]
-    lifetime_methods = [opt::LifetimeMethod]
-    #lifetime_multipliers = [0.8, 0.9, 1.0, 1.1, 1.2]
-    lifetime_multipliers = [1.0]
+    lifetime_methods = [opt::LifetimeMethod, pol::LifetimeMethod]
+    #lifetime_methods = [opt::LifetimeMethod]
+    lifetime_multipliers = [0.8, 0.9, 1.0, 1.1, 1.2]
+    #lifetime_multipliers = [1.0]
     X_dist = Uniform(0, 1)
     mu = (x -> sum(sin.(pi .* x)))
     sigma = 0.3

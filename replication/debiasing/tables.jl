@@ -24,7 +24,7 @@ function make_table(df)
     d = df[1, "d"]
     n = df[1, "n"]
     B = df[1, "B"]
-    tex = "\\begin{tabular}{ccccccccccccccccc}\n"
+    tex = "\\begin{tabular}{|cc|cc|cccc|cc|cc|cc|}\n"
     tex *= "%\$d=$d\$, & \$n=$n\$, & \$B=$B\$&&&&&&&&&&\\\\\n"
     tex *= "\\hline\n"
     tex *= "\$J\$ & LS & LM & \$\\lambda\$ & RMSE & Bias & SD & Bias/SD & "
@@ -78,7 +78,7 @@ function make_table(df)
 
         tex *= "\\\\\n"
     end
-    tex *= "\\hline\\n"
+    tex *= "\\hline\n"
     tex *= "\\end{tabular}"
     write("./replication/debiasing/table_d$(d)_n$(n)_b$B.tex", tex)
 end
