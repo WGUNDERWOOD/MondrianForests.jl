@@ -25,14 +25,16 @@ export select_lifetime_gcv
 export get_gcv
 
 # lifetime_polynomial
-export select_lifetime_polynomial
+export select_lifetime_polynomial_aimse
+export select_lifetime_polynomial_amse
 
 # include source files
 include("tree.jl")
 include("data.jl")
 include("forest.jl")
 include("debias.jl")
-include("lifetime_polynomial.jl")
+include("lifetime_polynomial_aimse.jl")
+include("lifetime_polynomial_amse.jl")
 include("lifetime_gcv.jl")
 
 end

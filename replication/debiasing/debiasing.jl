@@ -37,6 +37,7 @@ mutable struct Experiment
     coverage::Bool
     width::Float64
     lambda::Float64
+    rmse_theory::Float64
     sd_theory::Float64
     bias_theory::Float64
 end
@@ -46,7 +47,7 @@ function Experiment(J_estimator::Int, J_lifetime::Int, lifetime_method::Lifetime
         X_dist::Distribution, mu::Function, eps_dist::Distribution, X, Y, rep)
     Experiment(J_estimator, J_lifetime, lifetime_method, lifetime_multiplier, d, n, B,
                x_evals, X_dist, mu, eps_dist, X, Y, rep, NaN, NaN, NaN, false, NaN,
-               NaN, NaN, NaN)
+               NaN, NaN, NaN, NaN)
 end
 
 function run_all()
@@ -54,11 +55,12 @@ function run_all()
     tables = [
               #(1, 1000, 600), # good
               #(2, 1000, 600), # good
-              (1, 200, 200), # medium test
+              (1, 1000, 500), # medium test
               #(2, 1000, 200), # medium test
-              #(1, 10, 10), # small test
+              #(1, 100, 100), # small test
+              #(2, 10, 10), # small test
              ]
-    n_reps = 2000
+    n_reps = 1000
     lifetime_methods = [opt::LifetimeMethod, pol::LifetimeMethod]
     #lifetime_methods = [opt::LifetimeMethod]
     lifetime_multipliers = [0.8, 0.9, 1.0, 1.1, 1.2]
@@ -109,7 +111,7 @@ function run_all()
                 round(t_left / 60, digits=2), "min left")
         println(f)
         println("$count / $n_exp")
-        count += 1 
+        count += 1
         run(experiment)
     end
 
@@ -146,6 +148,7 @@ function run_all()
                                       "sigma2_hat" => sum(e.sigma2_hat for e in experiments_small) / n_small,
                                       "bias_theory" => sum(e.bias_theory for e in experiments_small) / n_small,
                                       "sd_theory" => sum(e.sd_theory for e in experiments_small) / n_small,
+                                      "rmse_theory" => sum(e.rmse_theory for e in experiments_small) / n_small,
                                       "coverage" => sum(e.coverage for e in experiments_small) / n_small,
                                       "average_width" => sum(e.width for e in experiments_small) / n_small,
                                      )
@@ -178,9 +181,10 @@ function get_theory(experiment::Experiment)
         experiment.sd_theory = sqrt(lambda^d * sigma2 * C / n)
         experiment.bias_theory = -4 * pi^4 * d / (27 * lambda^4)
     end
+    experiment.rmse_theory = sqrt(experiment.bias_theory^2 + experiment.sd_theory^2)
 end
 
-function select_lifetime(X, Y, experiment)
+function select_lifetime(X, Y, x_eval, experiment)
     d = experiment.d
     n = experiment.n
     sigma2 = var(experiment.eps_dist)
@@ -188,19 +192,16 @@ function select_lifetime(X, Y, experiment)
     if experiment.lifetime_method == opt::LifetimeMethod
         if J_lifetime == 0
             numerator = d * pi^4 * n
-            denominator = sigma2 * ((4 - 4*log(2)) / 3)^d
+            denominator = sigma2 * 0.4091^d
             return (numerator / denominator)^(1 / (4+d))
         elseif J_lifetime == 1
-            C1 = (4/3 - 4*log(2)/3)
-            C2 = (2 - 2*log(2))
-            C3 = (5/3 - log(5/2) - 3*log(5/3)/2)
-            C_all = 16/5 * C1^d + 81/25 * C2^d - 72/5 * C3^d
-            numerator = 8 * d * pi^8 * n
-            denominator = 9 * sigma2 * C_all
+            C = 3.2 * 0.4091^d - 2.88 * 0.4932^d + 3.24 * 0.6137^d
+            numerator = 128 * d * pi^8 * n
+            denominator = 27^2 * sigma2 * C
             return (numerator / denominator)^(1 / (8+d))
         end
     elseif experiment.lifetime_method == pol::LifetimeMethod
-        return select_lifetime_polynomial(X, Y, J_lifetime)
+        return select_lifetime_polynomial_amse(X, Y, x_eval, J_lifetime)
     end
 end
 
@@ -214,7 +215,7 @@ function run(experiment::Experiment)
     Y = experiment.Y
     mu = experiment.mu
     lifetime_multiplier = experiment.lifetime_multiplier
-    lambda = select_lifetime(X, Y, experiment) * lifetime_multiplier
+    lambda = select_lifetime(X, Y, x_evals[], experiment) * lifetime_multiplier
     forest = DebiasedMondrianForest(lambda, B, x_evals, J_estimator, X, Y, true)
     experiment.mu_hat = forest.mu_hat[]
     ci = forest.confidence_band

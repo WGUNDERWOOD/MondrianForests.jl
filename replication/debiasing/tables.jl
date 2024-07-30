@@ -12,38 +12,36 @@ end
 
 data = CSV.read("./replication/debiasing/results.csv", DataFrame)
 data = select!(data, sort(names(data)))
-#data = select!(data, ["d", "n", "B", "J_estimator", "J_lifetime", "lifetime_method",
-#"lifetime_multiplier", "lambda", "rmse", "bias", "sd",
-#"bias_over_sd", "sd_hat",
-#"sigma2_hat", "bias_theory", "sd_theory", "coverage", "average_width"])
 
-data = sort!(data, [:d, :n, :B, :J_estimator, :J_lifetime, order(:lifetime_method, by=lifetime_method_order),
-                    :lifetime_multiplier])
+data = sort!(data, [:d, :n, :B, :J_estimator, :J_lifetime,
+                    order(:lifetime_method, by=lifetime_method_order),
+                    order(:lifetime_multiplier, rev=true)])
 
 function make_table(df)
     d = df[1, "d"]
     n = df[1, "n"]
     B = df[1, "B"]
-    tex = "\\begin{tabular}{|cc|cc|cccc|cc|cc|cc|}\n"
+    tex = "\\begin{tabular}{|cc|cc|cccc|cc|ccc|cc|}\n"
     tex *= "%\$d=$d\$, & \$n=$n\$, & \$B=$B\$&&&&&&&&&&\\\\\n"
     tex *= "\\hline\n"
     tex *= "\$J\$ & LS & LM & \$\\lambda\$ & RMSE & Bias & SD & Bias/SD & "
-    tex *= "\$\\widehat{\\textrm{SD}}\$ & \$\\hat\\sigma^2\$ & ABias & ASD & CR & CIW \\\\\n"
+    tex *= "\$\\widehat{\\textrm{SD}}\$ & \$\\hat\\sigma^2\$ & ARMSE & ABias & ASD & CR & CIW \\\\\n"
 
     #display(df)
     for i in 1:nrow(df)
         row = df[i, :]
 
+        #if i > 1 && df[i, :J_lifetime] == df[i-1, :J_lifetime] &&
+                     #df[i, :J_estimator] == df[i-1, :J_estimator]
+        #else
+            #tex *= "\\hline\n"
+        #end
+
         if i > 1 && df[i, :J_lifetime] == df[i-1, :J_lifetime] &&
                      df[i, :J_estimator] == df[i-1, :J_estimator]
-        else
-            tex *= "\\hline\n"
-        end
-
-        if i > 1 && df[i, :J_estimator] == df[i-1, :J_estimator]
             tex *= ""
         else
-            tex *= "$(df[i, :J_estimator])"
+            tex *= "\\hline\n$(df[i, :J_estimator])"
         end
 
         if i > 1 && df[i, :J_lifetime] == df[i-1, :J_lifetime] &&
@@ -57,11 +55,11 @@ function make_table(df)
             else
                 hat = ""
             end
-            tex *= "& \$$hat\\lambda_{$Jl}^{\\scriptsize{\\textrm{$lm}}}\$"
+            tex *= "& \$$hat\\lambda_{$Jl}\$"
         end
 
         for col in [:lifetime_multiplier, :lambda, :rmse, :bias, :sd,
-                    :bias_over_sd, :sd_hat, :sigma2_hat, :bias_theory, :sd_theory,
+                    :bias_over_sd, :sd_hat, :sigma2_hat, :rmse_theory, :bias_theory, :sd_theory,
                     :coverage, :average_width]
             cell = df[i, col]
             if col == :coverage
