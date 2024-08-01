@@ -10,10 +10,21 @@ function lifetime_method_order(l)
     end
 end
 
+function get_debias_text(J_estimator, J_lifetime)
+    if J_estimator == 0
+        return "No debiasing"
+    elseif J_lifetime == 0
+        return "Undersmoothing"
+    else
+        return "Debiasing"
+    end
+end
+
 data = CSV.read("./replication/debiasing/results.csv", DataFrame)
 data = select!(data, sort(names(data)))
 
-data = sort!(data, [:d, :n, :B, :J_estimator, :J_lifetime,
+data = sort!(data, [:d, :n, :B, :J_estimator,
+                    order(:J_lifetime, rev=true),
                     order(:lifetime_method, by=lifetime_method_order),
                     order(:lifetime_multiplier, rev=true)])
 
@@ -21,27 +32,24 @@ function make_table(df)
     d = df[1, "d"]
     n = df[1, "n"]
     B = df[1, "B"]
-    tex = "\\begin{tabular}{|cc|cc|cccc|cc|ccc|cc|}\n"
+    n_mults = length(unique(df[!, :lifetime_multiplier]))
+    tex = "\\begin{tabular}{|c|cc|cc|cccc|cc|ccc|cc|}\n"
     tex *= "%\$d=$d\$, & \$n=$n\$, & \$B=$B\$&&&&&&&&&&\\\\\n"
     tex *= "\\hline\n"
-    tex *= "\$J\$ & LS & LM & \$\\lambda\$ & RMSE & Bias & SD & Bias/SD & "
+    tex *= "& \$J\$ & LS & LM & \$\\lambda\$ & RMSE & Bias & SD & Bias/SD & "
     tex *= "\$\\widehat{\\textrm{SD}}\$ & \$\\hat\\sigma^2\$ & ARMSE & ABias & ASD & CR & CIW \\\\\n"
 
-    #display(df)
     for i in 1:nrow(df)
         row = df[i, :]
 
-        #if i > 1 && df[i, :J_lifetime] == df[i-1, :J_lifetime] &&
-                     #df[i, :J_estimator] == df[i-1, :J_estimator]
-        #else
-            #tex *= "\\hline\n"
-        #end
-
         if i > 1 && df[i, :J_lifetime] == df[i-1, :J_lifetime] &&
                      df[i, :J_estimator] == df[i-1, :J_estimator]
-            tex *= ""
+            tex *= "&"
         else
-            tex *= "\\hline\n$(df[i, :J_estimator])"
+            debias_text = get_debias_text(df[i, :J_estimator], df[i, :J_lifetime])
+            tex *= "\\hline\n"
+            tex *= "\\multirow{$(n_mults+1)}{*}{\\rotatebox{90}{$debias_text}}&"
+            tex *= "$(df[i, :J_estimator])"
         end
 
         if i > 1 && df[i, :J_lifetime] == df[i-1, :J_lifetime] &&
