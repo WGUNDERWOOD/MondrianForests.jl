@@ -78,7 +78,7 @@ function make_table(df)
     end
     tex *= "\\hline\n"
     tex *= "\\end{tabular}"
-    write("./replication/debiasing/table_d$(d)_n$(n)_b$B.tex", tex)
+    write("./replication/debiasing/table_d$(d)_n$(n)_B$B.tex", tex)
 end
 
 for d in unique(data[!, "d"])
