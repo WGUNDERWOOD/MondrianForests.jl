@@ -49,14 +49,18 @@ end
 function run_all()
     # tables format is (d, n, B)
     tables = [
-              #(1, 1000, 1000), # good
-              #(2, 1000, 1000), # good
-              (1, 1000, 1000), # medium test
-              (2, 1000, 1000), # medium test
+              (1, 1000, 1000),
+              (2, 1000, 1000),
+              (1, 1000, 10),
+              (2, 1000, 10),
+              (1, 1000, 2),
+              (2, 1000, 2),
+              #(1, 1000, 1), # medium test
+              #(2, 1000, 400), # medium test
               #(1, 100, 100), # small test
               #(2, 10, 10), # small test
              ]
-    n_reps = 5000
+    n_reps = 3000
     lifetime_methods = [opt::LifetimeMethod, pol::LifetimeMethod]
     #lifetime_methods = [opt::LifetimeMethod]
     lifetime_multipliers = [0.8, 0.9, 1.0, 1.1, 1.2]
