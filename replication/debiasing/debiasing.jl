@@ -60,12 +60,16 @@ end
 function run_all()
     # tables format is (d, n, B)
     tables::Vector{Tuple{Int,Int,Int}} = [
-              #(1, 1000, 600),
-              #(2, 1000, 600),
-              (1, 1000, 10),
-              (2, 1000, 10),
-              (1, 1000, 2),
+              #(1, 1000, 800),
+              #(2, 1000, 800),
+              #(1, 1000, 10),
+              #(2, 1000, 10),
+              (2, 1000, 5),
+              (1, 1000, 5),
               (2, 1000, 2),
+              (1, 1000, 2),
+              (2, 1000, 1),
+              (1, 1000, 1),
              ]
     n_reps = 3000
     lifetime_methods::Vector{LifetimeMethod} = [opt::LifetimeMethod, pol::LifetimeMethod]
@@ -124,16 +128,15 @@ function run_all()
                 println(f)
                 println("$count / $n_experiments")
                 #println(Base.summarysize(X)/1e6, " MB")
-                mem_use = get_mem_use()
-                println(mem_use, " MB")
+                #mem_use = get_mem_use()
+                #println(mem_use, " MB")
                 #println()
                 #display(varinfo())
                 println()
                 run(experiment, X, Y)
                 count += 1
             end
-            println("here")
-            GC.gc()
+            #GC.gc()
         end
     end
 
@@ -153,6 +156,12 @@ function run_all()
                                           e.lifetime_method, e.lifetime_multiplier)
                                          == (d, n, B, J_estimator, J_lifetime, lifetime_method,
                                              lifetime_multiplier)]
+                    #println("n_exp_small ", length(experiments_small))
+                    #experiments_small = [e for e in experiments_small if e.mu_hat != NaN]
+                    #experiments_small = [e for e in experiments_small if e.sd_hat != NaN]
+                    #experiments_small = [e for e in experiments_small if e.width != NaN]
+                    #println("n_exp_small ", length(experiments_small))
+                    #println()
                     n_small = length(experiments_small)
                     if n_small > 0
                         result = Dict(
@@ -173,6 +182,7 @@ function run_all()
                                       "rmse_theory" => sum(e.rmse_theory for e in experiments_small) / n_small,
                                       "coverage" => sum(e.coverage for e in experiments_small) / n_small,
                                       "average_width" => sum(e.width for e in experiments_small) / n_small,
+                                      "n_reps" => maximum(e.rep for e in experiments_small),
                                      )
                         result["sd"] = sqrt(result["rmse"]^2 - result["bias"]^2)
                         result["bias_over_sd"] = abs(result["bias"]) / result["sd"]

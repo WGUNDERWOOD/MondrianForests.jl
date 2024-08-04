@@ -32,6 +32,7 @@ function make_table(df)
     d = df[1, "d"]
     n = df[1, "n"]
     B = df[1, "B"]
+    n_reps = df[1, "n_reps"]
     n_mults = length(unique(df[!, :lifetime_multiplier]))
     tex = "\\begin{tabular}{|c|cc|cc|cccc|cc|ccc|cc|}\n"
     tex *= "%\$d=$d\$, & \$n=$n\$, & \$B=$B\$&&&&&&&&&&\\\\\n"
@@ -86,7 +87,7 @@ function make_table(df)
     end
     tex *= "\\hline\n"
     tex *= "\\end{tabular}"
-    write("./replication/debiasing/table_d$(d)_n$(n)_B$B.tex", tex)
+    write("./replication/debiasing/table_d$(d)_n$(n)_B$(B)_reps$(n_reps).tex", tex)
 end
 
 for d in unique(data[!, "d"])
@@ -95,7 +96,11 @@ for d in unique(data[!, "d"])
     for n in unique(data_d[!, "n"])
         println(n)
         data_d_n = filter(:n => ==(n), data_d)
-        make_table(data_d_n)
-        display(data_d_n)
+        for B in unique(data_d_n[!, "B"])
+            println(B)
+            data_d_n_B = filter(:B => ==(B), data_d_n)
+            make_table(data_d_n_B)
+            display(data_d_n_B)
+        end
     end
 end

@@ -153,7 +153,9 @@ function estimate_mu_hat(forest::DebiasedMondrianForest{d}, Ns::Array{Int,3}) wh
                     denom += 1
                 end
             end
-            mu_hat[s] += numer / denom
+            if denom != 0
+                mu_hat[s] += numer / denom
+            end
         end
     end # COV_EXCL_LINE
 
@@ -182,7 +184,9 @@ function estimate_sigma2_hat(forest::DebiasedMondrianForest{d}, Ns::Array{Int,3}
                 denom += 1
             end
         end
-        sigma2_hat[s] += numer / denom
+        if denom != 0
+            sigma2_hat[s] += numer / denom
+        end
     end # COV_EXCL_LINE
 
     forest.sigma2_hat = sigma2_hat
