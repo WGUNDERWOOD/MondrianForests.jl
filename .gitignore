@@ -11,4 +11,6 @@ Manifest.toml
 *.fls
 *.log
 *.synctex.gz
+*.tex
+*.mem
 docs/build
