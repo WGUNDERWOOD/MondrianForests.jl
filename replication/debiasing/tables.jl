@@ -14,7 +14,7 @@ function get_debias_text(J_estimator, J_lifetime)
     if J_estimator == 0
         return "No debiasing"
     elseif J_lifetime == 0
-        return "Undersmoothing"
+        return "Robust BC"
     else
         return "Debiasing"
     end

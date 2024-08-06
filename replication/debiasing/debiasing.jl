@@ -64,20 +64,22 @@ function run_all()
               #(2, 1000, 800),
               #(1, 1000, 10),
               #(2, 1000, 10),
-              (2, 1000, 5),
-              (1, 1000, 5),
-              (2, 1000, 2),
-              (1, 1000, 2),
-              (2, 1000, 1),
+              #(2, 1000, 5),
+              #(1, 1000, 5),
+              #(2, 1000, 2),
+              #(1, 1000, 2),
+              #(2, 1000, 1),
               (1, 1000, 1),
              ]
-    n_reps = 3000
+    n_reps = 300
     lifetime_methods::Vector{LifetimeMethod} = [opt::LifetimeMethod, pol::LifetimeMethod]
     lifetime_multipliers::Vector{Float64} = [0.8, 0.9, 1.0, 1.1, 1.2]
     X_dist::Distribution = Uniform(0, 1)
     mu::Function = (x -> sum(sin.(pi .* x)))
     sigma = 0.3
-    eps_dist = Normal(0, sigma)
+    #eps_dist = Normal(0, sigma)
+    eps_dist = Uniform(-sigma * sqrt(3), sigma * sqrt(3))
+    @assert abs(var(eps_dist) - sigma^2) <= 1e-10
     J_blocks::Vector{Tuple{Int,Int}} = [(0, 0), (1, 1), (1, 0)]
 
     # set up experiments
