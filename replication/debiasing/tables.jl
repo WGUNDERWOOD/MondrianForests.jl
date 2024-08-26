@@ -77,6 +77,10 @@ function make_table(df)
                 cell = "$cell\\%"
             elseif col == :lifetime_multiplier
                 cell = @sprintf "%.1f" cell
+            elseif col == :lambda
+                cell = @sprintf "%.2f" cell
+            elseif col == :average_width
+                cell = @sprintf "%.3f" cell
             elseif isa(cell, Float64)
                 cell = @sprintf "%.4f" cell
             end

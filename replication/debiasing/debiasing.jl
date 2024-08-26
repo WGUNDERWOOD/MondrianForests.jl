@@ -60,18 +60,14 @@ end
 function run_all()
     # tables format is (d, n, B)
     tables::Vector{Tuple{Int,Int,Int}} = [
-              #(1, 1000, 800),
-              #(2, 1000, 800),
-              #(1, 1000, 10),
+              (2, 1000, 800),
+              (1, 1000, 800),
               #(2, 1000, 10),
-              #(2, 1000, 5),
-              #(1, 1000, 5),
-              #(2, 1000, 2),
-              #(1, 1000, 2),
+              #(1, 1000, 10),
               #(2, 1000, 1),
-              (1, 1000, 1),
+              #(1, 1000, 1),
              ]
-    n_reps = 300
+    n_reps = 3000
     lifetime_methods::Vector{LifetimeMethod} = [opt::LifetimeMethod, pol::LifetimeMethod]
     lifetime_multipliers::Vector{Float64} = [0.8, 0.9, 1.0, 1.1, 1.2]
     X_dist::Distribution = Uniform(0, 1)
@@ -114,7 +110,7 @@ function run_all()
         for rep in 1:n_reps
             X::Vector{NTuple{d,Float64}} = [ntuple(j -> rand(X_dist), d) for i in 1:n]
             Y::Vector{Float64} = [mu(X[i]) + rand(eps_dist) for i in 1:n]
-            valid_indices = [i for i in 1:n_experiments 
+            valid_indices = [i for i in 1:n_experiments
                              if (experiments[i].rep, experiments[i].d,
                                  experiments[i].n, experiments[i].B) == (rep, d, n, B)]
             Threads.@threads for i in valid_indices
@@ -125,16 +121,13 @@ function run_all()
                 f *= "rep = $(experiment.rep)"
                 rate = count / t1
                 t_left = (n_experiments - count) / rate
-                println(round(t_left, digits=0), "s left, ",
-                        round(t_left / 60, digits=2), "min left")
-                println(f)
-                println("$count / $n_experiments")
-                #println(Base.summarysize(X)/1e6, " MB")
-                #mem_use = get_mem_use()
-                #println(mem_use, " MB")
-                #println()
-                #display(varinfo())
-                println()
+                if count % 100 == 0
+                    println(round(t_left, digits=0), "s left, ",
+                            round(t_left / 60, digits=2), "min left")
+                    println(f)
+                    println("$count / $n_experiments")
+                    println()
+                end
                 run(experiment, X, Y)
                 count += 1
             end
@@ -210,7 +203,7 @@ function get_theory(experiment::Experiment)
         experiment.sd_theory = sqrt(lambda^d * sigma2 * 0.4091^d / n)
         experiment.bias_theory = - pi^2 * d / (2 * lambda^2)
     elseif experiment.J_estimator == 1
-        C = 3.2 * 0.4091^d - 2.88 * 0.4932^d + 3.24 * 0.6137^d
+        C = 0.64 * 0.4091^d - 2.88 * 0.4932^d + 3.24 * 0.6137^d
         experiment.sd_theory = sqrt(lambda^d * sigma2 * C / n)
         experiment.bias_theory = -4 * pi^4 * d / (27 * lambda^4)
     end
@@ -229,7 +222,7 @@ function select_lifetime(X::Vector{NTuple{d,Float64}}, Y::Vector{Float64},
             denominator = sigma2 * 0.4091^d
             return (numerator / denominator)^(1 / (4+d))
         elseif J_lifetime == 1
-            C = 3.2 * 0.4091^d - 2.88 * 0.4932^d + 3.24 * 0.6137^d
+            C = 0.64 * 0.4091^d - 2.88 * 0.4932^d + 3.24 * 0.6137^d
             numerator = 128 * d * pi^8 * n
             denominator = 27^2 * sigma2 * C
             return (numerator / denominator)^(1 / (8+d))
