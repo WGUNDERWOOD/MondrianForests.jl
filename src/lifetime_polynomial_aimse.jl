@@ -15,8 +15,9 @@ debias_order = 0
 lambda = select_lifetime_polynomial(X_data, Y_data, debias_order)
 ```
 """
-function select_lifetime_polynomial_aimse(X_data::Vector{NTuple{d,Float64}}, Y_data::Vector{Float64},
-                                    debias_order::Int=0) where {d}
+function select_lifetime_polynomial_aimse(X_data::Vector{NTuple{d,Float64}},
+                                          Y_data::Vector{Float64},
+                                          debias_order::Int=0) where {d}
     n = length(X_data)
     derivative_estimates = get_derivative_estimates_polynomial(X_data, Y_data, debias_order)
     sigma2_hat = get_variance_estimate_polynomial(X_data, Y_data, debias_order)

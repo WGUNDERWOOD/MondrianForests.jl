@@ -22,10 +22,11 @@ end
 
 data = CSV.read("./replication/debiasing/results.csv", DataFrame)
 data = select!(data, sort(names(data)))
-data = sort!(data, [:d, :n, :B, :J_estimator,
-                    order(:J_lifetime, rev=true),
-                    order(:lifetime_method, by=lifetime_method_order),
-                    order(:lifetime_multiplier, rev=true)])
+data = sort!(data,
+             [:d, :n, :B, :J_estimator,
+              order(:J_lifetime, rev=true),
+              order(:lifetime_method, by=lifetime_method_order),
+              order(:lifetime_multiplier, rev=true)])
 
 function make_table(df)
     d = df[1, "d"]
@@ -42,8 +43,8 @@ function make_table(df)
     for i in 1:nrow(df)
         row = df[i, :]
 
-        if i > 1 && df[i, :J_lifetime] == df[i-1, :J_lifetime] &&
-                     df[i, :J_estimator] == df[i-1, :J_estimator]
+        if i > 1 && df[i, :J_lifetime] == df[i - 1, :J_lifetime] &&
+           df[i, :J_estimator] == df[i - 1, :J_estimator]
             tex *= "&"
         else
             debias_text = get_debias_text(df[i, :J_estimator], df[i, :J_lifetime])
@@ -52,8 +53,8 @@ function make_table(df)
             tex *= "$(df[i, :J_estimator])"
         end
 
-        if i > 1 && df[i, :J_lifetime] == df[i-1, :J_lifetime] &&
-                     df[i, :lifetime_method] == df[i-1, :lifetime_method]
+        if i > 1 && df[i, :J_lifetime] == df[i - 1, :J_lifetime] &&
+           df[i, :lifetime_method] == df[i - 1, :lifetime_method]
             tex *= "&"
         else
             Jl = df[i, :J_lifetime]
@@ -90,7 +91,7 @@ function make_table(df)
     end
     tex *= "\\hline\n"
     tex *= "\\end{tabular}"
-    write("./replication/debiasing/table_d$(d)_n$(n)_B$(B)_reps$(n_reps).tex", tex)
+    return write("./replication/debiasing/table_d$(d)_n$(n)_B$(B)_reps$(n_reps).tex", tex)
 end
 
 for d in unique(data[!, "d"])

@@ -16,10 +16,11 @@ lambda = select_lifetime_polynomial(X_data, Y_data, debias_order)
 ```
 """
 function select_lifetime_polynomial_amse(X_data::Vector{NTuple{d,Float64}}, Y_data::Vector{Float64},
-        x_eval::NTuple{d,Float64},
-        debias_order::Int=0) where {d}
+                                         x_eval::NTuple{d,Float64},
+                                         debias_order::Int=0) where {d}
     n = length(X_data)
-    derivative_estimates = get_derivative_estimates_polynomial_amse(X_data, Y_data, x_eval, debias_order)
+    derivative_estimates = get_derivative_estimates_polynomial_amse(X_data, Y_data, x_eval,
+                                                                    debias_order)
     sigma2_hat = get_variance_estimate_polynomial(X_data, Y_data, debias_order)
 
     omega_bar = get_omega_bar(debias_order)
@@ -33,9 +34,9 @@ function select_lifetime_polynomial_amse(X_data::Vector{NTuple{d,Float64}}, Y_da
 end
 
 function get_derivative_estimates_polynomial_amse(X_data::Vector{NTuple{d,Float64}},
-                                            Y_data::Vector{Float64},
-                                            x_eval::NTuple{d,Float64},
-                                            debias_order::Int) where {d}
+                                                  Y_data::Vector{Float64},
+                                                  x_eval::NTuple{d,Float64},
+                                                  debias_order::Int) where {d}
     n = length(X_data)
     J = debias_order
     derivative_vectors = Vector{Float64}[]
