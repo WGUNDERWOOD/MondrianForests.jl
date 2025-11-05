@@ -108,5 +108,11 @@ display(debiased_forest.confidence_band)
 - Test
 
 ### Documentation
+
 Documentation for the **MondrianForests** package is available on
 [the web](https://wgunderwood.github.io/MondrianForests.jl/stable/).
+
+### Replication
+
+A Julia script to replicate the tables generated in the paper
+is available in the replication/debiasing/ directory.

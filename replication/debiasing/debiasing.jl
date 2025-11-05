@@ -4,8 +4,6 @@ using DataFrames
 using CSV
 using Random
 
-# TODO most of memory use is from constructing mondrian trees
-
 @enum LifetimeMethod begin
     opt
     pol
@@ -255,5 +253,3 @@ function run(experiment::Experiment, X::Vector{NTuple{d,Float64}}, Y::Vector{Flo
 end
 
 run_all()
-
-# TODO use medians?
