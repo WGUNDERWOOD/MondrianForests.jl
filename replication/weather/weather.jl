@@ -36,6 +36,7 @@ function load_data(; limit=nothing)
     data.Pressure3pm = (data.Pressure3pm .- y_min) ./ (y_max - y_min)
     Random.seed!(1)
     data = shuffle(data)
+    data = data[1:1000, :]
     println("number of samples ", nrow(data))
     return (data, x_min, x_max, y_min, y_max)
 end
@@ -358,7 +359,7 @@ global filename = "./replication/weather/weather_forest_" * string(n_trees) * ".
 make_forest_plot(data, trees[1:n_trees], x_min, x_max, y_min, y_max, filename)
 
 # plot debiased forest with design points
-n_trees = 20
+n_trees = 10
 debias_order = 1
 debias_scaling = MondrianForests.get_debias_scaling(debias_order)
 lambda2 = lambda * debias_scaling[2]
@@ -373,7 +374,7 @@ make_debiased_forest_design_plot(data, trees[1:n_trees], trees2[1:n_trees],
                                  filename)
 
 # plot forest with design points
-n_trees = 40
+n_trees = 10
 println("plotting forest with ", n_trees, " trees and design points")
 global filename = "./replication/weather/weather_forest_design.png"
 make_forest_design_plot(data, trees[1:n_trees], x_min, x_max, y_min,
