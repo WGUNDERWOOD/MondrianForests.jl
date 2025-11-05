@@ -22,7 +22,6 @@ end
 
 data = CSV.read("./replication/debiasing/results.csv", DataFrame)
 data = select!(data, sort(names(data)))
-
 data = sort!(data, [:d, :n, :B, :J_estimator,
                     order(:J_lifetime, rev=true),
                     order(:lifetime_method, by=lifetime_method_order),

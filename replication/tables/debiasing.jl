@@ -39,10 +39,10 @@ mutable struct Experiment
 end
 
 function get_mem_use()
-    f::IOStream         = open( "/proc/self/stat", "r" )
-    s::AbstractString   = read( f, String )
-    vsize::Int          = parse( Int64, split( s )[23] )
-    mb::Int             = Int( ceil( vsize / ( 1024 * 1024 ) ) )
+    f::IOStream = open("/proc/self/stat", "r")
+    s::AbstractString = read(f, String)
+    vsize::Int = parse(Int64, split(s)[23])
+    mb::Int = Int(ceil(vsize / (1024 * 1024)))
     close(f)
     return mb::Int
 end
@@ -60,10 +60,10 @@ function run_all()
     tables::Vector{Tuple{Int,Int,Int}} = [
               (2, 1000, 800),
               (1, 1000, 800),
-              #(2, 1000, 10),
-              #(1, 1000, 10),
-              #(2, 1000, 1),
-              #(1, 1000, 1),
+              (2, 1000, 10),
+              (1, 1000, 10),
+              (2, 1000, 1),
+              (1, 1000, 1),
              ]
     n_reps = 3000
     lifetime_methods::Vector{LifetimeMethod} = [opt::LifetimeMethod, pol::LifetimeMethod]
@@ -71,8 +71,7 @@ function run_all()
     X_dist::Distribution = Uniform(0, 1)
     mu::Function = (x -> sum(sin.(pi .* x)))
     sigma = 0.3
-    #eps_dist = Normal(0, sigma)
-    eps_dist = Uniform(-sigma * sqrt(3), sigma * sqrt(3))
+    eps_dist = Normal(0, sigma)
     @assert abs(var(eps_dist) - sigma^2) <= 1e-10
     J_blocks::Vector{Tuple{Int,Int}} = [(0, 0), (1, 1), (1, 0)]
 
@@ -149,12 +148,6 @@ function run_all()
                                           e.lifetime_method, e.lifetime_multiplier)
                                          == (d, n, B, J_estimator, J_lifetime, lifetime_method,
                                              lifetime_multiplier)]
-                    #println("n_exp_small ", length(experiments_small))
-                    #experiments_small = [e for e in experiments_small if e.mu_hat != NaN]
-                    #experiments_small = [e for e in experiments_small if e.sd_hat != NaN]
-                    #experiments_small = [e for e in experiments_small if e.width != NaN]
-                    #println("n_exp_small ", length(experiments_small))
-                    #println()
                     n_small = length(experiments_small)
                     if n_small > 0
                         result = Dict(
