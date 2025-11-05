@@ -116,7 +116,7 @@ Documentation for the **MondrianForests** package is available on
 
 Julia scripts to replicate the tables generated in the paper
 are available in the
-replication/tables/
+[replication/tables/](https://github.com/WGUNDERWOOD/MondrianForests.jl/tree/main/replication/tables)
 directory.
 All experiments (including some not included in the paper)
 can be run with `julia --project make.jl`.
