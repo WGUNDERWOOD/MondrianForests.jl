@@ -9,7 +9,9 @@
             data = MondrianForests.generate_data(n, X_dist, eps_dist, mu, sigma2)
             X_data = data["X"]
             Y_data = data["Y"]
-            lambda = select_lifetime_polynomial(X_data, Y_data, debias_order)
+            x_eval = ntuple(j -> 0.5, d)
+            lambda = select_lifetime_polynomial_amse(X_data, Y_data, x_eval, debias_order)
+            lambda = select_lifetime_polynomial_aimse(X_data, Y_data, debias_order)
         end
     end
 end

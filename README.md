@@ -114,7 +114,7 @@ Documentation for the **MondrianForests** package is available on
 
 ### Replication
 
-A Julia script to replicate the tables generated in the paper
-is available in the replication/debiasing/ directory.
-The experiments can be run with run.jl, and the tables
-generated from the output data using tables.jl.
+Julia scripts to replicate the tables generated in the paper
+are available in the replication/tables/ directory.
+All experiments (including some not included in the paper)
+can be run with `julia --project make.jl`.
