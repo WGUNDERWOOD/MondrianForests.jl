@@ -20,7 +20,7 @@ function get_debias_text(J_estimator, J_lifetime)
     end
 end
 
-data = CSV.read("./replication/debiasing/results.csv", DataFrame)
+data = CSV.read("./replication/tables/results.csv", DataFrame)
 data = select!(data, sort(names(data)))
 data = sort!(data,
              [:d, :n, :B, :J_estimator,
@@ -91,7 +91,7 @@ function make_table(df)
     end
     tex *= "\\hline\n"
     tex *= "\\end{tabular}"
-    return write("./replication/debiasing/table_d$(d)_n$(n)_B$(B)_reps$(n_reps).tex", tex)
+    return write("./replication/tables/table_d$(d)_n$(n)_B$(B)_reps$(n_reps).tex", tex)
 end
 
 for d in unique(data[!, "d"])

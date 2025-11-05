@@ -189,7 +189,7 @@ function run_all()
     end
 
     df = DataFrame(results)
-    CSV.write("./replication/debiasing/results.csv", df)
+    CSV.write("./replication/tables/results.csv", df)
     return nothing
 end
 
