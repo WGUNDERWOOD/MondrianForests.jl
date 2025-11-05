@@ -10,12 +10,12 @@ using Coverage
 #Pkg.test(coverage=true)
 
 # coverage
-coverage = process_folder()
-covered_lines, total_lines = get_summary(coverage)
-println("Coverage: $covered_lines / $total_lines")
+#coverage = process_folder()
+#covered_lines, total_lines = get_summary(coverage)
+#println("Coverage: $covered_lines / $total_lines")
 
 # docs
-#include("docs/make.jl")
+include("docs/make.jl")
 
 # replication
 #include("replication/construction_diagrams/construction_diagrams.jl")

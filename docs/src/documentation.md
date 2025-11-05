@@ -28,7 +28,7 @@ Private = false
 
 ```@autodocs
 Modules = [MondrianForests]
-Pages   = ["lifetime_polynomial.jl", "lifetime_gcv.jl"]
+Pages   = ["lifetime_polynomial_amse.jl", "lifetime_polynomial_aimse.jl", "lifetime_gcv.jl"]
 Private = false
 ```
 
